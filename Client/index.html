@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whisper Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="controls">
+    <button id="addPinBtn">Add Pin</button>
+    <button id="moveLocBtn">Move Location</button>
+    <button id="showAllBtn">Show All Whispers</button>
+    <label>Radius: <span id="radiusValue">500</span> m</label>
+    <input id="radiusSlider" type="range" min="50" max="1000" step="50" value="500" />
+  </div>
+
+  <div id="map"></div>
+
+  <div id="whisperModal" class="modal">
+    <div class="modal-content">
+      <h3>Create Whisper</h3>
+      <label>
+        Mode:
+        <select id="modeToggle">
+          <option value="text">Text</option>
+          <option value="audio">Audio</option>
+        </select>
+      </label>
+
+      <textarea id="whisperText" placeholder="Type your whisper..."></textarea>
+
+      <button id="recordBtn" style="display:none;">Record</button>
+      <span id="recordingIndicator" style="color:red; margin-left:10px;"></span>
+
+      <div class="modal-actions">
+        <button id="sendBtn">Send</button>
+        <button id="cancelBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="unpackModal" class="modal">
+    <div class="modal-content">
+      <h3 id="unpackTitle">Whisper Box</h3>
+      <div id="unpackContent"></div>
+      <div class="modal-actions">
+        <button id="closeUnpackBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
