@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { inject, type Ref } from 'vue';
 import type { Product } from '../types';
+import { titleInjectionKey } from '../injectionKeys';
 
 const emit = defineEmits<{
     (e: 'select', product: Product): void;
 }>();
 
 const props = defineProps<{ product: Product }>();
+const injected: { title: Readonly<Ref<string>>, update: (t: string) => void } | undefined = inject(titleInjectionKey);
 
 function onClick() {
     emit('select', props.product);
@@ -13,6 +16,8 @@ function onClick() {
         props.product.price++;
         props.product.description = "x"
     }
+    console.log(titleInjectionKey);
+    injected?.update(props.product.title);
 }
 </script>
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Bars3Icon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';// https://heroicons.com/
+import { ref, onMounted } from 'vue';
+import { Bars3Icon, MagnifyingGlassIcon, SunIcon, MoonIcon } from '@heroicons/vue/24/outline';
 
 const emit = defineEmits<{
   (e: 'menu-toggle'): void;
@@ -28,7 +28,8 @@ function onProfile() {
 <template>
   <nav class="w-full bg-white/50 border-b border-gray-200">
     <div class="max-w-5xl mx-auto px-3 py-2 flex items-center gap-3">
-      <button @click="[onMenu(), onProfile()]" class="p-2 rounded-md hover:bg-gray-100 transition sm:mr-2"
+      <button @click="[onMenu(), onProfile()]"
+        class="p-2 rounded-md border border-transparent hover:bg-gray-100 hover:border-gray-400 transition sm:mr-2"
         aria-label="Toggle menu">
         <Bars3Icon class="w-6 h-6 text-gray-700" />
       </button>
@@ -37,11 +38,10 @@ function onProfile() {
         <div class="w-full max-w-xl">
           <div class="relative">
             <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon class="w-5 h-5 text-gray-400" />
+              <MagnifyingGlassIcon class="w-5 h-5 text-gray-400 dark:text-gray-400" />
             </span>
-            <input v-model="query" @input="onInput" @keyup.enter="onEnter" type="search"
-              placeholder="Search whispers, places..."
-              class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
+            <input v-model="query" @input="onInput" @keyup.enter="onEnter" type="search" placeholder="Search..."
+              class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
               aria-label="Search" />
           </div>
         </div>
@@ -49,6 +49,5 @@ function onProfile() {
     </div>
   </nav>
 </template>
-
 
 <style scoped></style>

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, provide, readonly, onActivated, onUpdated, onUnmounted } from 'vue';
 import NavBar from './components/Navbar.vue';
 import ProductItem from './components/ProductItem.vue';
 import type { Product } from './types';
+import { titleInjectionKey } from './injectionKeys';
 
 const lastSearch = ref('');
 const menuOpen = ref(false);
@@ -37,29 +38,35 @@ function onSelectProduct(product: Product) {
 }
 
 
+onActivated(() => console.log("onactivated"));
+onUpdated(() => console.log("update"));
 onMounted(async () => {
   await new Promise<void>((res) => {
     setTimeout(() => {
-      res();
       console.log("MOUNTED");
       products.splice(0, products.length, ...Array.from({ length: 12 }).map((_, i): Product => ({
         id: `product-${i + 1}`,
         title: `#${i + 1}`,
         description:
-          'Short description of the item for sale. This is mock data to demonstrate the item card layout in a responsive grid.',
+          'Short description of the item for sale',
         image: `https://picsum.photos/seed/product-${i + 1}/640/360`,
-
         price: Math.round((10 + Math.random() * 90) * 100) / 100,
         seller: `Seller ${Math.ceil(Math.random() * 10)}`,
-      } as Product)))
+      })))
+      res();
     }, 2000);
 
   });
 });
+onUnmounted(() => console.log("unmoun"))
+
+const title = ref("this is title");
+provide(titleInjectionKey, { title: readonly(title), update: (t: string) => title.value = t });
 
 </script>
 
 <template>
+  <title>{{ title }}</title>
   <NavBar @search="onSearch" @menu-toggle="onMenuToggle" @profile-click="onProfileClick" />
 
   <main class="max-w-6xl mx-auto p-4">
