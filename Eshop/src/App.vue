@@ -1,9 +1,9 @@
-<script setup lang="ts">
+<script setup lang="ts" async>
 import { ref, onMounted, reactive, provide, readonly, onActivated, onUpdated, onUnmounted } from 'vue';
 import NavBar from './components/Navbar.vue';
-import ProductItem from './components/ProductItem.vue';
 import type { Product } from './types';
 import { titleInjectionKey } from './injectionKeys';
+import ProductItem from './components/ProductItem.vue';
 //#region variables and providers
 const products = reactive<Product[]>([]);
 const title = ref("this is title");
@@ -14,13 +14,13 @@ provide(titleInjectionKey, { title: readonly(title), update: (t: string) => titl
 
 //#endregion
 //#region event hooks
-function onSearch(value: string) { }
+function onSearch(_value: string) { }
 
 function onMenuToggle() { }
 
 function onProfileClick() { }
 
-function onSelectProduct(product: Product) { }
+function onSelectProduct(_product: Product) { }
 //#endregion
 //#region lifecycle hooks
 onActivated(() => console.log("onactivated"));
@@ -38,6 +38,7 @@ onMounted(() =>
 );
 onUnmounted(() => console.log("unmoun"))
 //#endregion
+
 </script>
 <template>
   <div class="min-h-screen bg-surface text-text transition-colors duration-300">
@@ -48,7 +49,8 @@ onUnmounted(() => console.log("unmoun"))
     <main class="max-w-6xl mx-auto p-4">
       <section>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <ProductItem v-for="(item, index) in products" :key="item.id" :product="item" @select="onSelectProduct" />
+          <ProductItem v-for="(item, index) in products" :key="index" :product="item" @select="onSelectProduct">
+          </ProductItem>
         </div>
       </section>
     </main>

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { Bars3Icon, MagnifyingGlassIcon, SunIcon, MoonIcon, AdjustmentsHorizontalIcon, BoltIcon } from '@heroicons/vue/24/outline';
-type ThemeDropdown = { name: string, label: string, icon: any };
 
 const emit = defineEmits<{
   (e: 'menu-toggle'): void;
@@ -9,15 +8,17 @@ const emit = defineEmits<{
   (e: 'profile-click'): void;
 }>();
 
-const query = ref("");
-const dropdownOpen = ref(false);
-const currentTheme = ref("light");
+type ThemeDropdown = { name: string, label: string, icon: any };
 const themes: ThemeDropdown[] = [
   { name: "light", label: "Light", icon: SunIcon },
   { name: "dark", label: "Dark", icon: MoonIcon },
   { name: "solarized", label: "Solarized", icon: AdjustmentsHorizontalIcon },
   { name: "highcontrast", label: "High Contrast", icon: BoltIcon },
 ];
+
+const query = ref("");
+const dropdownOpen = ref(false);
+const currentTheme = ref("light");
 
 onMounted(() => {
   const saved = localStorage.getItem("theme") || "light";
