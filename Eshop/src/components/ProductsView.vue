@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, onMounted, onUnmounted, onUpdated, reactive, ref, toValue, type Ref } from 'vue';
+import { computed, onActivated, onMounted, onUnmounted, onUpdated, reactive, ref, toValue } from 'vue';
 import type { Product } from '../types';
 import ProductItem from './ProductItem.vue';
 import ProductDetail from './ProductDetail.vue';

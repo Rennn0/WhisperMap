@@ -25,9 +25,9 @@ const onClick = () => {
     emits('select', props.product);
     depRef.value = new Date().toISOString();
 
-    // getUsername()
-    //     .then(data => console.log(data))
-    //     .catch(err => console.error("Failed to fetch edge config:", err));
+    getUsername()
+        .then(data => console.log(data))
+        .catch(err => console.error("Failed to fetch edge config:", err));
 }
 
 //#region lifecycle hooks
