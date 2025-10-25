@@ -22,6 +22,7 @@ const query = ref('');
 const dropdownOpen = ref(false);
 const searchPreviewOpen = ref(false);
 const currentTheme = ref('light');
+const searchInput = ref<HTMLInputElement | null>(null);
 
 
 const filteredProducts = computed(() => {
@@ -66,12 +67,16 @@ const onEnter = () => {
 }
 
 const onProductClick = (product: Product) => {
-  searchPreviewOpen.value = false;
   emit('product-chosen', product);
+  query.value = '';
+  searchPreviewOpen.value = false;
+  searchInput.value?.blur();
 }
 
 const closeSearchPreviewLater = () => {
-  searchPreviewOpen.value = false;
+  setTimeout(() => {
+    searchPreviewOpen.value = false;
+  }, 100);
 }
 
 //#region lifecycle hooks
@@ -104,8 +109,8 @@ onUnmounted(() => { })
             <MagnifyingGlassIcon class="w-5 h-5 text-text/60" />
           </span>
 
-          <input v-model="query" @input="onInput" @keyup.enter="onEnter" @focus="searchPreviewOpen = true"
-            @blur="closeSearchPreviewLater" type="search" placeholder="Search..."
+          <input v-model="query" ref="searchInput" @input="onInput" @keyup.enter="onEnter"
+            @focus="searchPreviewOpen = true" @blur="closeSearchPreviewLater" type="search" placeholder="Search..."
             class="w-full pl-10 pr-4 py-3 md:py-2 rounded-full border border-gray-300/40 bg-surface text-text shadow-sm focus:outline-none focus:ring-1 focus:ring-primary transition-colors duration-300 text-base md:text-sm"
             aria-label="Search" />
 
@@ -147,7 +152,7 @@ onUnmounted(() => { })
         <transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0 scale-95"
           enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-50 ease-in"
           leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-          <div v-if="dropdownOpen" @mouseleave="toggleDropdown(false)"
+          <div v-if="dropdownOpen" @mouseleave="toggleDropdown(false)" @blur="toggleDropdown(false)"
             class="absolute right-0 mt-2 w-48 bg-surface border border-gray-300/40 shadow-lg rounded-lg py-1 z-60 pointer-events-auto">
             <div v-for="theme in themes" :key="theme.name" @click="selectTheme(theme)"
               class="flex items-center gap-3 px-3 py-2 hover:bg-subtle cursor-pointer transition-colors duration-150">

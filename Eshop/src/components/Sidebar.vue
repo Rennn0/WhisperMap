@@ -39,7 +39,7 @@ onUnmounted(() => { })
                     <h2 class="font-semibold text-sm sm:text-xl">ხათის საჩუქრების ზარდახშა</h2>
                     <button @click="$emit('close')"
                         class="w-8 h-8 rounded-md flex items-center justify-center text-text hover:text-primary transition-colors">
-                        <XCircleIcon class="w-6 h-6" />
+                        <XCircleIcon class="w-4 h-4" />
                     </button>
                 </div>
 

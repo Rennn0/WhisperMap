@@ -38,6 +38,7 @@ const onSelectProduct = (_product: Product): void => { }
 
 const onOptionSelect = (key: CurrentViewSelection) => {
   viewKey.value++;
+  displayProduct.value = undefined;
   selectedView.value = key;
   sidebarOpen.value = false;
   window.scrollTo({ top: 0, behavior: 'smooth' })
