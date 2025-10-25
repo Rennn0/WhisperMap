@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onActivated, onUnmounted, onUpdated } from 'vue';
 import type { MediaItem, Product } from '../types';
 import { ArrowLeftIcon } from '@heroicons/vue/24/solid';
 
@@ -9,25 +9,31 @@ const emit = defineEmits<{ (e: 'close'): void }>();
 const mediaList = computed<MediaItem[]>(() => {
     const base: MediaItem[] = [];
 
-    if ((props.product as any).images && Array.isArray((props.product as any).images) && (props.product as any).images.length) {
-        (props.product as any).images.forEach((s: string) => base.push({ type: 'image', src: s }));
-    } else {
-        if (props.product.image) base.push({ type: 'image', src: props.product.image, alt: props.product.title });
-        for (let i = 1; i <= 25; i++) {
-            base.push({
-                type: 'image',
-                src: `https://picsum.photos/seed/${props.product.id}-extra-${i}/800/600`,
-                alt: `${props.product.title} ${i + 1}`
-            });
-        }
-        base.push({ type: 'video', src: 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4' });
+    if (props.product.image) base.push({ type: 'image', src: props.product.image, alt: props.product.title });
+    for (let i = 1; i <= 25; i++) {
+        base.push({
+            type: 'image',
+            src: `https://picsum.photos/seed/${props.product.id}-extra-${i}/800/600`,
+            alt: `${props.product.title} ${i + 1}`
+        });
     }
+    base.push({ type: 'video', src: 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4' });
 
     return base;
 });
 
 const selectedIndex = ref(0);
 const selectedMedia = computed(() => mediaList.value[selectedIndex.value] ?? mediaList.value[0]);
+
+const showFullDescription = ref(false);
+const displayedDescription = computed(() => {
+    if (!props.product.description) return '';
+    if (showFullDescription.value || props.product.description.length <= 256) {
+        return props.product.description;
+    }
+    return props.product.description.slice(0, 256) + '...';
+});
+
 
 const selectMedia = (i: number) => {
     selectedIndex.value = i;
@@ -57,10 +63,17 @@ const handleTouchEnd = (e: TouchEvent) => {
     }
 };
 
-onMounted(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-})
+const toggleDescription = () => {
+    showFullDescription.value = !showFullDescription.value;
+};
 
+
+//#region lifecycle hooks
+onActivated(() => { });
+onUpdated(() => { });
+onMounted(() => { window.scrollTo({ top: 0, behavior: 'smooth' }) });
+onUnmounted(() => { })
+//#endregion
 </script>
 
 <template>
@@ -72,7 +85,7 @@ onMounted(() => {
                 <span>Back</span>
             </button>
 
-            <div class="text-sm text-muted">
+            <div class="text-sm  ">
                 Sold by <span class="font-medium">{{ props.product.seller }}</span>
             </div>
         </div>
@@ -113,8 +126,8 @@ onMounted(() => {
                 </div>
 
                 <div class="space-y-2">
-                    <div class="text-sm text-muted">Media</div>
-                    <div class="text-xs text-muted">Choose an image or video to preview in large view</div>
+                    <div class="text-sm  ">Media</div>
+                    <div class="text-xs  ">Choose an image or video to preview in large view</div>
                 </div>
             </div>
         </div>
@@ -122,12 +135,19 @@ onMounted(() => {
         <div class="mt-6 border-t border-subtle pt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="md:col-span-2">
                 <h1 class="text-2xl font-semibold mb-2">{{ props.product.title }}</h1>
-                <p class="text-sm text-muted mb-4">{{ props.product.description }}</p>
+                <p class="text-sm mb-4">
+                    {{ displayedDescription }}
+                    <span v-if="props.product.description.length > 256" @click="toggleDescription"
+                        class="font-bold text-primary cursor-pointer ml-1">
+                        {{ showFullDescription ? 'showLess' : 'showMore' }}
+                    </span>
+                </p>
+
             </div>
 
             <div class="md:col-span-1 space-y-4">
                 <div class="text-lg">
-                    <div class="text-sm text-muted">Price</div>
+                    <div class="text-sm  ">Price</div>
                     <div class="text-2xl font-bold">${{ (props.product.price ?? 0).toFixed(2) }}</div>
                 </div>
 

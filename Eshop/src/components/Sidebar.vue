@@ -1,48 +1,57 @@
 <script setup lang="ts">
 import { XCircleIcon, GiftIcon, ShoppingBagIcon, Cog6ToothIcon } from '@heroicons/vue/24/solid';
-import type { SidebarOptions } from '../types';
+import { CurrentViewSelection, type SidebarOptions } from '../types';
+import { onActivated, onUpdated, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps<{ open: boolean }>();
-const emit = defineEmits<{ (e: 'close'): void; (e: 'select', option: string): void }>();
+const emit = defineEmits<{ (e: 'close'): void; (e: 'select', option: CurrentViewSelection): void }>();
 
 const options: SidebarOptions[] = [
-    { title: "Products", key: "products", icon: GiftIcon },
-    { title: "Orders", key: "orders", icon: ShoppingBagIcon },
-    { title: "Settings", key: "settings", icon: Cog6ToothIcon }
+    { title: "Products", key: CurrentViewSelection.Product, icon: GiftIcon },
+    { title: "Orders", key: CurrentViewSelection.Order, icon: ShoppingBagIcon },
+    { title: "Settings", key: CurrentViewSelection.Setting, icon: Cog6ToothIcon }
 ];
 
-const selectOption = (key: string) => emit('select', key);
-
+const selectOption = (key: CurrentViewSelection) => emit('select', key);
+//#region lifecycle hooks
+onActivated(() => { });
+onUpdated(() => { });
+onMounted(() => { });
+onUnmounted(() => { })
+//#endregion
 </script>
 
 <template>
     <div>
+        <!-- Overlay -->
         <transition name="fade">
             <div v-if="props.open" class="fixed inset-0 bg-black/40 z-40" @click="$emit('close')"></div>
         </transition>
 
+        <!-- Sidebar -->
         <transition enter-active-class="transform transition duration-300 ease-out" enter-from-class="-translate-x-full"
             enter-to-class="translate-x-0" leave-active-class="transform transition duration-200 ease-in"
             leave-from-class="translate-x-0" leave-to-class="-translate-x-full">
-            <aside v-if="props.open" class="fixed inset-y-0 left-0 w-64 bg-surface border-r border-subtle z-50 p-4">
-                <div class="flex mb-4">
-                    <h2 class="font-semibold">ხათის საჩუქრების ზარდახშა</h2>
+            <aside v-if="props.open" class="fixed inset-y-0 left-0 bg-surface border-r border-subtle z-50 p-4
+               w-72 sm:w-80 md:w-96">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="font-semibold text-sm sm:text-xl">ხათის საჩუქრების ზარდახშა</h2>
                     <button @click="$emit('close')"
-                        class="w-8 h-8 rounded-md transition-colors flex items-center justify-center">
-                        <XCircleIcon />
+                        class="w-8 h-8 rounded-md flex items-center justify-center text-text hover:text-primary transition-colors">
+                        <XCircleIcon class="w-6 h-6" />
                     </button>
                 </div>
 
-                <nav class="space-y-2">
+                <!-- Navigation -->
+                <nav class="space-y-3">
                     <button v-for="opt in options" :key="opt.key" @click="selectOption(opt.key)"
-                        class="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-subtle cursor-pointer transition-colors">
-                        <component :is="opt.icon" class="w-5 h-5" />
-                        <span class="text-sm">{{ opt.title }}</span>
+                        class="w-full text-left flex items-center sm:justify-start gap-3 px-3 py-3 rounded-md hover:bg-subtle cursor-pointer transition-colors">
+                        <component :is="opt.icon" class="w-6 h-6" />
+                        <span class="text-base sm:text-sm font-medium">{{ opt.title }}</span>
                     </button>
                 </nav>
             </aside>
         </transition>
     </div>
 </template>
-
-<style scoped></style>

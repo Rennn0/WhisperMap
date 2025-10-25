@@ -1,9 +1,17 @@
 <script setup lang="ts">
+import { onActivated, onUpdated, onMounted, onUnmounted } from 'vue';
+
 const settings = [
     { key: 'profile', label: 'Profile' },
     { key: 'billing', label: 'Billing' },
     { key: 'prefs', label: 'Preferences' },
 ];
+//#region lifecycle hooks
+onActivated(() => { });
+onUpdated(() => { });
+onMounted(() => { });
+onUnmounted(() => { })
+//#endregion
 </script>
 
 <template>

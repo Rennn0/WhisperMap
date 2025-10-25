@@ -1,5 +1,5 @@
 export enum CurrentViewSelection {
-    Product, Sidebar, Order, Setting
+    Product, Order, Setting
 }
 
 export interface Product {
@@ -15,4 +15,4 @@ export type ThemeDropdown = { name: string, label: string, icon: any };
 
 export type MediaItem = { type: 'image' | 'video'; src: string; alt?: string };
 
-export type SidebarOptions = { title: string; key: string; icon: any };
+export type SidebarOptions = { title: string; key: CurrentViewSelection; icon: any };

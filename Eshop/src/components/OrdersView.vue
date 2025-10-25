@@ -14,7 +14,7 @@ const orders = [
                 <div class="flex items-center justify-between">
                     <div>
                         <div class="font-medium">{{ o.title }}</div>
-                        <div class="text-sm text-muted">{{ o.id }}</div>
+                        <div class="text-sm  ">{{ o.id }}</div>
                     </div>
                     <div class="text-sm px-2 py-1 rounded-full bg-gray-100 text-gray-700">{{ o.status }}</div>
                 </div>

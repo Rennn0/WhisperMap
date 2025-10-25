@@ -1,25 +1,16 @@
 <script setup lang="ts" async>
-import { ref } from 'vue';
+import { onActivated, onMounted, onUnmounted, onUpdated, ref } from 'vue';
 import type { Product } from '../types';
 import ErrorProductItem from './ErrorProductItem.vue';
 import SkeletonProductItem from './SkeletonProductItem.vue';
 import { useLoader } from '../main';
 import { getUsername } from '../services/user.service';
 
-const emit = defineEmits<{
+const emits = defineEmits<{
     (e: 'select', product: Product): void;
 }>();
 
 const props = defineProps<{ product: Product }>();
-
-function onClick() {
-    emit('select', props.product);
-    depRef.value = new Date().toISOString();
-    
-    getUsername()
-        .then(data => console.log(data))
-        .catch(err => console.error("Failed to fetch edge config:", err));
-}
 
 const depRef = ref("Luka");
 const { data, error } = useLoader<number>(depRef, () => new Promise<number>((res) => {
@@ -29,6 +20,22 @@ const { data, error } = useLoader<number>(depRef, () => new Promise<number>((res
     return res(rand);
 }));
 
+
+const onClick = () => {
+    emits('select', props.product);
+    depRef.value = new Date().toISOString();
+
+    // getUsername()
+    //     .then(data => console.log(data))
+    //     .catch(err => console.error("Failed to fetch edge config:", err));
+}
+
+//#region lifecycle hooks
+onActivated(() => { });
+onUpdated(() => { });
+onMounted(() => { });
+onUnmounted(() => { })
+//#endregion
 </script>
 
 <template>
