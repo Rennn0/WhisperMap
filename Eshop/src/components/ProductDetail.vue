@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import type { Product } from '../types';
+import { ArrowLeftIcon } from '@heroicons/vue/24/solid';
 
 type MediaItem = { type: 'image' | 'video'; src: string; alt?: string };
 
@@ -14,7 +15,7 @@ const mediaList = computed<MediaItem[]>(() => {
         (props.product as any).images.forEach((s: string) => base.push({ type: 'image', src: s }));
     } else {
         if (props.product.image) base.push({ type: 'image', src: props.product.image, alt: props.product.title });
-        for (let i = 1; i <= 2; i++) {
+        for (let i = 1; i <= 25; i++) {
             base.push({
                 type: 'image',
                 src: `https://picsum.photos/seed/${props.product.id}-extra-${i}/800/600`,
@@ -30,16 +31,57 @@ const mediaList = computed<MediaItem[]>(() => {
 const selectedIndex = ref(0);
 const selectedMedia = computed(() => mediaList.value[selectedIndex.value] ?? mediaList.value[0]);
 
-function selectMedia(i: number) {
+const selectMedia = (i: number) => {
     selectedIndex.value = i;
 }
+
+let startX = 0;
+let endX = 0;
+
+const handleTouchStart = (e: TouchEvent) => {
+    if (!e || !e.touches) return;
+    startX = e.touches[0]?.clientX || 0;
+};
+
+const handleTouchEnd = (e: TouchEvent) => {
+    if (!e || !e.touches) return;
+    endX = e.changedTouches[0]?.clientX || 0;
+    const diff = endX - startX;
+
+    const threshold = 50;
+
+    if (Math.abs(diff) > threshold) {
+        if (diff < 0 && selectedIndex.value < mediaList.value.length - 1) {
+            selectedIndex.value++;
+        } else if (diff > 0 && selectedIndex.value > 0) {
+            selectedIndex.value--;
+        }
+    }
+};
+
+onMounted(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+})
+
 </script>
 
 <template>
     <div class="max-w-5xl mx-auto bg-surface border border-subtle rounded-lg shadow-sm p-4">
+        <div class="flex justify-between items-center mb-4">
+            <button type="button" @click="$emit('close')" aria-label="Back to product list"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-subtle hover:bg-subtle/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition text-sm font-medium">
+                <ArrowLeftIcon class="w-4 h-4" />
+                <span>Back</span>
+            </button>
+
+            <div class="text-sm text-muted">
+                Sold by <span class="font-medium">{{ props.product.seller }}</span>
+            </div>
+        </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2">
-                <div v-if="selectedMedia" class="w-full rounded-md overflow-hidden bg-black/5">
+                <div v-if="selectedMedia" class="w-full rounded-md overflow-hidden bg-black/5"
+                    @touchstart="handleTouchStart" @touchend="handleTouchEnd">
                     <template v-if="selectedMedia.type === 'image'">
                         <img :src="selectedMedia.src" :alt="selectedMedia.alt ?? 'product image'"
                             class="w-full h-[520px] object-cover" />
@@ -50,7 +92,7 @@ function selectMedia(i: number) {
                 </div>
             </div>
 
-            <div class="space-y-4">
+            <div class="space-y-4 max-h-[520px] overflow-y-auto pr-2">
                 <div class="grid grid-cols-4 gap-2">
                     <button v-for="(m, i) in mediaList" :key="m.src + i" @click="selectMedia(i)"
                         :aria-pressed="selectedIndex === i"
@@ -98,20 +140,23 @@ function selectMedia(i: number) {
                         seller</button>
                 </div>
 
-                <div class="flex justify-between text-sm text-muted items-center">
-                    <!-- Accessible Back Button -->
-                    <button type="button" @click="$emit('close')" aria-label="Back to product list"
-                        class="inline-flex items-center gap-2 px-3 py-2 rounded-md hover:bg-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-colors text-sm">
-                        <span aria-hidden="true" class="text-lg leading-none">←</span>
-                        <span class="sr-only">Back to products</span>
-                        <span class="hidden sm:inline">Back</span>
-                    </button>
-
-                    <div>Sold by <span class="font-medium">{{ props.product.seller }}</span></div>
+                <div class="flex justify-between items-center mb-4">
+                    <div class="text-sm text-muted">
+                        Sold by <span class="font-medium">{{ props.product.seller }}</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 9999px;
+}
+</style>
