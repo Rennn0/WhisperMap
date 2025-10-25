@@ -27,7 +27,7 @@ onActivated(() => console.log("onactivated"));
 onUpdated(() => console.log("update"));
 onMounted(() =>
   products.splice(0, products.length, ...Array.from({ length: 12 }).map((_, i): Product => ({
-    id: `product-${i + 1}`,
+    id: `${i + 1}`,
     title: `#${i + 1}`,
     description:
       'Short description of the item for sale',

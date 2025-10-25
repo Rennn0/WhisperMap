@@ -5,6 +5,7 @@ import { titleInjectionKey } from '../injectionKeys';
 import ErrorProductItem from './ErrorProductItem.vue';
 import SkeletonProductItem from './SkeletonProductItem.vue';
 import { useLoader } from '../main';
+import { getUsername } from '../services/user.service';
 
 const emit = defineEmits<{
     (e: 'select', product: Product): void;
@@ -21,6 +22,10 @@ function onClick() {
     }
     depRef.value = new Date().toISOString();
     injected?.update(props.product.title);
+
+    getUsername(props.product.id)
+        .then(data => console.log(data))
+        .catch(err => console.error("Failed to fetch edge config:", err));
 }
 
 const depRef = ref("Luka");
