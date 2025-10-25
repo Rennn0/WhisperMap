@@ -1,57 +1,86 @@
 <script setup lang="ts" async>
-import { ref, onMounted, reactive, provide, readonly, onActivated, onUpdated, onUnmounted } from 'vue';
+import { ref, onMounted, provide, readonly, onActivated, onUpdated, onUnmounted, computed, watchEffect } from 'vue';
 import NavBar from './components/Navbar.vue';
+import Sidebar from './components/Sidebar.vue';
+import ProductsView from './components/ProductsView.vue';
+import OrdersView from './components/OrdersView.vue';
+import SettingsView from './components/SettingsView.vue';
 import type { Product } from './types';
 import { titleInjectionKey } from './injectionKeys';
-import ProductItem from './components/ProductItem.vue';
+
 //#region variables and providers
-const products = reactive<Product[]>([]);
-const title = ref("this is title");
+
+const title = ref("საჩუქრების ზარდახშა");
+const sidebarOpen = ref(false);
+
+const selectedView = ref<'products' | 'orders' | 'settings'>('products');
 
 provide(titleInjectionKey, { title: readonly(title), update: (t: string) => title.value = t });
 //#endregion
-//#region private methods
 
+//#region computed / watchEffect
+const viewMap = {
+  products: ProductsView,
+  orders: OrdersView,
+  settings: SettingsView,
+} as const;
+
+const currentView = computed(() => viewMap[selectedView.value]);
+
+const currentProps = computed(() => {
+  if (selectedView.value === 'products') return {};
+  return {};
+});
+
+watchEffect(() => {
+  switch (selectedView.value) {
+    case 'products':
+      break;
+    case 'orders':
+      break;
+    case 'settings':
+      break;
+  }
+});
 //#endregion
+
 //#region event hooks
-function onSearch(_value: string) { }
+const onSearch = (_value: string): void => { }
 
-function onMenuToggle() { }
+const onMenuToggle = () => sidebarOpen.value = true
 
-function onProfileClick() { }
+const onProfileClick = (): void => { }
 
-function onSelectProduct(_product: Product) { }
+const onSelectProduct = (_product: Product): void => { }
+
+const onOptionSelect = (key: string) => {
+  if (key === 'products' || key === 'orders' || key === 'settings') {
+    selectedView.value = key;
+  }
+  sidebarOpen.value = false;
+}
 //#endregion
+
 //#region lifecycle hooks
-onActivated(() => console.log("onactivated"));
-onUpdated(() => console.log("update"));
-onMounted(() =>
-  products.splice(0, products.length, ...Array.from({ length: 12 }).map((_, i): Product => ({
-    id: `${i + 1}`,
-    title: `#${i + 1}`,
-    description:
-      'Short description of the item for sale',
-    image: `https://picsum.photos/seed/product-${i + 1}/640/360`,
-    price: Math.round((10 + Math.random() * 90) * 100) / 100,
-    seller: `Seller ${Math.ceil(Math.random() * 10)}`,
-  })))
-);
-onUnmounted(() => console.log("unmoun"))
+onActivated(() => { });
+onUpdated(() => { });
+onMounted(() => { });
+onUnmounted(() => { })
 //#endregion
 
 </script>
+
 <template>
   <div class="min-h-screen bg-surface text-text transition-colors duration-300">
     <title>{{ title }}</title>
 
     <NavBar @search="onSearch" @menu-toggle="onMenuToggle" @profile-click="onProfileClick" />
 
+    <Sidebar :open="sidebarOpen" @close="sidebarOpen = false" @select="onOptionSelect" />
+
     <main class="max-w-6xl mx-auto p-4">
       <section>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <ProductItem v-for="(item, index) in products" :key="index" :product="item" @select="onSelectProduct">
-          </ProductItem>
-        </div>
+        <component :is="currentView" v-bind="currentProps" @select="onSelectProduct" />
       </section>
     </main>
   </div>

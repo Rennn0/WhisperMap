@@ -5,7 +5,7 @@ import { Bars3Icon, MagnifyingGlassIcon, SunIcon, MoonIcon, AdjustmentsHorizonta
 const emit = defineEmits<{
   (e: 'menu-toggle'): void;
   (e: 'search', value: string): void;
-  (e: 'profile-click'): void;
+  (e: 'input', value: string): void;
 }>();
 
 type ThemeDropdown = { name: string, label: string, icon: any };
@@ -45,18 +45,18 @@ const currentThemeIcon = computed(() => {
   return t ? t.icon : SunIcon;
 });
 
-function onMenu() { }
-function onProfile() { }
-function onInput() { }
-function onEnter() { }
+const onMenu = () => emit('menu-toggle')
+const onInput = () => emit('input', query.value)
+const onEnter = () => emit('search', query.value)
 
 </script>
 
 <template>
-  <nav class="w-full backdrop-blur-md bg-surface border-b border-subtle transition-colors duration-300">
+  <!-- add stacking context so navbar and its dropdown stay above the page/detail -->
+  <nav class="relative z-50 w-full backdrop-blur-md bg-surface border-b border-subtle transition-colors duration-300">
     <div class="max-w-5xl mx-auto px-3 py-2 flex items-center gap-3 relative">
       <!-- Menu Button -->
-      <button @click="[onMenu(), onProfile()]"
+      <button @click="onMenu()"
         class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
         aria-label="Toggle menu">
         <Bars3Icon class="w-6 h-6 text-text" />
@@ -89,7 +89,7 @@ function onEnter() { }
           enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-50 ease-in"
           leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
           <div v-if="dropdownOpen" @mouseleave="toggleDropdown(false)"
-            class="absolute right-0 mt-2 w-48 bg-surface border border-gray-300/40 shadow-lg rounded-lg py-1 z-50">
+            class="absolute right-0 mt-2 w-48 bg-surface border border-gray-300/40 shadow-lg rounded-lg py-1 z-60 pointer-events-auto">
             <div v-for="theme in themes" :key="theme.name" @click="selectTheme(theme)"
               class="flex items-center gap-3 px-3 py-2 hover:bg-subtle cursor-pointer transition-colors duration-150">
               <component :is="theme.icon" class="w-5 h-5" />

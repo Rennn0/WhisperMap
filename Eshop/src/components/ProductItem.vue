@@ -1,7 +1,6 @@
 <script setup lang="ts" async>
-import { inject, ref, type Ref } from 'vue';
+import { ref } from 'vue';
 import type { Product } from '../types';
-import { titleInjectionKey } from '../injectionKeys';
 import ErrorProductItem from './ErrorProductItem.vue';
 import SkeletonProductItem from './SkeletonProductItem.vue';
 import { useLoader } from '../main';
@@ -12,17 +11,11 @@ const emit = defineEmits<{
 }>();
 
 const props = defineProps<{ product: Product }>();
-const injected: { title: Readonly<Ref<string>>, update: (t: string) => void } | undefined = inject(titleInjectionKey);
 
 function onClick() {
     emit('select', props.product);
-    if (props.product.price) {
-        props.product.price++;
-        props.product.description = "x"
-    }
     depRef.value = new Date().toISOString();
-    injected?.update(props.product.title);
-
+    
     getUsername()
         .then(data => console.log(data))
         .catch(err => console.error("Failed to fetch edge config:", err));
