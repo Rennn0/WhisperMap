@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WhisperMap")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+558fcfb5b9941b89919f718019d81860d30a2cde")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d5a1cc5ac153b6f31ae4a6fdb5e190574fe475cc")]
 [assembly: System.Reflection.AssemblyProductAttribute("WhisperMap")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WhisperMap")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

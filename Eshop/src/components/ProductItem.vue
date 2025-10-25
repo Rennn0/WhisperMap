@@ -23,7 +23,7 @@ function onClick() {
     depRef.value = new Date().toISOString();
     injected?.update(props.product.title);
 
-    getUsername(props.product.id)
+    getUsername()
         .then(data => console.log(data))
         .catch(err => console.error("Failed to fetch edge config:", err));
 }
