@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { Bars3Icon, MagnifyingGlassIcon, SunIcon, MoonIcon, AdjustmentsHorizontalIcon, BoltIcon } from '@heroicons/vue/24/outline';
+import type { ThemeDropdown } from '../types';
 
 const emit = defineEmits<{
   (e: 'menu-toggle'): void;
@@ -8,7 +9,7 @@ const emit = defineEmits<{
   (e: 'input', value: string): void;
 }>();
 
-type ThemeDropdown = { name: string, label: string, icon: any };
+
 const themes: ThemeDropdown[] = [
   { name: "light", label: "Light", icon: SunIcon },
   { name: "dark", label: "Dark", icon: MoonIcon },

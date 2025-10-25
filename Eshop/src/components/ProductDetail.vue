@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import type { Product } from '../types';
+import type { MediaItem, Product } from '../types';
 import { ArrowLeftIcon } from '@heroicons/vue/24/solid';
-
-type MediaItem = { type: 'image' | 'video'; src: string; alt?: string };
 
 const props = defineProps<{ product: Product }>();
 const emit = defineEmits<{ (e: 'close'): void }>();
@@ -138,12 +136,6 @@ onMounted(() => {
                         cart</button>
                     <button class="flex-1 px-4 py-2 border rounded-md hover:bg-subtle transition">Contact
                         seller</button>
-                </div>
-
-                <div class="flex justify-between items-center mb-4">
-                    <div class="text-sm text-muted">
-                        Sold by <span class="font-medium">{{ props.product.seller }}</span>
-                    </div>
                 </div>
             </div>
         </div>

@@ -3,18 +3,11 @@ import { reactive, ref } from 'vue';
 import type { Product } from '../types';
 import ProductItem from './ProductItem.vue';
 import ProductDetail from './ProductDetail.vue';
+import { productData } from '../mock.data';
 
 const emit = defineEmits<{ (e: 'select', product: Product): void }>();
 
-const products = reactive<Product[]>(Array.from({ length: 12 }).map((_, i): Product => ({
-    id: `${i + 1}`,
-    title: `#${i + 1}`,
-    description:
-        'Short description of the item for sale',
-    image: `https://picsum.photos/seed/product-${i + 1}/640/360`,
-    price: Math.round((10 + Math.random() * 90) * 100) / 100,
-    seller: `Seller ${Math.ceil(Math.random() * 10)}`,
-})));
+const products = reactive<Product[]>(productData);
 
 const selectedProduct = ref<Product | null>(null);
 

@@ -79,9 +79,7 @@ onUnmounted(() => { })
     <Sidebar :open="sidebarOpen" @close="sidebarOpen = false" @select="onOptionSelect" />
 
     <main class="max-w-6xl mx-auto p-4">
-      <section>
-        <component :is="currentView" v-bind="currentProps" @select="onSelectProduct" />
-      </section>
+      <component :is="currentView" v-bind="currentProps" @select="onSelectProduct" />
     </main>
   </div>
 </template>

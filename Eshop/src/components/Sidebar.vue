@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { XCircleIcon, GiftIcon, ShoppingBagIcon, Cog6ToothIcon } from '@heroicons/vue/24/solid';
+import type { SidebarOptions } from '../types';
 
 const props = defineProps<{ open: boolean }>();
 const emit = defineEmits<{ (e: 'close'): void; (e: 'select', option: string): void }>();
 
-const options: { title: string; key: string; icon: any }[] = [
+const options: SidebarOptions[] = [
     { title: "Products", key: "products", icon: GiftIcon },
     { title: "Orders", key: "orders", icon: ShoppingBagIcon },
     { title: "Settings", key: "settings", icon: Cog6ToothIcon }
