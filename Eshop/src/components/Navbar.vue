@@ -94,7 +94,7 @@ onUnmounted(() => { })
 <template>
   <nav
     class="sticky top-0 z-50 w-full backdrop-blur-md bg-surface border-b border-subtle transition-colors duration-300">
-    <div class="max-w-5xl mx-auto px-3 py-2 flex items-center gap-3 relative">
+    <div class="max-w-5xl h-10 md:h-12 mx-auto px-3 py-2 flex items-center gap-3 relative">
       <!-- Menu Button -->
       <button @click="onMenu"
         class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
@@ -111,7 +111,7 @@ onUnmounted(() => { })
 
           <input v-model="query" ref="searchInput" @input="onInput" @keyup.enter="onEnter"
             @focus="searchPreviewOpen = true" @blur="closeSearchPreviewLater" type="search" placeholder="Search..."
-            class="w-full pl-10 pr-4 py-3 md:py-2 rounded-full border border-gray-300/40 bg-surface text-text shadow-sm focus:outline-none focus:ring-1 focus:ring-primary transition-colors duration-300 text-base md:text-sm"
+            class="w-full pl-10 pr-4 py-1 md:py-2 rounded-full border border-gray-300/40 bg-surface text-text shadow-sm focus:outline-none focus:ring-1 focus:ring-primary transition-colors duration-300 text-base md:text-sm"
             aria-label="Search" />
 
           <!-- Search Preview -->
