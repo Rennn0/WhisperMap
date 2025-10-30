@@ -1,8 +1,23 @@
 import { createApp, ref, toValue, watchEffect, type Ref } from 'vue'
 import './style.css'
 import App from './App.vue'
+import { createRouter, createWebHistory } from 'vue-router'
+import ProductDetail from './components/ProductDetail.vue'
+import ProductsView from './components/ProductsView.vue'
+import OrdersView from './components/OrdersView.vue'
+import SettingsView from './components/SettingsView.vue'
 
-createApp(App).mount('#app')
+const router = createRouter({
+    history: createWebHistory(),
+    routes: [
+        { path: "/", component: ProductsView },
+        { path: "/p/:id", component: ProductDetail, props: true, name: "product" },
+        { path: "/o", component: OrdersView },
+        { path: "/s", component: SettingsView }
+    ]
+})
+
+createApp(App).use(router).mount('#app')
 
 export function useLoader<TData>(dependency: Ref<any>, loaderFunc: (arg: any) => Promise<TData>) {
     const data: Ref<TData | undefined> = ref();

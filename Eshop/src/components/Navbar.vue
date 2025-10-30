@@ -165,3 +165,6 @@ onUnmounted(() => { })
     </div>
   </nav>
 </template>
+
+
+postgresql://luka:Xju4eqzdFKANB09dar4dgUv3iGezTiVv@dpg-d415cle3jp1c73ckmeu0-a.frankfurt-postgres.render.com/render_zyab

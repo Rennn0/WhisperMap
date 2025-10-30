@@ -2,19 +2,22 @@
 import { ref, computed, onMounted, onActivated, onUnmounted, onUpdated } from 'vue';
 import type { MediaItem, Product } from '../types';
 import { ArrowLeftIcon } from '@heroicons/vue/24/solid';
+import { productData } from '../mock.data';
+import { useRouter } from 'vue-router';
 
-const props = defineProps<{ product: Product }>();
-const emit = defineEmits<{ (e: 'close'): void }>();
+const props = defineProps<{ id: string }>();
+const product = productData.find(p => p.id === props.id)!;
+const router = useRouter();
 
 const mediaList = computed<MediaItem[]>(() => {
     const base: MediaItem[] = [];
 
-    if (props.product.image) base.push({ type: 'image', src: props.product.image, alt: props.product.title });
+    if (product.image) base.push({ type: 'image', src: product.image, alt: product.title });
     for (let i = 1; i <= 25; i++) {
         base.push({
             type: 'image',
-            src: `https://picsum.photos/seed/${props.product.id}-extra-${i}/800/600`,
-            alt: `${props.product.title} ${i + 1}`
+            src: `https://picsum.photos/seed/${product.id}-extra-${i}/800/600`,
+            alt: `${product.title} ${i + 1}`
         });
     }
     base.push({ type: 'video', src: 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4' });
@@ -27,11 +30,11 @@ const selectedMedia = computed(() => mediaList.value[selectedIndex.value] ?? med
 
 const showFullDescription = ref(false);
 const displayedDescription = computed(() => {
-    if (!props.product.description) return '';
-    if (showFullDescription.value || props.product.description.length <= 256) {
-        return props.product.description;
+    if (!product.description) return '';
+    if (showFullDescription.value || product.description.length <= 256) {
+        return product.description;
     }
-    return props.product.description.slice(0, 256) + '...';
+    return product.description.slice(0, 256) + '...';
 });
 
 
@@ -67,7 +70,6 @@ const toggleDescription = () => {
     showFullDescription.value = !showFullDescription.value;
 };
 
-
 //#region lifecycle hooks
 onActivated(() => { });
 onUpdated(() => { });
@@ -79,14 +81,14 @@ onUnmounted(() => { })
 <template>
     <div class="max-w-5xl mx-auto bg-surface border border-subtle rounded-lg shadow-sm p-4">
         <div class="flex justify-between items-center mb-4">
-            <button type="button" @click="$emit('close')" aria-label="Back to product list"
+            <button type="button" @click="router.back()" aria-label="Back to product list"
                 class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-subtle hover:bg-subtle/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition text-sm font-medium">
                 <ArrowLeftIcon class="w-4 h-4" />
                 <span>Back</span>
             </button>
 
             <div class="text-sm  ">
-                Sold by <span class="font-medium">{{ props.product.seller }}</span>
+                Sold by <span class="font-medium">{{ product.seller }}</span>
             </div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -134,10 +136,10 @@ onUnmounted(() => { })
 
         <div class="mt-6 border-t border-subtle pt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="md:col-span-2">
-                <h1 class="text-2xl font-semibold mb-2">{{ props.product.title }}</h1>
+                <h1 class="text-2xl font-semibold mb-2">{{ product.title }}</h1>
                 <p class="text-sm mb-4">
                     {{ displayedDescription }}
-                    <span v-if="props.product.description.length > 256" @click="toggleDescription"
+                    <span v-if="product.description.length > 256" @click="toggleDescription"
                         class="font-bold text-primary cursor-pointer ml-1">
                         {{ showFullDescription ? 'showLess' : 'showMore' }}
                     </span>
@@ -148,7 +150,7 @@ onUnmounted(() => { })
             <div class="md:col-span-1 space-y-4">
                 <div class="text-lg">
                     <div class="text-sm  ">Price</div>
-                    <div class="text-2xl font-bold">${{ (props.product.price ?? 0).toFixed(2) }}</div>
+                    <div class="text-2xl font-bold">${{ (product.price ?? 0).toFixed(2) }}</div>
                 </div>
 
                 <div class="flex gap-2">
