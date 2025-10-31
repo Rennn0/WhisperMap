@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, onActivated, onUnmounted, onUpdated } from 'vue';
+import { ref, onMounted, computed, onActivated, onUnmounted, onUpdated, watch, toValue } from 'vue';
 import { Bars3Icon, MagnifyingGlassIcon, SunIcon, MoonIcon, AdjustmentsHorizontalIcon, BoltIcon } from '@heroicons/vue/24/outline';
 import type { Product, ThemeDropdown } from '../types';
-import { productData } from '../mock.data';
+import { getProducts } from '../mock.data';
 
 const emit = defineEmits<{
   (e: 'menu-toggle'): void;
@@ -24,16 +24,21 @@ const searchPreviewOpen = ref(false);
 const currentTheme = ref('light');
 const searchInput = ref<HTMLInputElement | null>(null);
 
+const products = ref<Product[]>([]);
 
-const filteredProducts = computed(() => {
-  const q = query.value.trim().toLowerCase();
-  if (!q) return productData.slice(0, 3);
-  return productData.filter(
-    (p) =>
+watch(query, async (newQuery) => {
+  const q = newQuery.trim().toLowerCase();
+  const ps = await getProducts();
+
+  products.value = !q
+    ? ps.slice(0, 3)
+    : ps.filter(p =>
       p.title.toLowerCase().includes(q) ||
       p.description.toLowerCase().includes(q)
-  ).slice(0, 5);
-});
+    ).slice(0, 5);
+}, { immediate: true });
+
+const filteredProducts = computed(() => toValue(products));
 
 const currentThemeIcon = computed(() => {
   const t = themes.find((t) => t.name === currentTheme.value);

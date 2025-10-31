@@ -3,7 +3,7 @@ import type { Product } from "./types";
 const randomWords = ["Elegant", "Cozy", "Rustic", "Minimal", "Vibrant", "Sleek", "Modern", "Artisan", "Handmade", "Premium"];
 const categories = ["Home", "Clothing", "Art", "Electronics", "Toys", "Beauty"];
 
-export const productData: Product[] = Array.from({ length: 112 }, (_, i) => {
+const productData: Product[] = Array.from({ length: 112 }, (_, i) => {
     const adjective = randomWords[Math.floor(Math.random() * randomWords.length)];
     const category = categories[Math.floor(Math.random() * categories.length)];
 
@@ -16,4 +16,12 @@ export const productData: Product[] = Array.from({ length: 112 }, (_, i) => {
         seller: `Seller ${Math.ceil(Math.random() * 10)}`,
     };
 });
-    
+
+export const getProducts = () => new Promise<Product[]>(r => {
+    const min = 1000;
+    const max = 5000;
+    setTimeout(() => r(productData), Math.floor(Math.random() * (max - min + 1) + min));
+});
+
+export const getProduct = (id: string) => new Promise<Product>((r, j) =>
+    getProducts().then(ps => ps.find(p => p.id == id)).then(p => p ? r(p) : j()));

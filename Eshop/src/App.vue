@@ -53,7 +53,6 @@ onUnmounted(() => { })
     <title>{{ title }}</title>
 
     <NavBar @menu-toggle="onMenuToggle" @profile-click="onProfileClick" />
-
     <Sidebar :open="sidebarOpen" @close="sidebarOpen = false" @select="onOptionSelect" />
 
     <main class="max-w-6xl mx-auto p-4">
