@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, onMounted, onUnmounted, onUpdated, reactive, ref, watchEffect } from 'vue';
+import { computed, onActivated, onMounted, onUnmounted, onUpdated, ref, watchEffect } from 'vue';
 import type { Product } from '../types';
 import ProductItem from './ProductItem.vue';
 import { getProducts } from '../mock.data';
