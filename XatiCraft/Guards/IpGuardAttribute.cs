@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using XatiCraft.Settings;
 
 namespace XatiCraft.Guards;
@@ -11,20 +12,21 @@ public class IpGuardAttribute : Attribute, IAsyncAuthorizationFilter
     public Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
         IServiceProvider serviceProvider = context.HttpContext.RequestServices;
+
         IOptionsSnapshot<IpRestrictionSettings> ipSettings =
             serviceProvider.GetRequiredService<IOptionsSnapshot<IpRestrictionSettings>>();
-        ILogger<IpGuardAttribute> logger =
-            serviceProvider.GetRequiredService<ILogger<IpGuardAttribute>>();
+        ILogger<IpGuardAttribute> logger = serviceProvider.GetRequiredService<ILogger<IpGuardAttribute>>();
 
         List<string> allowedList = ipSettings.Value.AllowedIpAddresses;
 
-        IPAddress? remoteIp = context.HttpContext.Connection.RemoteIpAddress;
-        if (remoteIp is null) return Forbidden();
+        string? ip = context.HttpContext.Connection.RemoteIpAddress?.ToString();
 
-        string ip = remoteIp.ToString();
-        logger.LogInformation(ip);
+        if (context.HttpContext.Request.Headers.TryGetValue("X-Forwarded-For", out StringValues forwardHeader))
+            ip = forwardHeader.ToString().Split(',')[0].Trim();
 
-        return !allowedList.Contains(ip) ? Forbidden() : Task.CompletedTask;
+        logger.LogInformation("Client IP: {Ip}", ip);
+
+        return !allowedList.Contains(ip ?? string.Empty) ? Forbidden() : Task.CompletedTask;
 
         Task Forbidden()
         {
