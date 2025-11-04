@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using XatiCraft.Guards;
 using XatiCraft.Handlers.Read;
 using XatiCraft.Handlers.Upload;
 
@@ -9,6 +10,7 @@ namespace XatiCraft.Controllers;
 public class StorageController : ControllerBase
 {
     [HttpPost("upload")]
+    [IpGuard]
     public async Task<IActionResult> Upload([FromServices] IUploader uploader, IFormFile file,
         CancellationToken cancellation)
     {
@@ -18,6 +20,7 @@ public class StorageController : ControllerBase
     }
 
     [HttpGet]
+    [IpGuard]
     public async Task<IActionResult> Read([FromServices] IReader reader, string folder, CancellationToken cancellation)
     {
         return Ok(await reader.ListFilesAsync(folder, cancellation));
