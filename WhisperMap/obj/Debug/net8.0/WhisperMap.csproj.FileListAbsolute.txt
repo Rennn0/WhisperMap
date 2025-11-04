@@ -87,3 +87,4 @@
 /home/luka/RiderProjects/WhisperMap/WhisperMap/bin/Debug/net8.0/Newtonsoft.Json.dll
 /home/luka/RiderProjects/WhisperMap/WhisperMap/bin/Debug/net8.0/System.IO.Hashing.dll
 /home/luka/RiderProjects/WhisperMap/WhisperMap/bin/Debug/net8.0/System.Memory.Data.dll
+/home/luka/RiderProjects/WhisperMap/WhisperMap/obj/Debug/net8.0/WhisperMap.sourcelink.json
