@@ -18,6 +18,8 @@ public class Program
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
         });
 
         builder.Services.AddControllers();
@@ -28,12 +30,13 @@ public class Program
         builder.Services.AddScoped<IReader, ClaudflareR2StorageService>();
 
         WebApplication app = builder.Build();
+        app.UseForwardedHeaders();
+        app.UseRouting();
+        app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
         app.UseSwagger();
         app.UseSwaggerUI();
-
-        app.UseForwardedHeaders();
         app.Run();
     }
 }
