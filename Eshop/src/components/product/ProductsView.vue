@@ -11,7 +11,7 @@ const emit = defineEmits<{ (e: 'select', product: Product): void }>();
 
 const productsRef = ref<Product[] | null>(null);
 watchEffect(() => getProducts().then(ps => productsRef.value = ps));
-const products = computed(() => productsRef.value ?? []);
+const products = computed(() => productsRef.value);
 
 const onSelect = (product: Product) => {
     product.description = product.description.repeat(50);
@@ -33,7 +33,7 @@ onUnmounted(() => { })
             <ProductItem v-for="(item, index) in products" :key="index" :product="item" @select="onSelect" />
         </template>
         <template v-else>
-            <SkeletonProductItem v-for="(_, index) in Array(12)" :key="index" />
+            <SkeletonProductItem v-for="(_, i) in Array(12)" :key="i" />
         </template>
     </div>
 </template>

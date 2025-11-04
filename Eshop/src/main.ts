@@ -7,24 +7,41 @@ import ProductsView from './components/product/ProductsView.vue'
 import OrdersView from './components/orders/OrdersView.vue'
 import SettingsView from './components/settings/SettingsView.vue'
 import { ensureProductDetailAccess } from './guards/productDetail.guard'
+import Root from './components/Root.vue'
 
 const router = createRouter({
     history: createWebHistory(),
     routes: [
         {
             path: "/",
-            component: ProductsView,
-            name: "products",
-            children: []
+            component: Root,
+            name: "root",
+            children: [
+                {
+                    path: "",
+                    name: "products",
+                    component: ProductsView
+                },
+                {
+                    path: ":id",
+                    name: "product",
+                    component: ProductDetail,
+                    props: true,
+                    beforeEnter: ensureProductDetailAccess
+                },
+                {
+                    path: "/orders",
+                    component: OrdersView,
+                    name: "orders"
+                },
+                {
+                    path: "/settings",
+                    component: SettingsView,
+                        name: "settings"
+                }
+            ]
         },
-        {
-            path: "/:id", component: ProductDetail,
-            props: true,
-            name: "product",
-            beforeEnter: ensureProductDetailAccess,
-        },
-        { path: "/orders", component: OrdersView, name: "orders" },
-        { path: "/settings", component: SettingsView, name: "settings" }
+
     ],
 })
 

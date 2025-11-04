@@ -4,7 +4,7 @@ import type { MediaItem, Product } from '../../types';
 import { ArrowLeftIcon } from '@heroicons/vue/24/solid';
 import { getProduct } from '../../mock.data';
 import { useRouter } from 'vue-router';
-import SkeletonProductItem from '../skeletons/SkeletonProductItem.vue';
+import SkeletonProductDetail from '../skeletons/SkeletonProductDetail.vue';
 
 const router = useRouter();
 const props = defineProps<{ id: string }>();
@@ -172,7 +172,7 @@ onUnmounted(() => { })
             </div>
         </div>
     </div>
-    <SkeletonProductItem v-else />
+    <SkeletonProductDetail v-else />
 </template>
 
 <style scoped>
