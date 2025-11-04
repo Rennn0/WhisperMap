@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
+using XatiCraft.Data;
 using XatiCraft.Handlers.Impl;
 using XatiCraft.Handlers.Read;
 using XatiCraft.Handlers.Upload;
@@ -27,6 +29,11 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        builder.Services.AddDbContext<ApplicationContext>(options =>
+        {
+            options.UseNpgsql(builder.Configuration.GetConnectionString("RenderPg"));
+        });
 
         builder.Services.AddScoped<IUploader, ClaudflareR2StorageService>();
         builder.Services.AddScoped<IReader, ClaudflareR2StorageService>();

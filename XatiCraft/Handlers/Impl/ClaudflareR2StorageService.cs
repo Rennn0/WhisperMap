@@ -70,7 +70,8 @@ public class ClaudflareR2StorageService : IUploader, IReader
         };
 
         await _s3Client.PutObjectAsync(request, cancellation);
-        return new UploadResult(fileName, keyBuilder.ToString(), folder);
+        string location = $"{_settings.PublicUrl}/{keyBuilder}";
+        return new UploadResult(fileName, keyBuilder.ToString(), folder, location);
     }
 
     private static string NormalizeFileName(string fileName)
