@@ -18,13 +18,15 @@ public class ApiKeyGuardAttribute : Attribute, IAsyncAuthorizationFilter
         ILogger<ApiKeyGuardAttribute> logger = serviceProvider.GetRequiredService<ILogger<ApiKeyGuardAttribute>>();
 
         List<string> allowedList = settings.Value.AllowedKeys;
-        string apiKey = "";
-        if (context.HttpContext.Request.Headers.TryGetValue("x-api-key", out StringValues apiKeyValues))
-            apiKey = apiKeyValues.ToString().Split(',')[0].Trim();
+        if (!context.HttpContext.Request.Headers.TryGetValue("x-api-key", out StringValues apiKeyValues))
+            return Forbidden();
 
-        logger.LogInformation("client api key: {ApiKey}", apiKey);
+        string apiKey = apiKeyValues.ToString().Split(',')[0].Trim();
 
-        return !allowedList.Contains(apiKey) ? Forbidden() : Task.CompletedTask;
+        if (allowedList.Contains(apiKey)) return Task.CompletedTask;
+
+        logger.LogWarning("client ip: {ip} is not allowed", apiKey);
+        return Forbidden();
 
         Task Forbidden()
         {

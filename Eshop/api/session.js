@@ -3,7 +3,8 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5158';
+    const backendUrl = process.env.BACKEND_URL;
+    // const backendUrl = 'http://localhost:5158';
     const ip = req.headers['x-real-ip'] || req.headers['x-forwarded-for']?.split(',')[0].trim();
     const apiResponse = await fetch(`${backendUrl}/session`, {
         method: "GET",

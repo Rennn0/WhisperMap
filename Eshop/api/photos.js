@@ -3,9 +3,10 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5158';
-    const apiKey = process.env.CLIENT_API_KEY || 'dev';
+    const backendUrl = process.env.BACKEND_URL;
+    const apiKey = process.env.CLIENT_API_KEY;
+    // const backendUrl = 'http://localhost:5158';
+    // const apiKey = 'dev';
     const cookies = req.headers.cookie;
     const apiResponse = await fetch(`${backendUrl}/storage?folder=photo`, {
         method: 'GET',

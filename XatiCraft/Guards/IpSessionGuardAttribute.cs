@@ -8,12 +8,13 @@ public class IpSessionGuardAttribute : Attribute, IAuthorizationFilter
 {
     public void OnAuthorization(AuthorizationFilterContext context)
     {
-        bool hasIp = context.HttpContext.Request.Cookies.TryGetValue("ip", out string? clientIp) &&
-                     !string.IsNullOrEmpty(clientIp);
-        bool hasSession = context.HttpContext.Request.Cookies.TryGetValue("session_id", out string? sessionId) &&
+        ILogger logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<IpSessionGuardAttribute>>();
+        bool hasSession = context.HttpContext.Request.Cookies.TryGetValue("session", out string? sessionId) &&
                           !string.IsNullOrEmpty(sessionId);
 
-        if (!hasIp || !hasSession)
-            context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
+        if (hasSession) return;
+
+        logger.LogWarning("blocked request");
+        context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
     }
 }

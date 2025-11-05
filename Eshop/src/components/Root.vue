@@ -67,8 +67,7 @@ onActivated(() => { });
 onUpdated(() => { });
 onMounted(() => {
     window.addEventListener("scroll", handleScroll, false)
-    getSession().then(v => console.log(v)).catch(e => console.error(e));
-    getPhotos().then(v => console.log(v)).catch(e => console.error(e));
+    Promise.all([getSession(), getPhotos()]).then(([session, photos]) => console.log(session, photos));
 });
 onUnmounted(() => {
     window.removeEventListener("scroll", handleScroll, false)
