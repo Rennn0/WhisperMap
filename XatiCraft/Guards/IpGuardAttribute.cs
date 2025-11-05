@@ -21,10 +21,10 @@ public class IpGuardAttribute : Attribute, IAsyncAuthorizationFilter
 
         string? ip = context.HttpContext.Connection.RemoteIpAddress?.ToString();
 
-        if (context.HttpContext.Request.Headers.TryGetValue("X-Forwarded-For", out StringValues forwardHeader))
+        if (context.HttpContext.Request.Headers.TryGetValue("x-forwarded-for", out StringValues forwardHeader))
             ip = forwardHeader.ToString().Split(',')[0].Trim();
 
-        logger.LogInformation("Client IP: {Ip}", ip);
+        logger.LogInformation("client ip: {Ip}", ip);
 
         return !allowedList.Contains(ip ?? string.Empty) ? Forbidden() : Task.CompletedTask;
 

@@ -8,7 +8,7 @@ using XatiCraft.Settings;
 
 namespace XatiCraft;
 
-public class Program
+public static class Program
 {
     public static void Main(string[] args)
     {
@@ -25,14 +25,18 @@ public class Program
             builder.Configuration.GetSection(nameof(ClaudflareR2Settings)));
         builder.Services.Configure<IpRestrictionSettings>(
             builder.Configuration.GetSection(nameof(IpRestrictionSettings)));
+        builder.Services.Configure<ApiKeySettings>(builder.Configuration.GetSection(nameof(ApiKeySettings)));
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
+        {
+            options.SuppressMapClientErrors = true;
+        });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddDbContext<ApplicationContext>(options =>
         {
-            options.UseNpgsql(builder.Configuration.GetConnectionString("RenderPg"));
+            options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(ApplicationContext)));
         });
 
         builder.Services.AddScoped<IUploader, ClaudflareR2StorageService>();
