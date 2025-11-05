@@ -18,6 +18,15 @@ public class SessionController : ControllerBase
             logger.LogInformation("forwarded ip {ip}", ip);
         }
 
+        if (HttpContext.Request.Headers.TryGetValue("x-real-ip", out StringValues realIpHeader))
+        {
+            ip = realIpHeader.ToString().Split(',')[0].Trim();
+            logger.LogInformation("real ip {ip}", ip);
+        }
+
+        logger.LogCritical(string.Join('_', HttpContext.Request.Headers.Keys));
+        logger.LogCritical(string.Join('_', HttpContext.Request.Headers.Values));
+
         string sessionId = Guid.NewGuid().ToString("N");
         CookieOptions cookieOptions = new CookieOptions
         {
