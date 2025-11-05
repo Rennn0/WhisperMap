@@ -4,11 +4,8 @@ export const config = {
 
 export default async function handler(req, res) {
     try {
-        // const backendUrl = process.env.BACKEND_URL;
-        // const apiKey = process.env.CLIENT_API_KEY;
-
-        const backendUrl = 'https://whispermap-flkg.onrender.com'
-        const apiKey = 'xui'
+        const backendUrl = process.env.BACKEND_URL || 'localhost:5158';
+        const apiKey = process.env.CLIENT_API_KEY || 'dev';
 
         const apiResponse = await fetch(`${backendUrl}/storage?folder=photo`, {
             method: 'GET',
