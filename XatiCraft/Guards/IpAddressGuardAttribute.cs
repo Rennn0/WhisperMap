@@ -21,6 +21,10 @@ public class IpAddressGuardAttribute : Attribute, IAsyncAuthorizationFilter
 
         string? ip = context.HttpContext.Connection.RemoteIpAddress?.ToString();
         logger.LogInformation("remote ip: {ip}", ip);
+
+        logger.LogCritical(string.Join('_', context.HttpContext.Request.Headers.Keys));
+        logger.LogCritical(string.Join('_', context.HttpContext.Request.Headers.Values));
+
         if (!context.HttpContext.Request.Headers.TryGetValue("x-forwarded-for", out StringValues forwardHeader))
             return !allowedList.Contains(ip ?? string.Empty) ? Forbidden() : Task.CompletedTask;
 

@@ -14,7 +14,6 @@ public class StorageController : ControllerBase
 {
     [HttpPost("upload")]
     [IpAddressGuard]
-    [ApiKeyGuard]
     public async Task<IActionResult> Upload([FromServices] IUploader uploader, [FromServices] ApplicationContext db,
         IFormFile file,
         CancellationToken cancellation)
@@ -41,6 +40,7 @@ public class StorageController : ControllerBase
 
     [HttpGet]
     [ApiKeyGuard]
+    [IpAddressGuard]
     public async Task<IActionResult> Read([FromServices] IReader reader, string folder, CancellationToken cancellation)
     {
         return Ok(await reader.ListFilesAsync(folder, cancellation));
