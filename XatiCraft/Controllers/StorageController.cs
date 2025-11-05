@@ -9,10 +9,11 @@ namespace XatiCraft.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+[IpSessionGuard]
 public class StorageController : ControllerBase
 {
     [HttpPost("upload")]
-    [IpGuard]
+    [IpAddressGuard]
     [ApiKeyGuard]
     public async Task<IActionResult> Upload([FromServices] IUploader uploader, [FromServices] ApplicationContext db,
         IFormFile file,

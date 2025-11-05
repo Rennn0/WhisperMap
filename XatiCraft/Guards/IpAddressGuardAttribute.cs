@@ -1,4 +1,3 @@
-using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
@@ -7,7 +6,7 @@ using XatiCraft.Settings;
 
 namespace XatiCraft.Guards;
 
-public class IpGuardAttribute : Attribute, IAsyncAuthorizationFilter
+public class IpAddressGuardAttribute : Attribute, IAsyncAuthorizationFilter
 {
     public Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
@@ -15,7 +14,7 @@ public class IpGuardAttribute : Attribute, IAsyncAuthorizationFilter
 
         IOptionsSnapshot<IpRestrictionSettings> ipSettings =
             serviceProvider.GetRequiredService<IOptionsSnapshot<IpRestrictionSettings>>();
-        ILogger<IpGuardAttribute> logger = serviceProvider.GetRequiredService<ILogger<IpGuardAttribute>>();
+        ILogger<IpAddressGuardAttribute> logger = serviceProvider.GetRequiredService<ILogger<IpAddressGuardAttribute>>();
 
         List<string> allowedList = ipSettings.Value.AllowedIpAddresses;
 
@@ -30,7 +29,7 @@ public class IpGuardAttribute : Attribute, IAsyncAuthorizationFilter
 
         Task Forbidden()
         {
-            context.Result = new StatusCodeResult((int)HttpStatusCode.Forbidden);
+            context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
             return Task.CompletedTask;
         }
     }

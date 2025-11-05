@@ -33,6 +33,17 @@ public static class Program
         });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+        builder.Services.AddDistributedMemoryCache();
+        builder.Services.AddSession(options =>
+        {
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+            options.IdleTimeout = TimeSpan.FromMinutes(30);
+            options.Cookie.Name = "XatiCraft.Session";
+            options.Cookie.MaxAge = TimeSpan.FromMinutes(30);
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.SameSite = SameSiteMode.Strict;
+        });
 
         builder.Services.AddDbContext<ApplicationContext>(options =>
         {
@@ -44,6 +55,8 @@ public static class Program
 
         WebApplication app = builder.Build();
         app.UseForwardedHeaders();
+        app.UseSession();
+        app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
