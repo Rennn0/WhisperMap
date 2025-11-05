@@ -5,7 +5,7 @@ export const getUsername = async (): Promise<string | null> => {
 }
 
 export const getSession = async (): Promise<{} | null> => {
-    const response = await fetch(`/api/session`);
+    const response = await fetch(`/api/session`, { method: "GET", credentials: "include" });
     const data = await response.json();
     return data || null;
 }
