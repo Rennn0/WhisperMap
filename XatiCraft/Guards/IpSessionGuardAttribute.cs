@@ -8,7 +8,7 @@ public class IpSessionGuardAttribute : Attribute, IAuthorizationFilter
 {
     public void OnAuthorization(AuthorizationFilterContext context)
     {
-        bool hasIp = context.HttpContext.Request.Cookies.TryGetValue("client_ip", out string? clientIp) &&
+        bool hasIp = context.HttpContext.Request.Cookies.TryGetValue("ip", out string? clientIp) &&
                      !string.IsNullOrEmpty(clientIp);
         bool hasSession = context.HttpContext.Request.Cookies.TryGetValue("session_id", out string? sessionId) &&
                           !string.IsNullOrEmpty(sessionId);

@@ -4,7 +4,14 @@ export const config = {
 
 export default async function handler(req, res) {
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:5158';
-    const apiResponse = await fetch(`${backendUrl}/session`);
+    const ip = req.headers['x-real-ip'] || req.headers['x-forwarded-for']?.split(',')[0].trim();
+    const apiResponse = await fetch(`${backendUrl}/session`, {
+        method: "GET",
+        headers: {
+            'x-public-ip': ip,
+            'content-type': 'application/json'
+        }
+    });
     const setCookies = apiResponse.headers.getSetCookie?.();
     if (setCookies && setCookies.length > 0) {
         res.setHeader('set-cookie', setCookies);
@@ -17,5 +24,4 @@ export default async function handler(req, res) {
         data = bodyText;
     }
     return res.status(apiResponse.status).send(data);
-
 }
