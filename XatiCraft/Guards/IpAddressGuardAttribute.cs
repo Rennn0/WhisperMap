@@ -14,18 +14,20 @@ public class IpAddressGuardAttribute : Attribute, IAsyncAuthorizationFilter
 
         IOptionsSnapshot<IpRestrictionSettings> ipSettings =
             serviceProvider.GetRequiredService<IOptionsSnapshot<IpRestrictionSettings>>();
-        ILogger<IpAddressGuardAttribute> logger = serviceProvider.GetRequiredService<ILogger<IpAddressGuardAttribute>>();
+        ILogger<IpAddressGuardAttribute>
+            logger = serviceProvider.GetRequiredService<ILogger<IpAddressGuardAttribute>>();
 
         List<string> allowedList = ipSettings.Value.AllowedIpAddresses;
 
         string? ip = context.HttpContext.Connection.RemoteIpAddress?.ToString();
+        logger.LogInformation("remote ip: {ip}", ip);
+        if (!context.HttpContext.Request.Headers.TryGetValue("x-forwarded-for", out StringValues forwardHeader))
+            return !allowedList.Contains(ip ?? string.Empty) ? Forbidden() : Task.CompletedTask;
 
-        if (context.HttpContext.Request.Headers.TryGetValue("x-forwarded-for", out StringValues forwardHeader))
-            ip = forwardHeader.ToString().Split(',')[0].Trim();
+        ip = forwardHeader.ToString().Split(',')[0].Trim();
+        logger.LogInformation("forwarded ip: {ip}", ip);
 
-        logger.LogInformation("client ip: {Ip}", ip);
-
-        return !allowedList.Contains(ip ?? string.Empty) ? Forbidden() : Task.CompletedTask;
+        return !allowedList.Contains(ip) ? Forbidden() : Task.CompletedTask;
 
         Task Forbidden()
         {

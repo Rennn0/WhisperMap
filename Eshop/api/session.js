@@ -3,7 +3,7 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-    const backendUrl = process.env.BACKEND_URL || 'localhost:5158';
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5158';
     const apiResponse = await fetch(`${backendUrl}/session`);
     const setCookies = apiResponse.headers.getSetCookie?.();
     if (setCookies && setCookies.length > 0) {

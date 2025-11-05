@@ -8,12 +8,15 @@ namespace XatiCraft.Controllers;
 public class SessionController : ControllerBase
 {
     [HttpGet]
-    public IActionResult InitSession()
+    public IActionResult InitSession([FromServices] ILogger<SessionController> logger)
     {
         string ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
-
+        logger.LogInformation("remote ip {ip}", ip);
         if (HttpContext.Request.Headers.TryGetValue("x-forwarded-for", out StringValues forwardHeader))
+        {
             ip = forwardHeader.ToString().Split(',')[0].Trim();
+            logger.LogInformation("forwarded ip {ip}", ip);
+        }
 
         string sessionId = Guid.NewGuid().ToString("N");
         CookieOptions cookieOptions = new CookieOptions
