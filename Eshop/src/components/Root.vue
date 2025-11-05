@@ -6,6 +6,7 @@ import { CurrentViewSelection, type Product } from '../types';
 import { titleInjectionKey } from '../injectionKeys';
 import { useRouter } from 'vue-router';
 import { getPhotos } from '../services/content.service';
+import { getSession } from '../services/user.service';
 
 //#region variables and providers
 const router = useRouter();
@@ -66,6 +67,7 @@ onActivated(() => { });
 onUpdated(() => { });
 onMounted(() => {
     window.addEventListener("scroll", handleScroll, false)
+    getSession().then(v => console.log(v)).catch(e => console.error(e));
     getPhotos().then(v => console.log(v)).catch(e => console.error(e));
 });
 onUnmounted(() => {
