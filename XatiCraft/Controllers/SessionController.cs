@@ -15,7 +15,7 @@ public class SessionController : ControllerBase
 
     public SessionController(IDataProtectionProvider dataProtectionProvider, ILogger<SessionController> logger)
     {
-        _protector = dataProtectionProvider.CreateProtector("XatiCraft.SessionCookie");
+        _protector = dataProtectionProvider.CreateProtector(AuthGuard.GetProtectionPurpose());
         _logger = logger;
     }
 

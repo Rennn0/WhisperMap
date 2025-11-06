@@ -1,20 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-
 namespace XatiCraft.Guards;
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class IpSessionGuardAttribute : Attribute, IAuthorizationFilter
+public class IpSessionGuardAttribute : AuthGuard
 {
-    public void OnAuthorization(AuthorizationFilterContext context)
+    protected override bool Validate(SessionData sessionData, IServiceProvider serviceProvider,
+        Func<string, string?> fromHeader)
     {
-        ILogger logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<IpSessionGuardAttribute>>();
-        bool hasSession = context.HttpContext.Request.Cookies.TryGetValue("session", out string? sessionId) &&
-                          !string.IsNullOrEmpty(sessionId);
-
-        if (hasSession) return;
-
-        logger.LogWarning("blocked request");
-        context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
+        return !string.IsNullOrWhiteSpace(sessionData.SessionId);
     }
 }
