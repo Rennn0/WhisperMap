@@ -11,7 +11,7 @@ const props = defineProps<{ id: string }>();
 const productRef = ref<Product | null>(null);
 watchEffect(async () => {
     productRef.value = null;
-    getProduct(props.id).then(p => productRef.value = p)
+    getProduct(props.id).then(p => productRef.value = p?.id ? p : null)
 },)
 const product = computed(() => productRef.value);
 
@@ -150,7 +150,7 @@ onUnmounted(() => { })
                 <h1 class="text-2xl font-semibold mb-2">{{ product.title }}</h1>
                 <p class="text-sm mb-4">
                     {{ displayedDescription }}
-                    <span v-if="product.description.length > 256" @click="toggleDescription"
+                    <span v-if="product?.description?.length > 256" @click="toggleDescription"
                         class="font-bold text-primary cursor-pointer ml-1">
                         {{ showFullDescription ? 'showLess' : 'showMore' }}
                     </span>
