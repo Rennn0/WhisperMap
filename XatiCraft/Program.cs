@@ -10,6 +10,7 @@ using XatiCraft.Handlers.Api;
 using XatiCraft.Handlers.Impl;
 using XatiCraft.Handlers.Read;
 using XatiCraft.Handlers.Upload;
+using XatiCraft.Objects;
 using XatiCraft.Settings;
 
 namespace XatiCraft;
@@ -90,6 +91,7 @@ public static class Program
             options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(ApplicationContext)));
         });
 
+        builder.Services.AddSingleton<SystemHealthMonitor>();
         builder.Services.AddTransient<IProductRepo, ProductRepo>();
         builder.Services.AddTransient<IProductMetadaRepo, ProductMetadataRepo>();
         builder.Services.AddTransient<IUploader, ClaudflareR2StorageService>();
@@ -100,6 +102,7 @@ public static class Program
         builder.Services.AddTransient<IGetProductsHandler, GetProductsHandler>();
 
         WebApplication app = builder.Build();
+        app.Services.GetRequiredService<SystemHealthMonitor>();
         app.UseForwardedHeaders();
         app.UseSession();
         app.UseRouting();

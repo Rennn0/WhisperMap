@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhisperMap", "WhisperMap\Wh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XatiCraft", "XatiCraft\XatiCraft.csproj", "{6C6140D7-369A-457A-B536-F7286F582F12}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Healthcheck", "Healthcheck\Healthcheck.csproj", "{97905F84-85D0-41D6-8827-2DA30AB19A95}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{6C6140D7-369A-457A-B536-F7286F582F12}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C6140D7-369A-457A-B536-F7286F582F12}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C6140D7-369A-457A-B536-F7286F582F12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97905F84-85D0-41D6-8827-2DA30AB19A95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97905F84-85D0-41D6-8827-2DA30AB19A95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97905F84-85D0-41D6-8827-2DA30AB19A95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97905F84-85D0-41D6-8827-2DA30AB19A95}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
