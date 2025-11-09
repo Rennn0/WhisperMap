@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, provide, readonly, onActivated, onUpdated, onUnmounted } from 'vue';
+import { ref, onMounted, provide, readonly, onActivated, onUpdated, onUnmounted, onBeforeMount } from 'vue';
 import NavBar from './navbar/NavbarView.vue';
 import Sidebar from './sidebar/Sidebar.vue';
 import { CurrentViewSelection, type Product } from '../types';
@@ -12,7 +12,7 @@ const router = useRouter();
 const title = ref("საჩუქრების ზარდახშა");
 const sidebarOpen = ref(false);
 const navbarOpen = ref(true);
-
+const sessionEnabled = ref(false);
 
 provide(titleInjectionKey, { title: readonly(title), update: (t: string) => title.value = t });
 //#endregion
@@ -63,20 +63,19 @@ const onOptionSelect = (key: CurrentViewSelection) => {
 
 //#region lifecycle hooks
 onActivated(() => { });
+onBeforeMount(() => getSession().then(() => sessionEnabled.value = true));
 onUpdated(() => { });
-onMounted(async () => {
-    await getSession();
+onMounted(() => {
     window.addEventListener("scroll", handleScroll, false)
 });
 onUnmounted(() => {
     window.removeEventListener("scroll", handleScroll, false)
 })
 //#endregion
-
 </script>
 
 <template>
-    <div class="min-h-screen bg-surface text-text transition-colors duration-300">
+    <div v-if="sessionEnabled" class="min-h-screen bg-surface text-text transition-colors duration-300">
         <title>{{ title }}</title>
 
         <NavBar :class="navbarOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'"
@@ -86,5 +85,8 @@ onUnmounted(() => {
         <main class="max-w-6xl mx-auto p-4">
             <router-view />
         </main>
+    </div>
+    <div v-else class="flex items-center justify-center min-h-screen">
+        <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
 </template>
