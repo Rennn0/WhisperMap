@@ -77,9 +77,9 @@ public static class Program
         {
             options.Cookie.HttpOnly = true;
             options.Cookie.IsEssential = true;
-            options.IdleTimeout = TimeSpan.FromMinutes(30);
+            options.IdleTimeout = TimeSpan.FromDays(7);
             options.Cookie.Name = "XatiCraft.Session";
-            options.Cookie.MaxAge = TimeSpan.FromMinutes(30);
+            options.Cookie.MaxAge = TimeSpan.FromDays(7);
             options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             options.Cookie.SameSite = SameSiteMode.Strict;
         });
