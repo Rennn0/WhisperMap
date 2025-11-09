@@ -19,7 +19,11 @@ export default async function handler(req) {
     });
     const bodyText = await apiResponse.text();
     const headers = new Headers(apiResponse.headers);
-    headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=120');
+    if (apiResponse.ok) {
+        headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=120');
+    } else {
+        headers.set('Cache-Control', 'no-store');
+    }
 
     return new Response(bodyText, {
         status: apiResponse.status,
