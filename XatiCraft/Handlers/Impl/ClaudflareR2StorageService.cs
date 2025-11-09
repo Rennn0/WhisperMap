@@ -9,11 +9,16 @@ using XatiCraft.Settings;
 
 namespace XatiCraft.Handlers.Impl;
 
+/// <summary>
+/// </summary>
 public class ClaudflareR2StorageService : IUploader, IReader
 {
     private readonly AmazonS3Client _s3Client;
     private readonly ClaudflareR2Settings _settings;
 
+    /// <summary>
+    /// </summary>
+    /// <param name="settings"></param>
     public ClaudflareR2StorageService(IOptionsSnapshot<ClaudflareR2Settings> settings)
     {
         _settings = settings.Value;
@@ -24,6 +29,11 @@ public class ClaudflareR2StorageService : IUploader, IReader
         });
     }
 
+    /// <summary>
+    /// </summary>
+    /// <param name="folder"></param>
+    /// <param name="cancellation"></param>
+    /// <returns></returns>
     public async Task<IEnumerable<string>> ListFilesAsync(string folder, CancellationToken cancellation)
     {
         string prefix = string.IsNullOrEmpty(folder) ? "" : $"{folder}/";
@@ -39,6 +49,12 @@ public class ClaudflareR2StorageService : IUploader, IReader
             : [];
     }
 
+    /// <summary>
+    /// </summary>
+    /// <param name="fileStream"></param>
+    /// <param name="fileName"></param>
+    /// <param name="cancellation"></param>
+    /// <returns></returns>
     public async Task<UploadResult> UploadFileAsync(Stream fileStream, string fileName, CancellationToken cancellation)
     {
         if (fileStream.CanSeek) fileStream.Position = 0;
@@ -69,9 +85,10 @@ public class ClaudflareR2StorageService : IUploader, IReader
             Headers = { ContentLength = fileStream.Length }
         };
 
-        await _s3Client.PutObjectAsync(request, cancellation);
+        PutObjectResponse response = await _s3Client.PutObjectAsync(request, cancellation);
         string location = $"{_settings.PublicUrl}/{keyBuilder}";
-        return new UploadResult(fileName, keyBuilder.ToString(), folder, location);
+        UploadResult uploadResult = new UploadResult(fileName, keyBuilder.ToString(), folder, location);
+        return uploadResult;
     }
 
     private static string NormalizeFileName(string fileName)

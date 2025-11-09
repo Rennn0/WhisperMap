@@ -8,9 +8,14 @@ using Microsoft.Extensions.Primitives;
 
 namespace XatiCraft.Guards;
 
+/// <summary>
+/// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public abstract class AuthGuard : Attribute, IAuthorizationFilter
 {
+    /// <summary>
+    /// </summary>
+    /// <param name="context"></param>
     public void OnAuthorization(AuthorizationFilterContext context)
     {
         if (!TryGetSessionData(context.HttpContext, out SessionData? protectedSession) || protectedSession is null)
@@ -31,6 +36,11 @@ public abstract class AuthGuard : Attribute, IAuthorizationFilter
             : null;
     }
 
+    /// <summary>
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="sessionData"></param>
+    /// <returns></returns>
     protected virtual bool TryGetSessionData(HttpContext context, out SessionData? sessionData)
     {
         sessionData = null;
@@ -51,6 +61,9 @@ public abstract class AuthGuard : Attribute, IAuthorizationFilter
         }
     }
 
+    /// <summary>
+    /// </summary>
+    /// <returns></returns>
     public static string GetProtectionPurpose()
     {
         StringBuilder builder = new StringBuilder();
@@ -61,6 +74,12 @@ public abstract class AuthGuard : Attribute, IAuthorizationFilter
         return builder.ToString();
     }
 
+    /// <summary>
+    /// </summary>
+    /// <param name="sessionData"></param>
+    /// <param name="serviceProvider"></param>
+    /// <param name="fromHeader"></param>
+    /// <returns></returns>
     protected abstract bool Validate(SessionData sessionData, IServiceProvider serviceProvider,
         Func<string, string?> fromHeader);
 }

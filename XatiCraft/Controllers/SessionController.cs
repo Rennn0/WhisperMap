@@ -6,6 +6,8 @@ using XatiCraft.Guards;
 
 namespace XatiCraft.Controllers;
 
+/// <summary>
+/// </summary>
 [ApiController]
 [Route("[controller]")]
 public class SessionController : ControllerBase
@@ -13,12 +15,19 @@ public class SessionController : ControllerBase
     private readonly ILogger<SessionController> _logger;
     private readonly IDataProtector _protector;
 
+    /// <summary>
+    /// </summary>
+    /// <param name="dataProtectionProvider"></param>
+    /// <param name="logger"></param>
     public SessionController(IDataProtectionProvider dataProtectionProvider, ILogger<SessionController> logger)
     {
         _protector = dataProtectionProvider.CreateProtector(AuthGuard.GetProtectionPurpose());
         _logger = logger;
     }
 
+    /// <summary>
+    /// </summary>
+    /// <returns></returns>
     [HttpGet]
     public IActionResult InitSession()
     {

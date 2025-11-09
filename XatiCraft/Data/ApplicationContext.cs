@@ -14,6 +14,8 @@ public partial class ApplicationContext : DbContext
 
     public virtual DbSet<ProductMetadata> ProductMetadata { get; set; }
 
+    public virtual DbSet<VProduct> VProducts { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Product>(entity =>
@@ -53,6 +55,26 @@ public partial class ApplicationContext : DbContext
             entity.HasOne(d => d.Product).WithMany(p => p.ProductMetadata)
                 .HasForeignKey(d => d.ProductId)
                 .HasConstraintName("product_metadata_product_id_fkey");
+        });
+
+        modelBuilder.Entity<VProduct>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("v_products");
+
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Metadata)
+                // .HasColumnType("json")
+                .HasColumnName("metadata");
+            entity.Property(e => e.Price)
+                .HasPrecision(6, 3)
+                .HasColumnName("price");
+            entity.Property(e => e.Timestamp)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("timestamp");
+            entity.Property(e => e.Title).HasColumnName("title");
         });
 
         OnModelCreatingPartial(modelBuilder);
