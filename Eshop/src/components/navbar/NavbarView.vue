@@ -131,7 +131,7 @@ onUnmounted(() => { })
               <ul class="divide-y divide-gray-200/50">
                 <li v-for="p in filteredProducts" :key="p.id" @mousedown.prevent="onProductClick(p)"
                   class="px-4 py-4 md:py-2 hover:bg-subtle cursor-pointer transition-colors duration-150 flex items-center gap-4 active:scale-[0.98]">
-                  <img :src="p.image || '/placeholder.png'"
+                  <img :src="p.preview_img || '/placeholder.png'"
                     class="w-16 h-16 md:w-10 md:h-10 rounded-lg object-cover flex-shrink-0" alt="Product image" />
                   <div class="flex flex-col">
                     <span class="text-base md:text-sm font-semibold text-text">{{ p.title }}</span>
