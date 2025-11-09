@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import ProductDetail from './components/product/ProductDetaiedView.vue'
 import ProductsView from './components/product/ProductsView.vue'
 import OrdersView from './components/orders/OrdersView.vue'
@@ -10,7 +10,7 @@ import { ensureProductDetailAccess } from './guards/productDetail.guard'
 import Root from './components/Root.vue'
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHashHistory(),
     routes: [
         {
             path: "/",
@@ -37,7 +37,7 @@ const router = createRouter({
                 {
                     path: "/settings",
                     component: SettingsView,
-                        name: "settings"
+                    name: "settings"
                 }
             ]
         },
