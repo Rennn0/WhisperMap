@@ -21,8 +21,8 @@ onUnmounted(() => { })
         class="group bg-surface border border-transparent hover:border-gray-300 hover:bg-subtle rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-4 cursor-pointer flex flex-col w-full sm:w-auto">
 
         <div class="overflow-hidden rounded-md">
-            <img :src="product.image" :alt="product.title"
-                class="w-full h-48 sm:h-40 object-cover group-hover:scale-[1.02] transition-transform duration-300" />
+            <img :src="product.preview_img" :alt="product.title"
+                class="w-full h-48 sm:h-44 object-cover group-hover:scale-[1.02] transition-transform duration-300" />
         </div>
 
         <div class="mt-4 flex-1 flex flex-col">
@@ -42,9 +42,9 @@ onUnmounted(() => { })
                 </span>
                 <span v-else class="text-text/50">No price</span>
 
-                <span class="text-xs text-text/60">
+                <!-- <span class="text-xs text-text/60">
                     {{ product.seller ?? "Unknown" }}
-                </span>
+                </span> -->
             </div>
         </div>
     </article>

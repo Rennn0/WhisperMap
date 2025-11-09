@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onActivated, onUnmounted, onUpdated, watchEffect } from 'vue';
 import type { MediaItem, Product } from '../../types';
 import { ArrowLeftIcon } from '@heroicons/vue/24/solid';
-import { getProduct } from '../../mock.data';
+import { getProduct } from '../../services/content.service';
 import { useRouter } from 'vue-router';
 import SkeletonProductDetail from '../skeletons/SkeletonProductDetail.vue';
 
@@ -18,19 +18,20 @@ const product = computed(() => productRef.value);
 const mediaList = computed<MediaItem[]>(() => {
     if (!product.value) return [];
 
-    const base: MediaItem[] = [];
+    const list: MediaItem[] = [];
 
-    if (product.value.image) base.push({ type: 'image', src: product.value.image, alt: product.value.title });
-    for (let i = 1; i <= 25; i++) {
-        base.push({
-            type: 'image',
-            src: `https://picsum.photos/seed/${product.value.id}-extra-${i}/800/600`,
-            alt: `${product.value.title} ${i + 1}`
+    if (product.value.resources && product.value.resources.length > 0) {
+        product.value.resources.forEach((res, idx) => {
+            const isVideo = /\.(mp4|webm|mov)$/i.test(res);
+            list.push({
+                type: isVideo ? 'video' : 'image',
+                src: res,
+                alt: `${product.value?.title} ${idx + 1}`
+            });
         });
     }
-    base.push({ type: 'video', src: 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4' });
 
-    return base;
+    return list;
 });
 
 const selectedIndex = ref(0);
@@ -97,9 +98,9 @@ onUnmounted(() => { })
                 <span>Back</span>
             </button>
 
-            <div class="text-sm  ">
+            <!-- <div class="text-sm  ">
                 Sold by <span class="font-medium">{{ product.seller }}</span>
-            </div>
+            </div> -->
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2">
@@ -107,10 +108,10 @@ onUnmounted(() => { })
                     @touchstart="handleTouchStart" @touchend="handleTouchEnd">
                     <template v-if="selectedMedia.type === 'image'">
                         <img :src="selectedMedia.src" :alt="selectedMedia.alt ?? 'product image'"
-                            class="w-full h-[520px] object-cover" />
+                            class="w-full h-[700px] object-contain" />
                     </template>
                     <template v-else>
-                        <video :src="selectedMedia.src" controls class="w-full h-[520px] object-cover bg-black" />
+                        <video :src="selectedMedia.src" controls class="w-full h-[700px] object-contain bg-black" />
                     </template>
                 </div>
             </div>

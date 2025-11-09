@@ -1,9 +1,9 @@
-export const getUsername = async (): Promise<string | null> => {
+export const getConfig = async (): Promise<string | null> => {
     const response = await fetch(`/api/config`);
     const data = await response.json();
     return data || null;
 }
 
 export const getSession = async (): Promise<void> => {
-    fetch(`/api/session`, { method: "GET", credentials: "include" });
+    await fetch(`/api/session`, { method: "GET", credentials: "include" });
 }

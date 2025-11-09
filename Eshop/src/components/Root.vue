@@ -5,7 +5,6 @@ import Sidebar from './sidebar/Sidebar.vue';
 import { CurrentViewSelection, type Product } from '../types';
 import { titleInjectionKey } from '../injectionKeys';
 import { useRouter } from 'vue-router';
-import { getPhotos } from '../services/content.service';
 import { getSession } from '../services/user.service';
 
 //#region variables and providers
@@ -65,9 +64,9 @@ const onOptionSelect = (key: CurrentViewSelection) => {
 //#region lifecycle hooks
 onActivated(() => { });
 onUpdated(() => { });
-onMounted(() => {
+onMounted(async () => {
+    await getSession();
     window.addEventListener("scroll", handleScroll, false)
-    Promise.all([getSession(), getPhotos()]).then(([session, photos]) => console.log(session, photos));
 });
 onUnmounted(() => {
     window.removeEventListener("scroll", handleScroll, false)

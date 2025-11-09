@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onActivated, onMounted, onUnmounted, onUpdated, ref, watchEffect } from 'vue';
 import type { Product } from '../../types';
-import { getProducts } from '../../mock.data';
+import { getProducts } from '../../services/content.service';
 import { useRouter } from 'vue-router';
 import ProductItem from './ProductItem.vue';
 import SkeletonProductItem from '../skeletons/SkeletonProductItem.vue';
@@ -14,7 +14,6 @@ watchEffect(() => getProducts().then(ps => productsRef.value = ps));
 const products = computed(() => productsRef.value);
 
 const onSelect = (product: Product) => {
-    product.description = product.description.repeat(50);
     router.push({ name: "product", params: { id: product.id } });
     emit('select', product);
 };

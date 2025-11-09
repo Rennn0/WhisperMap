@@ -6,9 +6,9 @@ export interface Product {
     id: string;
     title: string;
     description: string;
-    image: string;
     price?: number;
-    seller?: string;
+    preview_img?: string,
+    resources?: string[]
 }
 
 export type ThemeDropdown = { name: string, label: string, icon: any };
