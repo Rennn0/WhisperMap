@@ -19,11 +19,5 @@ export default async function handler(req, res) {
         credentials: "include"
     });
     const bodyText = await apiResponse.text();
-    let data;
-    try {
-        data = JSON.parse(bodyText);
-    } catch (error) {
-        data = bodyText;
-    }
-    return res.status(apiResponse.status).send(data);
+    return res.status(apiResponse.status).send(bodyText);
 }

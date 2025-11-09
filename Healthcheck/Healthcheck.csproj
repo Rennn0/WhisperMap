@@ -10,17 +10,12 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
         <Content Include="..\.dockerignore">
             <Link>.dockerignore</Link>
         </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Reference Include="Microsoft.Extensions.Http">
-            <HintPath>..\..\..\.nuget\packages\microsoft.aspnetcore.app.ref\8.0.20\ref\net8.0\Microsoft.Extensions.Http.dll</HintPath>
-        </Reference>
     </ItemGroup>
 </Project>

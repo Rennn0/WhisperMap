@@ -1,13 +1,13 @@
 export const config = {
-    runtime: 'nodejs',
+    runtime: 'edge',
 };
 
-export default async function handler(req, res) {
+export default async function handler(req) {
     const backendUrl = process.env.BACKEND_URL;
     const apiKey = process.env.CLIENT_API_KEY;
     // const backendUrl = 'http://localhost:5158';
     // const apiKey = 'dev';
-    const cookies = req.headers.cookie;
+    const cookies = req.headers.get("cookie") || "";
     const apiResponse = await fetch(`${backendUrl}/product`, {
         method: 'GET',
         headers: {
@@ -18,11 +18,11 @@ export default async function handler(req, res) {
         credentials: "include"
     });
     const bodyText = await apiResponse.text();
-    let data;
-    try {
-        data = JSON.parse(bodyText);
-    } catch (error) {
-        data = bodyText;
-    }
-    return res.status(apiResponse.status).send(data);
+    const headers = new Headers(apiResponse.headers);
+    headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=120');
+
+    return new Response(bodyText, {
+        status: apiResponse.status,
+        headers,
+    });
 }
