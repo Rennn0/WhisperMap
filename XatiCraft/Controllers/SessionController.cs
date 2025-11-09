@@ -43,7 +43,7 @@ public class SessionController : ControllerBase
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.Now.AddDays(7),
+            Expires = DateTimeOffset.Now.AddDays(1),
             IsEssential = true
         };
         HttpContext.Response.Cookies.Append("session", protectedData, cookieOptions);
