@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using XatiCraft.ApiContracts;
+using XatiCraft.Guards;
 using XatiCraft.Handlers.Api;
 
 namespace XatiCraft.Controllers;
@@ -10,12 +11,9 @@ namespace XatiCraft.Controllers;
 [ApiController]
 [Route("product/{productId:long}/storage")]
 [EnableRateLimiting("policy_session")]
-#if DEBUG
-#else
 [IpSessionGuard]
 [IpAddressGuard]
 [ApiKeyGuard]
-#endif
 public class StorageController : ControllerBase
 {
     /// <summary>
