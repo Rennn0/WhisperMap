@@ -36,7 +36,7 @@ onUnmounted(() => { })
                w-72 sm:w-80 md:w-96">
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="font-semibold text-sm sm:text-xl">ხათის საჩუქრების ზარდახშა</h2>
+                    <h2 class="font-semibold text-sm sm:text-xl">საჩუქრების ზარდახშა</h2>
                     <button @click="$emit('close')"
                         class="w-8 h-8 rounded-md flex items-center justify-center text-text hover:text-primary transition-colors">
                         <XCircleIcon class="w-4 h-4" />
