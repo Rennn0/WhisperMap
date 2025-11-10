@@ -15,11 +15,21 @@ public class Worker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            HttpResponseMessage response = await _client.GetAsync(string.Empty, stoppingToken);
-            response.EnsureSuccessStatusCode();
-            string responseBody = await response.Content.ReadAsStringAsync(stoppingToken);
-            _logger.LogInformation(responseBody);
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            try
+            {
+                HttpResponseMessage response = await _client.GetAsync(string.Empty, stoppingToken);
+                response.EnsureSuccessStatusCode();
+                string responseBody = await response.Content.ReadAsStringAsync(stoppingToken);
+                _logger.LogInformation(responseBody);
+            }
+            catch (System.Exception e)
+            {
+                _logger.LogError(e.Message);
+            }
+            finally
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            }
         }
     }
 }

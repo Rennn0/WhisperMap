@@ -28,10 +28,11 @@ public class HealthController : ControllerBase
     [HttpGet]
     public IActionResult Get()
     {
-        _logger.LogInformation("ok");
+        _logger.LogDebug("ok");
         return Ok(new
         {
-            _healthMonitor.Start, _healthMonitor.Uptime
+            _healthMonitor.Start,
+            _healthMonitor.Uptime
         });
     }
 }
