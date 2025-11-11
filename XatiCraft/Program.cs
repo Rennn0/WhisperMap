@@ -95,6 +95,7 @@ public static class Program
 
         builder.Services.AddSingleton<SystemHealthMonitor>();
         builder.Services.AddScoped<UserManager>();
+        builder.Services.AddScoped<ActionMonitor>();
         builder.Services.AddTransient<IProductRepo, ProductRepo>();
         builder.Services.AddTransient<IProductMetadaRepo, ProductMetadataRepo>();
         builder.Services.AddTransient<IUploader, ClaudflareR2StorageService>();
