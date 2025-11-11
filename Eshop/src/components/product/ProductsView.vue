@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, onMounted, onUnmounted, onUpdated, ref, watchEffect } from 'vue';
+import { computed, onMounted, onUnmounted, onUpdated, ref } from 'vue';
 import type { Product } from '../../types';
 import { getProducts } from '../../services/content.service';
 import { useRouter } from 'vue-router';
