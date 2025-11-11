@@ -10,7 +10,7 @@ namespace XatiCraft.Handlers.Impl;
 /// </summary>
 public class UploadProductFileHandler : IUploadProductFileHandler
 {
-    private const long MaxFileSize = 5 * 1024 * 1024; //#NOTE ~ 5mb
+    // private const long MaxFileSize = 5 * 1024 * 1024; //#NOTE ~ 5mb
     private readonly IProductMetadaRepo _productMetadaRepo;
     private readonly IProductRepo _productRepo;
     private readonly IUploader _uploader;
@@ -35,7 +35,7 @@ public class UploadProductFileHandler : IUploadProductFileHandler
     public async ValueTask<ApiContract> HandleAsync(UploadProductFileContext context,
         CancellationToken cancellationToken)
     {
-        if (context.Stream.Length > MaxFileSize) return new Error(ErrorCode.FileTooLarge);
+        // if (context.Stream.Length > MaxFileSize) return new Error(ErrorCode.FileTooLarge);
         if (!await _productRepo.ExistsAsync(context.Product, cancellationToken))
             return new Error(ErrorCode.ArgumentMissmatchInDatabase, Hint: nameof(context.Product));
 

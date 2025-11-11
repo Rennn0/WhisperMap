@@ -13,26 +13,25 @@ const uploadProgress = ref(0);
 
 const uploadFiles = async () => {
     if (!selectedFiles.value.length) return;
+
     uploading.value = true;
     uploadProgress.value = 0;
 
     for (let i = 0; i < selectedFiles.value.length; i++) {
-        const file = selectedFiles.value[i];
-        await fileUpload(file!);
+        const file = selectedFiles.value[i]!;
+
+        try {
+            await uploadProductFile(props.upload.id ?? -1, file);
+        } catch (err) {
+            alert(`Failed to upload: ${file.name}, ${err}`,);
+        }
+
         uploadProgress.value = Math.round(((i + 1) / selectedFiles.value.length) * 100);
     }
 
     uploading.value = false;
     emit('attachments-uploaded', selectedFiles.value);
 };
-
-const fileUpload = (file: File) => {
-    return new Promise(async (ok, rej) => {
-        const id = await uploadProductFile(props.upload.id ?? -1, file);
-        if (id) ok(id)
-        else rej()
-    })
-}
 
 </script>
 
