@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, onActivated, onUnmounted, onUpdated, watch, toValue } from 'vue';
-import { Bars3Icon, MagnifyingGlassIcon, SunIcon, MoonIcon, AdjustmentsHorizontalIcon, BoltIcon } from '@heroicons/vue/24/outline';
-import type { Product, ThemeDropdown } from '../../types';
+import { ref, onMounted, computed, onActivated, onUnmounted, onUpdated, watch, toValue, inject, type Ref } from 'vue';
+import { Bars3Icon, MagnifyingGlassIcon, SunIcon, MoonIcon, AdjustmentsHorizontalIcon, BoltIcon, PlusIcon } from '@heroicons/vue/24/outline';
+import type { Product, ThemeDropdown, UserInfo } from '../../types';
 import { getProducts } from '../../mock.data';
+import { userInfoInjectionKey } from '../../injectionKeys';
 
 const emit = defineEmits<{
   (e: 'menu-toggle'): void;
   (e: 'search', value: string): void;
   (e: 'product-chosen', value: Product): void;
   (e: 'input', value: string): void;
+  (e: 'upload'): void;
 }>();
 
 const themes: ThemeDropdown[] = [
@@ -23,6 +25,7 @@ const dropdownOpen = ref(false);
 const searchPreviewOpen = ref(false);
 const currentTheme = ref('light');
 const searchInput = ref<HTMLInputElement | null>(null);
+const userInfo = inject<Readonly<Ref<UserInfo>>>(userInfoInjectionKey);
 
 const products = ref<Product[]>([]);
 
@@ -98,17 +101,28 @@ onUnmounted(() => { })
 
 <template>
   <nav class="sticky top-0 z-50 w-full backdrop-blur-md bg-surface border-b border-subtle transition-all duration-300">
-    <div class="max-w-5xl h-10 md:h-12 mx-auto px-3 py-2 flex items-center gap-3 relative">
-      <!-- Menu Button -->
-      <button @click="onMenu"
-        class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
-        aria-label="Toggle menu">
-        <Bars3Icon class="w-6 h-6 text-text" />
-      </button>
+    <div class="max-w-5xl h-10 md:h-12 mx-auto px-3 py-2 flex items-center justify-between gap-3 relative">
 
-      <!-- Search -->
-      <div class="flex-1 flex justify-center relative">
-        <div class="w-full max-w-xl relative">
+      <!-- Left side buttons -->
+      <div class="flex items-center gap-1">
+        <!-- Menu -->
+        <button @click="onMenu"
+          class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
+          aria-label="Toggle menu">
+          <Bars3Icon class="w-6 h-6 text-text" />
+        </button>
+
+        <!-- Upload -->
+        <button v-if="userInfo?.can_upload" @click="emit('upload')"
+          class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
+          aria-label="Upload product">
+          <PlusIcon class="w-6 h-6 text-text" />
+        </button>
+      </div>
+
+      <!-- Search (center, takes all free space) -->
+      <div class="flex-1 max-w-full flex justify-center">
+        <div class="w-full max-w-2xl relative">
           <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
             <MagnifyingGlassIcon class="w-5 h-5 text-text/60" />
           </span>
@@ -118,14 +132,13 @@ onUnmounted(() => { })
             class="w-full pl-10 pr-4 py-1 md:py-2 rounded-full border border-gray-300/40 bg-surface text-text shadow-sm focus:outline-none focus:ring-1 focus:ring-primary transition-colors duration-300 text-base md:text-sm"
             aria-label="Search" />
 
-          <!-- Search Preview -->
           <transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0 translate-y-1"
             enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100 ease-in"
             leave-from-class="opacity-100" leave-to-class="opacity-0 translate-y-1">
             <div v-if="searchPreviewOpen && filteredProducts.length" class="absolute mt-3 left-1/2 transform -translate-x-1/2
          bg-surface border border-gray-300/40 shadow-xl rounded-2xl overflow-hidden z-50
          max-h-[70vh] overflow-y-auto
-         w-[90vw] md:w-full md:max-w-xl
+         w-[90vw] md:w-full md:max-w-2xl
          p-2 md:p-0
          ring-1 ring-primary/10">
               <ul class="divide-y divide-gray-200/50">
@@ -140,13 +153,12 @@ onUnmounted(() => { })
                 </li>
               </ul>
             </div>
-
           </transition>
         </div>
       </div>
 
-      <!-- Theme Dropdown -->
-      <div class="relative ml-3">
+      <!-- Right side buttons -->
+      <div class="relative flex items-center">
         <button @click="toggleDropdown()"
           class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
           aria-label="Select theme">
@@ -166,6 +178,7 @@ onUnmounted(() => { })
           </div>
         </transition>
       </div>
+
     </div>
   </nav>
 </template>

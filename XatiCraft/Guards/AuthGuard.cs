@@ -16,7 +16,7 @@ public abstract class AuthGuard : Attribute, IAuthorizationFilter
     /// <summary>
     /// </summary>
     /// <param name="context"></param>
-    public void OnAuthorization(AuthorizationFilterContext context)
+    public virtual void OnAuthorization(AuthorizationFilterContext context)
     {
         if (!TryGetSessionData(context.HttpContext, out SessionData? protectedSession) || protectedSession is null)
         {

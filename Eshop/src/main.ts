@@ -8,6 +8,7 @@ import OrdersView from './components/orders/OrdersView.vue'
 import SettingsView from './components/settings/SettingsView.vue'
 import { ensureProductDetailAccess } from './guards/productDetail.guard'
 import Root from './components/Root.vue'
+import UploadView from './components/upload/UploadView.vue'
 
 const router = createRouter({
     history: createWebHashHistory(),
@@ -38,6 +39,11 @@ const router = createRouter({
                     path: "/settings",
                     component: SettingsView,
                     name: "settings"
+                },
+                {
+                    path: "/upload",
+                    name: "upload",
+                    component: UploadView,
                 }
             ]
         },

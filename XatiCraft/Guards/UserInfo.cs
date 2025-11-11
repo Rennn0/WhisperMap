@@ -6,9 +6,9 @@ public record UserInfo
 {
     /// <summary>
     /// </summary>
-    public bool CanUpload { get; init; }
+    public bool CanUpload { get; set; }
 
     /// <summary>
     /// </summary>
-    public HashSet<uint>? Claims { get; init; }
+    public HashSet<ApplicationClaims> Claims { get; } = [];
 }

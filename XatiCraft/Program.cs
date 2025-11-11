@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using XatiCraft.Data;
 using XatiCraft.Data.Repos;
 using XatiCraft.Data.Repos.EfCoreImpl;
+using XatiCraft.Guards;
 using XatiCraft.Handlers.Api;
 using XatiCraft.Handlers.Impl;
 using XatiCraft.Handlers.Read;
@@ -85,6 +86,7 @@ public static class Program
             options.Cookie.SameSite = SameSiteMode.Strict;
         });
         builder.Services.AddResponseCompression();
+        builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddDbContext<ApplicationContext>(options =>
         {
@@ -92,6 +94,7 @@ public static class Program
         });
 
         builder.Services.AddSingleton<SystemHealthMonitor>();
+        builder.Services.AddScoped<UserManager>();
         builder.Services.AddTransient<IProductRepo, ProductRepo>();
         builder.Services.AddTransient<IProductMetadaRepo, ProductMetadataRepo>();
         builder.Services.AddTransient<IUploader, ClaudflareR2StorageService>();

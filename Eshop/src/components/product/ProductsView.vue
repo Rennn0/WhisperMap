@@ -10,7 +10,7 @@ const router = useRouter();
 const emit = defineEmits<{ (e: 'select', product: Product): void }>();
 
 const productsRef = ref<Product[] | null>(null);
-watchEffect(() => getProducts().then(ps => productsRef.value = ps));
+// watchEffect(() => );
 const products = computed(() => productsRef.value);
 
 const onSelect = (product: Product) => {
@@ -19,9 +19,10 @@ const onSelect = (product: Product) => {
 };
 
 //#region lifecycle hooks
-onActivated(() => { });
 onUpdated(() => { });
-onMounted(() => { });
+onMounted(() => {
+    getProducts().then(ps => productsRef.value = ps)
+});
 onUnmounted(() => { })
 //#endregion
 </script>

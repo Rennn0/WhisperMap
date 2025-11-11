@@ -3,9 +3,10 @@ import { ref, onMounted, provide, readonly, onActivated, onUpdated, onUnmounted,
 import NavBar from './navbar/NavbarView.vue';
 import Sidebar from './sidebar/Sidebar.vue';
 import { CurrentViewSelection, type Product } from '../types';
-import { titleInjectionKey } from '../injectionKeys';
+import { titleInjectionKey, userInfoInjectionKey } from '../injectionKeys';
 import { useRouter } from 'vue-router';
-import { getSession } from '../services/user.service';
+import { getMe, getSession } from '../services/user.service';
+import { type UserInfo } from '../types';
 
 //#region variables and providers
 const router = useRouter();
@@ -13,9 +14,11 @@ const title = ref("საჩუქრების ზარდახშა");
 const sidebarOpen = ref(false);
 const navbarOpen = ref(true);
 const sessionEnabled = ref(false);
+const userInfo = ref<UserInfo>();
 
-provide(titleInjectionKey, { title: readonly(title), update: (t: string) => title.value = t });
-//#endregion
+provide(titleInjectionKey, { data: readonly(title), update: (t: string) => title.value = t });
+provide(userInfoInjectionKey, readonly(userInfo));
+//#endregion1
 
 //#region computed / watchEffect
 
@@ -59,11 +62,24 @@ const onOptionSelect = (key: CurrentViewSelection) => {
     }
 }
 
+const onUpload = () => router.push("upload");
+
 //#endregion
 
 //#region lifecycle hooks
 onActivated(() => { });
-onBeforeMount(() => getSession().then(() => sessionEnabled.value = true));
+onBeforeMount(() => {
+    getSession()
+        .then(() => {
+            sessionEnabled.value = true;
+            getMe()
+                .then(info => {
+                    if (info) {
+                        userInfo.value = info;
+                    }
+                });
+        });
+});
 onUpdated(() => { });
 onMounted(() => {
     window.addEventListener("scroll", handleScroll, false)
@@ -79,7 +95,8 @@ onUnmounted(() => {
         <title>{{ title }}</title>
 
         <NavBar :class="navbarOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'"
-            @menu-toggle="onMenuToggle" @profile-click="onProfileClick" @product-chosen="onProductChosen" />
+            @menu-toggle="onMenuToggle" @profile-click="onProfileClick" @product-chosen="onProductChosen"
+            @upload="onUpload" />
         <Sidebar :open="sidebarOpen" @close="sidebarOpen = false" @select="onOptionSelect" />
 
         <main class="max-w-6xl mx-auto p-4">

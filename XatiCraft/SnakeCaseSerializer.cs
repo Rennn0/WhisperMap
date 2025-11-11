@@ -3,8 +3,14 @@ using System.Text.Json;
 
 namespace XatiCraft;
 
+/// <summary>
+/// </summary>
 public class SnakeCaseSerializer : JsonNamingPolicy
 {
+    /// <summary>
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
     public override string ConvertName(string name)
     {
         if (string.IsNullOrEmpty(name))

@@ -49,4 +49,14 @@ public class SessionController : ControllerBase
         HttpContext.Response.Cookies.Append("session", protectedData, cookieOptions);
         return NoContent();
     }
+
+    /// <summary>
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("me")]
+    public IActionResult Me([FromServices] UserManager usermanager)
+    {
+        if (!usermanager.TryGetUserInfo(out UserInfo? userInfo)) return Unauthorized();
+        return Ok(userInfo);
+    }
 }

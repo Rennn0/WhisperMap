@@ -14,22 +14,20 @@ public class Worker : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
-        {
             try
             {
                 HttpResponseMessage response = await _client.GetAsync(string.Empty, stoppingToken);
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync(stoppingToken);
-                _logger.LogInformation(responseBody);
+                _logger.LogInformation("{Message}", responseBody);
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-                _logger.LogError(e.Message);
+                _logger.LogError("{Message}", e.Message);
             }
             finally
             {
                 await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
             }
-        }
     }
 }

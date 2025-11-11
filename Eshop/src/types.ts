@@ -11,6 +11,23 @@ export interface Product {
     resources?: string[]
 }
 
+export interface UserInfo {
+    can_upload: boolean,
+    claims: number[]
+}
+
+export interface UploadableProduct {
+    title: string;
+    price: number;
+    description: string;
+}
+
+export interface UploadProps {
+    product: UploadableProduct;
+    existingFiles: File[];
+    id: number | null
+}
+
 export type ThemeDropdown = { name: string, label: string, icon: any };
 
 export type MediaItem = { type: 'image' | 'video'; src: string; alt?: string };
