@@ -31,7 +31,6 @@ export const uploadProduct = async (product: UploadableProduct): Promise<{ produ
 };
 
 export const uploadProductFile = async (productId: number, file: File): Promise<{ url: string } | null> => {
-
     const buffer = await file.arrayBuffer();
 
     const signedUrlResponse = await fetch(
@@ -44,7 +43,7 @@ export const uploadProductFile = async (productId: number, file: File): Promise<
     );
 
     const { url } = await signedUrlResponse.json();
-    console.log(`got url ${url}`)
+    console.error(`got url ${url}`)
 
     for (let i = 0; i < 5; i++) {
         try {
@@ -52,10 +51,10 @@ export const uploadProductFile = async (productId: number, file: File): Promise<
                 method: 'PUT',
                 body: buffer,
             });
-            console.log(`fetched ${putResponse.status}`)
+            console.error(`fetched ${putResponse.status}`)
             break;
         } catch (error) {
-            console.log(error)
+            console.error(error)
 
             await new Promise(r => setTimeout(r, 1000));
         }

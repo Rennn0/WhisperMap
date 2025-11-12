@@ -18,12 +18,23 @@ watch(() => props.existingFiles, (v) => {
 });
 
 // Add / append new files
-const onFilesChange = (e: Event) => {
+const onFilesChange = async (e: Event) => {
     const input = e.target as HTMLInputElement;
-    const newFiles = input.files ? Array.from(input.files) : [];
-    files.value = [...files.value, ...newFiles];
+    if (!input.files?.length) return;
+
+    const newFiles: File[] = Array.from(input.files);
+    const stableFiles = await Promise.all(
+        newFiles.map(async (file) => {
+            // read file immediately to create stable copy for mobile
+            const buffer = await file.arrayBuffer();
+            return new File([buffer], file.name, { type: file.type });
+        })
+    );
+
+    files.value = [...files.value, ...stableFiles];
     emit('attachments-selected', files.value);
 };
+
 
 // Remove file
 const removeFile = (index: number) => {

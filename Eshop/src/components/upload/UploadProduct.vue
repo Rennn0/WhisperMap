@@ -23,7 +23,7 @@ const uploadFiles = async () => {
         try {
             await uploadProductFile(props.upload.id ?? -1, file);
         } catch (err) {
-            alert(`Failed to upload: ${file.name}, ${err}`,);
+            console.error(`Failed to upload: ${file.name}, ${err}`);
         }
 
         uploadProgress.value = Math.round(((i + 1) / selectedFiles.value.length) * 100);
