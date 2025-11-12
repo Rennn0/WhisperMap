@@ -43,11 +43,22 @@ export const uploadProductFile = async (productId: number, file: File): Promise<
     const { url } = await signedUrlResponse.json();
     alert(`got url ${url}`)
 
-    const putResponse = await fetch(url, {
-        method: 'PUT',
-        body: new Blob([file]),
-    });
-    alert(`fetched ${putResponse.status}`)
+    for (let i = 0; i < 5; i++) {
+        try {
+            const putResponse = await fetch(url, {
+                method: 'PUT',
+                body: new Blob([file]),
+            });
+            alert(`fetched ${putResponse.status}`)
+            break;
+        } catch (error) {
+            const e = JSON.stringify(error);
+            alert(e)
+            alert(`${error}`)
+
+            await new Promise(r => setTimeout(r, 1000));
+        }
+    }
 
     const publicUrl = url.split('?')[0];
 
