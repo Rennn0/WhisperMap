@@ -58,7 +58,7 @@ export const uploadProductFile = async (productId: number, file: File): Promise<
         method: 'PUT',
         body: file,
         headers: {
-            'Content-Type': file.type || 'application/octet-stream',
+            'Content-Type': 'application/octet-stream',
         },
     });
 
