@@ -43,7 +43,6 @@ export const uploadProductFile = async (productId: number, file: File): Promise<
     );
 
     const { url } = await signedUrlResponse.json();
-    console.error(`got url ${url}`)
 
     for (let i = 0; i < 5; i++) {
         try {
@@ -51,11 +50,10 @@ export const uploadProductFile = async (productId: number, file: File): Promise<
                 method: 'PUT',
                 body: buffer,
             });
-            console.error(`fetched ${putResponse.status}`)
+            putResponse;
             break;
         } catch (error) {
             console.error(error)
-
             await new Promise(r => setTimeout(r, 1000));
         }
     }

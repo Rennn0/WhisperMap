@@ -168,8 +168,8 @@ onUnmounted(() => { })
         <transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0 scale-95"
           enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-50 ease-in"
           leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-          <div v-if="dropdownOpen" @mouseleave="toggleDropdown(false)" @blur="toggleDropdown(false)"
-            class="absolute right-0 mt-2 w-48 bg-surface border border-gray-300/40 shadow-lg rounded-lg py-1 z-60 pointer-events-auto">
+          <div v-if="dropdownOpen" @mouseleave="toggleDropdown(false)"
+            class="absolute right-0 top-full mt-1 w-48 bg-surface border border-gray-300/40 shadow-lg rounded-lg py-1 z-50 pointer-events-auto">
             <div v-for="theme in themes" :key="theme.name" @click="selectTheme(theme)"
               class="flex items-center gap-3 px-3 py-2 hover:bg-subtle cursor-pointer transition-colors duration-150">
               <component :is="theme.icon" class="w-5 h-5" />
