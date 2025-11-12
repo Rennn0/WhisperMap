@@ -34,7 +34,8 @@ public class GetProductsHandler : IGetProductsHandler
             new Product(EraseIfLarger(p.Title, MaxLenTitle), EraseIfLarger(p.Description, MaxLenDesc), p.Price)
             {
                 Id = p.Id,
-                PreviewImg = p.ProductMetadata?.FirstOrDefault(pm => !string.IsNullOrEmpty(pm.Location))?.Location
+                PreviewImg = p.ProductMetadata?.Where(pm => !string.IsNullOrEmpty(pm.Location)).MinBy(pm => pm.Id)
+                    ?.Location
             }
         ))
         {

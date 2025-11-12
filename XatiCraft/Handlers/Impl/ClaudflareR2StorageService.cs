@@ -105,7 +105,7 @@ public class ClaudflareR2StorageService : IUploader, IReader
             BucketName = _settings.Bucket,
             Key = keyBuilder.ToString(),
             Verb = HttpVerb.PUT,
-            Expires = DateTime.UtcNow.AddMinutes(5)
+            Expires = DateTime.UtcNow.AddMinutes(1)
         };
         string signedUrl = await _s3Client.GetPreSignedURLAsync(request);
         string location = $"{_settings.PublicUrl}/{keyBuilder}";
