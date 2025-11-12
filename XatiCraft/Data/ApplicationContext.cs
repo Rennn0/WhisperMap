@@ -3,19 +3,30 @@ using XatiCraft.Model;
 
 namespace XatiCraft.Data;
 
+/// <inheritdoc />
 public partial class ApplicationContext : DbContext
 {
+    /// <inheritdoc />
     public ApplicationContext(DbContextOptions<ApplicationContext> options)
         : base(options)
     {
     }
 
+    /// <summary>
+    /// </summary>
     public virtual DbSet<Product> Products { get; set; }
 
+    /// <summary>
+    /// </summary>
     public virtual DbSet<ProductMetadata> ProductMetadata { get; set; }
 
+    /// <summary>
+    /// </summary>
     public virtual DbSet<VProduct> VProducts { get; set; }
 
+    /// <summary>
+    /// </summary>
+    /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Product>(entity =>
@@ -27,7 +38,7 @@ public partial class ApplicationContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.Price)
-                .HasPrecision(6, 3)
+                .HasPrecision(10, 3)
                 .HasColumnName("price");
             entity.Property(e => e.Timestamp)
                 .HasDefaultValueSql("now()")
@@ -69,7 +80,7 @@ public partial class ApplicationContext : DbContext
                 // .HasColumnType("json")
                 .HasColumnName("metadata");
             entity.Property(e => e.Price)
-                .HasPrecision(6, 3)
+                .HasPrecision(10, 3)
                 .HasColumnName("price");
             entity.Property(e => e.Timestamp)
                 .HasColumnType("timestamp without time zone")

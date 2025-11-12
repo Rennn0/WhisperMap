@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
+import TablerChooseFileIcon from '../freestyle/TablerChooseFileIcon.vue';
 
 const props = defineProps<{
     existingFiles?: File[];
@@ -71,12 +72,14 @@ const previews = computed(() =>
 </script>
 
 <template>
-    <div class="p-4 rounded-lg shadow-sm border border-gray-300/40 bg-surface">
+    <div class="p-4 rounded-lg bg-subtle border shadow-sm">
         <label
-            class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300/60 rounded-lg p-6 cursor-pointer hover:border-primary transition text-center">
-            <span class="text-text/70 mb-2">Select images or videos</span>
+            class="flex flex-row items-center justify-center gap-2 border-2 border-dashed border-primary rounded-lg p-6 cursor-pointer">
+            <TablerChooseFileIcon class="w-6 h-6 flex-shrink-0" />
+            <span class="text-text leading-none">{{ $t('upload.inputs.chooseFile') }}</span>
             <input type="file" multiple accept="image/*,video/*" class="hidden" @change="onFilesChange" />
         </label>
+
 
         <div v-if="previews.length" class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div v-for="(p, index) in previews" :key="p.url"

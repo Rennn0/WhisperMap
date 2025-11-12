@@ -3,20 +3,21 @@ import { ref, onMounted, provide, readonly, onActivated, onUpdated, onUnmounted,
 import NavBar from './navbar/NavbarView.vue';
 import Sidebar from './sidebar/Sidebar.vue';
 import { CurrentViewSelection, type Product } from '../types';
-import { titleInjectionKey, userInfoInjectionKey } from '../injectionKeys';
+import { userInfoInjectionKey } from '../injectionKeys';
 import { useRouter } from 'vue-router';
 import { getMe, getSession } from '../services/user.service';
 import { type UserInfo } from '../types';
+import LoaderBlockWave from './freestyle/TablerLoaderBlockWave.vue';
 
 //#region variables and providers
 const router = useRouter();
-const title = ref("საჩუქრების ზარდახშა");
+// const title = ref("საჩუქრების ზარდახშა");
 const sidebarOpen = ref(false);
 const navbarOpen = ref(true);
 const sessionEnabled = ref(false);
 const userInfo = ref<UserInfo>();
 
-provide(titleInjectionKey, { data: readonly(title), update: (t: string) => title.value = t });
+// provide(titleInjectionKey, { data: readonly(title), update: (t: string) => title.value = t });
 provide(userInfoInjectionKey, readonly(userInfo));
 //#endregion1
 
@@ -92,7 +93,7 @@ onUnmounted(() => {
 
 <template>
     <div v-if="sessionEnabled" class="min-h-screen bg-surface text-text transition-colors duration-300">
-        <title>{{ title }}</title>
+        <title>{{ $t('app.title') }}</title>
 
         <NavBar :class="navbarOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'"
             @menu-toggle="onMenuToggle" @profile-click="onProfileClick" @product-chosen="onProductChosen"
@@ -104,6 +105,6 @@ onUnmounted(() => {
         </main>
     </div>
     <div v-else class="flex items-center justify-center min-h-screen">
-        <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <LoaderBlockWave class="w-16 md:w-28 lg:w-44 h-16 md:h-28 lg:h-44" />
     </div>
 </template>

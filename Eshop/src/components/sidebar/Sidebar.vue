@@ -1,22 +1,31 @@
 <script setup lang="ts">
-import { XCircleIcon, GiftIcon, ShoppingBagIcon, Cog6ToothIcon } from '@heroicons/vue/24/solid';
 import { CurrentViewSelection, type SidebarOptions } from '../../types';
 import { onActivated, onUpdated, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+import GiftIcon from '../freestyle/TablerGiftIcon.vue';
+import ShoppingBagIcon from '../freestyle/TablerShoppingBagIcon.vue';
+import TablerSettingsIcon from '../freestyle/TablerSettingsIcon.vue';
+import IconParkCloseIcon from '../freestyle/IconParkCloseIcon.vue';
+import LanguageComponent from './LanguageComponent.vue';
 
 const props = defineProps<{ open: boolean }>();
 const emit = defineEmits<{ (e: 'close'): void; (e: 'select', option: CurrentViewSelection): void }>();
+const { locale } = useI18n();
 
 const options: SidebarOptions[] = [
-    { title: "Products", key: CurrentViewSelection.Product, icon: GiftIcon },
-    { title: "Orders", key: CurrentViewSelection.Order, icon: ShoppingBagIcon },
-    { title: "Settings", key: CurrentViewSelection.Setting, icon: Cog6ToothIcon }
+    { title: "sidebar.product", key: CurrentViewSelection.Product, icon: GiftIcon },
+    { title: "sidebar.order", key: CurrentViewSelection.Order, icon: ShoppingBagIcon },
+    { title: "sidebar.settings", key: CurrentViewSelection.Setting, icon: TablerSettingsIcon }
 ];
 
 const selectOption = (key: CurrentViewSelection) => emit('select', key);
 //#region lifecycle hooks
 onActivated(() => { });
 onUpdated(() => { });
-onMounted(() => { });
+onMounted(() => {
+    const savedLang = localStorage.getItem('lang');
+    if (savedLang) locale.value = savedLang;
+});
 onUnmounted(() => { })
 //#endregion
 </script>
@@ -36,10 +45,10 @@ onUnmounted(() => { })
                w-72 sm:w-80 md:w-96">
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="font-semibold text-sm sm:text-xl">საჩუქრების ზარდახშა</h2>
+                    <h2 class="font-semibold text-sm sm:text-xl">{{ $t('app.title') }}</h2>
                     <button @click="$emit('close')"
                         class="w-8 h-8 rounded-md flex items-center justify-center text-text hover:text-primary transition-colors">
-                        <XCircleIcon class="w-4 h-4" />
+                        <IconParkCloseIcon class="w-6 h-6" />
                     </button>
                 </div>
 
@@ -48,9 +57,12 @@ onUnmounted(() => { })
                     <button v-for="opt in options" :key="opt.key" @click="selectOption(opt.key)"
                         class="w-full text-left flex items-center sm:justify-start gap-3 px-3 py-3 rounded-md hover:bg-subtle cursor-pointer transition-colors">
                         <component :is="opt.icon" class="w-6 h-6" />
-                        <span class="text-base sm:text-sm font-medium">{{ opt.title }}</span>
+                        <span class="text-base sm:text-sm font-medium">{{ $t(opt.title) }}</span>
                     </button>
                 </nav>
+
+                <!-- Language chooser -->
+                <LanguageComponent />
             </aside>
         </transition>
     </div>

@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, onActivated, onUnmounted, onUpdated, watch, toValue, inject, type Ref } from 'vue';
-import { Bars3Icon, MagnifyingGlassIcon, SunIcon, MoonIcon, AdjustmentsHorizontalIcon, BoltIcon, PlusIcon } from '@heroicons/vue/24/outline';
 import type { Product, ThemeDropdown, UserInfo } from '../../types';
 import { getProducts } from '../../mock.data';
 import { userInfoInjectionKey } from '../../injectionKeys';
+import TablerMenuIcon from '../freestyle/TablerMenuIcon.vue';
+import TablerPlusIcon from '../freestyle/TablerPlusIcon.vue';
+import TablerSearchIcon from '../freestyle/TablerSearchIcon.vue';
+import TablerMoonIcon from '../freestyle/TablerMoonIcon.vue';
+import TablerSunIcon from '../freestyle/TablerSunIcon.vue';
+import TablerContrastIcon from '../freestyle/TablerContrastIcon.vue';
+import TablerCometIcon from '../freestyle/TablerCometIcon.vue';
 
 const emit = defineEmits<{
   (e: 'menu-toggle'): void;
@@ -14,10 +20,10 @@ const emit = defineEmits<{
 }>();
 
 const themes: ThemeDropdown[] = [
-  { name: 'light', label: 'Light', icon: SunIcon },
-  { name: 'dark', label: 'Dark', icon: MoonIcon },
-  { name: 'solarized', label: 'Solarized', icon: AdjustmentsHorizontalIcon },
-  { name: 'highcontrast', label: 'High Contrast', icon: BoltIcon },
+  { name: 'light', label: 'Light', icon: TablerSunIcon },
+  { name: 'dark', label: 'Dark', icon: TablerMoonIcon },
+  { name: 'solarized', label: 'Solarized', icon: TablerCometIcon },
+  { name: 'highcontrast', label: 'High Contrast', icon: TablerContrastIcon },
 ];
 
 const query = ref('');
@@ -45,7 +51,7 @@ const filteredProducts = computed(() => toValue(products));
 
 const currentThemeIcon = computed(() => {
   const t = themes.find((t) => t.name === currentTheme.value);
-  return t ? t.icon : SunIcon;
+  return t ? t.icon : TablerSunIcon;
 });
 
 const toggleDropdown = (val: boolean | null = null) => {
@@ -109,14 +115,14 @@ onUnmounted(() => { })
         <button @click="onMenu"
           class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
           aria-label="Toggle menu">
-          <Bars3Icon class="w-6 h-6 text-text" />
+          <TablerMenuIcon class="w-6 h-6 " />
         </button>
 
         <!-- Upload -->
         <button v-if="userInfo?.can_upload" @click="emit('upload')"
           class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
           aria-label="Upload product">
-          <PlusIcon class="w-6 h-6 text-text" />
+          <TablerPlusIcon class="w-6 h-6" />
         </button>
       </div>
 
@@ -124,11 +130,12 @@ onUnmounted(() => { })
       <div class="flex-1 max-w-full flex justify-center">
         <div class="w-full max-w-2xl relative">
           <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-            <MagnifyingGlassIcon class="w-5 h-5 text-text/60" />
+            <TablerSearchIcon class="w-5 h-5" />
           </span>
 
           <input id="nv1" v-model="query" ref="searchInput" @input="onInput" @keyup.enter="onEnter"
-            @focus="searchPreviewOpen = true" @blur="closeSearchPreviewLater" type="search" placeholder="Search..."
+            @focus="searchPreviewOpen = true" @blur="closeSearchPreviewLater" type="search"
+            :placeholder="$t('nav.search')"
             class="w-full pl-10 pr-4 py-1 md:py-2 rounded-full border border-gray-300/40 bg-surface text-text shadow-sm focus:outline-none focus:ring-1 focus:ring-primary transition-colors duration-300 text-base md:text-sm"
             aria-label="Search" />
 
@@ -178,7 +185,6 @@ onUnmounted(() => { })
           </div>
         </transition>
       </div>
-
     </div>
   </nav>
 </template>

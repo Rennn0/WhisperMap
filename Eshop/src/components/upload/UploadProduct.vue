@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { PaperAirplaneIcon } from '@heroicons/vue/24/outline';
 import { computed, ref } from 'vue';
 import { type UploadProps } from '../../types';
 import { uploadProductFile } from '../../services/content.service';
+import TablerLoaderBlockWave from '../freestyle/TablerLoaderBlockWave.vue';
+import TablerUploadIcon from '../freestyle/TablerUploadIcon.vue';
 
 const props = defineProps<{ upload: UploadProps }>();
 const emit = defineEmits<{ (e: 'attachments-uploaded', files: File[]): void }>();
@@ -36,26 +37,24 @@ const uploadFiles = async () => {
 </script>
 
 <template>
-    <div class="p-4 rounded-lg border border-gray-300/40 bg-subtle shadow-sm space-y-4">
+    <div class="p-4 rounded-lg bg-subtle border shadow-sm">
         <h3 class="font-semibold text-sm">
-            Product: {{ props.upload.product.title }}
+            {{ props.upload.product.title }}
         </h3>
 
-        <div v-if="selectedFiles.length" class="text-xs text-gray-600">
-            Selected files:
+        <div v-if="selectedFiles.length" class="text-xs text-text">
+            {{ $t('upload.inputs.chosen') }}
             <ul>
-                <li v-for="file in selectedFiles" :key="file.name">{{ file.name }}</li>
+                <li v-for="file in selectedFiles" :key="file.name" class="mt-1 mb-1">{{ file.name }}</li>
             </ul>
         </div>
 
         <button
-            class="flex items-center gap-2 px-4 py-2 border-2 border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex items-center gap-2 mt-2 px-4 py-2 border border-text text-text rounded-lg hover:text-subtle hover:bg-text transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             @click="uploadFiles" :disabled="uploading">
-            <PaperAirplaneIcon v-if="!uploading" class="w-5 h-5 transition-transform duration-300" />
-            <div v-else class="w-5 h-5 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <span>
-                {{ uploading ? `Uploading ${uploadProgress}%` : 'Upload' }}
-            </span>
+            <TablerUploadIcon v-if="!uploading" class="w-5 h-5" />
+            <TablerLoaderBlockWave v-else class="w-5 h-5" />
+            <span>{{ uploading ? `${uploadProgress}%` : $t('upload.inputs.upload') }}</span>
         </button>
     </div>
 </template>

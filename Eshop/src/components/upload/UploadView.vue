@@ -52,7 +52,7 @@ const onAttachmentsUploaded = () => router.push({ name: "root" }).then(() => {
 
         <CreateProduct v-if="!submited" @submit-product="handleProductSubmit" />
 
-        <div v-else class="p-4 rounded-lg border border-gray-300/40 bg-subtle shadow-sm">
+        <div v-else class="p-4 rounded-lg border bg-subtle shadow-sm">
             <p class="text-text/80 text-sm">{{ uploadProps.product.title.slice(0, 16) }} — {{ uploadProps.product.price
             }}$</p>
             <p class="text-text/60 text-xs mt-1">{{ uploadProps.product.description.slice(0, 16) }}</p>

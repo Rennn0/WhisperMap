@@ -9,9 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@heroicons/vue": "^2.2.0",
     "@vercel/edge-config": "^1.4.3",
     "vue": "^3.5.22",
+    "vue-i18n": "^11.1.12",
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
