@@ -40,33 +40,14 @@ export const uploadProductFile = async (productId: number, file: File): Promise<
         }
     );
 
-    if (!signedUrlResponse.ok) {
-        const err = `Failed to get signed URL: ${signedUrlResponse.statusText}`
-        alert(err)
-        console.error(err);
-        return null;
-    }
-
     const { url } = await signedUrlResponse.json();
-    if (!url) {
-        alert('Invalid signed URL response');
-        console.error('Invalid signed URL response');
-        return null;
-    }
+    alert(`got url ${url}`)
 
     const putResponse = await fetch(url, {
         method: 'PUT',
-        body: file,
-        headers: {
-            'Content-Type': 'application/octet-stream',
-        },
+        body: new Blob([file]),
     });
-
-    if (!putResponse.ok) {
-        const e = `Upload failed for ${file.name}: ${putResponse.statusText}`;
-        alert(e);
-        return null;
-    }
+    alert("fetched")
 
     const publicUrl = url.split('?')[0];
 
