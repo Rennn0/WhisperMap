@@ -30,7 +30,6 @@ watchEffect(() => {
 const handleProductSubmit = (data: { title: string; price: number; description: string }) => {
     uploadProps.product = data;
     uploadProduct(uploadProps.product).then(res => {
-        console.log(res);
         if (!res?.product_id) return;
 
         uploadProps.id = res.product_id;
@@ -42,7 +41,9 @@ const handleAttachmentsSelected = (files: File[]) => {
     uploadProps.existingFiles = [...files]
 };
 
-const onAttachmentsUploaded = () => router.push({ name: "root" });
+const onAttachmentsUploaded = () => router.push({ name: "root" }).then(() => {
+    window.location.reload();
+});;
 
 </script>
 

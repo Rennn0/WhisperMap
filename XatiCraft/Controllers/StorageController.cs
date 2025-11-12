@@ -11,9 +11,9 @@ namespace XatiCraft.Controllers;
 [ApiController]
 [Route("product/{productId:long}/storage")]
 [EnableRateLimiting("policy_session")]
-[IpSessionGuard]
-[IpAddressGuard]
-[ApiKeyGuard]
+// [IpSessionGuard]
+// [IpAddressGuard]
+// [ApiKeyGuard]
 public class StorageController : ControllerBase
 {
     /// <summary>
@@ -33,5 +33,19 @@ public class StorageController : ControllerBase
     {
         await using Stream stream = file.OpenReadStream();
         return await handler.HandleAsync(new UploadProductFileContext(productId, stream, file.FileName), cancellation);
+    }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="handler"></param>
+    /// <param name="productId"></param>
+    /// <param name="fileName"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    public async Task<ApiContract> GetSignedUrl([FromServices] IUploadProductFileHandler handler,
+        [FromRoute] long productId, string fileName, CancellationToken cancellationToken)
+    {
+        return await handler.HandleAsync(new GetSignedUrlContext(productId, fileName), cancellationToken);
     }
 }

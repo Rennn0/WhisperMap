@@ -30,16 +30,41 @@ export const uploadProduct = async (product: UploadableProduct): Promise<{ produ
     return data || null;
 };
 
-export const uploadProductFile = async (productId: number, file: File): Promise<{} | null> => {
-    const formData = new FormData();
-    formData.append("file", file);
+export const uploadProductFile = async (productId: number, file: File): Promise<{ url: string } | null> => {
+    const signedUrlResponse = await fetch(
+        `/api/getUrl?productId=${productId}&fileName=${encodeURIComponent(file.name)}`,
+        {
+            method: 'GET',
+            credentials: 'include',
+            headers
+        }
+    );
 
-    const response = await fetch(`/api/upload/${productId}`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
+    if (!signedUrlResponse.ok) {
+        console.error('Failed to get signed URL:', signedUrlResponse.statusText);
+        return null;
+    }
+
+    const { url } = await signedUrlResponse.json();
+    if (!url) {
+        console.error('Invalid signed URL response');
+        return null;
+    }
+
+    const putResponse = await fetch(url, {
+        method: 'PUT',
+        body: file,
+        headers: {
+            'Content-Type': file.type || 'application/octet-stream',
+        },
     });
 
-    const data = await response.json();
-    return data || null;
+    if (!putResponse.ok) {
+        console.error(`Upload failed for ${file.name}:`, putResponse.statusText);
+        return null;
+    }
+
+    const publicUrl = url.split('?')[0];
+
+    return { url: publicUrl };
 };

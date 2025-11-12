@@ -61,12 +61,8 @@ public class ClaudflareR2StorageService : IUploader, IReader
 
         string folder = Path.GetExtension(fileName).ToLowerInvariant() switch
         {
-            ".mp4" => "video",
-            ".mov" => "video",
-            ".mkv" => "video",
-            ".jpg" => "photo",
-            ".jpeg" => "photo",
-            ".png" => "photo",
+            ".mp4" or ".mov" or ".mkv" => "video",
+            ".jpg" or ".jpeg" or ".png" => "photo",
             _ => "misc"
         };
 
@@ -89,6 +85,31 @@ public class ClaudflareR2StorageService : IUploader, IReader
         string location = $"{_settings.PublicUrl}/{keyBuilder}";
         UploadResult uploadResult = new UploadResult(fileName, keyBuilder.ToString(), folder, location);
         return uploadResult;
+    }
+
+    /// <inheritdoc />
+    public async Task<SignedUrlUploadResult> GetSignedUrlAsync(string fileName, CancellationToken cancellation)
+    {
+        string folder = Path.GetExtension(fileName).ToLowerInvariant() switch
+        {
+            ".mp4" or ".mov" or ".mkv" => "video",
+            ".jpg" or ".jpeg" or ".png" => "photo",
+            _ => "misc"
+        };
+        StringBuilder keyBuilder = new StringBuilder();
+        keyBuilder.Append(folder);
+        keyBuilder.Append('/');
+        keyBuilder.Append(NormalizeFileName(fileName));
+        GetPreSignedUrlRequest request = new GetPreSignedUrlRequest
+        {
+            BucketName = _settings.Bucket,
+            Key = keyBuilder.ToString(),
+            Verb = HttpVerb.PUT,
+            Expires = DateTime.UtcNow.AddMinutes(5)
+        };
+        string signedUrl = await _s3Client.GetPreSignedURLAsync(request);
+        string location = $"{_settings.PublicUrl}/{keyBuilder}";
+        return new SignedUrlUploadResult(signedUrl, fileName, keyBuilder.ToString(), folder, location);
     }
 
     private static string NormalizeFileName(string fileName)

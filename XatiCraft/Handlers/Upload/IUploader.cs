@@ -11,4 +11,11 @@ public interface IUploader
     /// <param name="cancellation"></param>
     /// <returns></returns>
     Task<UploadResult> UploadFileAsync(Stream fileStream, string fileName, CancellationToken cancellation);
+
+    /// <summary>
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <param name="cancellation"></param>
+    /// <returns></returns>
+    Task<SignedUrlUploadResult> GetSignedUrlAsync(string fileName, CancellationToken cancellation);
 }

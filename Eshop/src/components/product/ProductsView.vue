@@ -21,6 +21,7 @@ const onSelect = (product: Product) => {
 //#region lifecycle hooks
 onUpdated(() => { });
 onMounted(() => {
+    console.log("MOUNT");
     getProducts().then(ps => productsRef.value = ps)
 });
 onUnmounted(() => { })

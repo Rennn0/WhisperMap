@@ -15,6 +15,7 @@ public class UploadProductFileHandler : IUploadProductFileHandler
     private readonly IProductRepo _productRepo;
     private readonly IUploader _uploader;
 
+
     /// <summary>
     /// </summary>
     /// <param name="uploader"></param>
@@ -27,23 +28,31 @@ public class UploadProductFileHandler : IUploadProductFileHandler
         _productRepo = productRepo;
     }
 
-    /// <summary>
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+
+    /// <inheritdoc />
     public async ValueTask<ApiContract> HandleAsync(UploadProductFileContext context,
         CancellationToken cancellationToken)
     {
         // if (context.Stream.Length > MaxFileSize) return new Error(ErrorCode.FileTooLarge);
         if (!await _productRepo.ExistsAsync(context.Product, cancellationToken))
             return new Error(ErrorCode.ArgumentMissmatchInDatabase, Hint: nameof(context.Product));
-
         UploadResult uploadResult =
             await _uploader.UploadFileAsync(context.Stream, context.FileName, cancellationToken);
         await _productMetadaRepo.InsertAsync(
             new ProductMetadata(uploadResult.OriginalFileName, uploadResult.Key, uploadResult.Location,
                 context.Product), cancellationToken);
         return new UploadProductFileContract { RequestId = context.RequestId };
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<ApiContract> HandleAsync(GetSignedUrlContext context, CancellationToken cancellationToken)
+    {
+        if (!await _productRepo.ExistsAsync(context.Product, cancellationToken))
+            return new Error(ErrorCode.ArgumentMissmatchInDatabase, Hint: nameof(context.Product));
+        SignedUrlUploadResult uploadResult = await _uploader.GetSignedUrlAsync(context.FileName, cancellationToken);
+        await _productMetadaRepo.InsertAsync(
+            new ProductMetadata(uploadResult.OriginalFileName, uploadResult.Key, uploadResult.Location,
+                context.Product), cancellationToken);
+        return new GetSignedUrlContract(uploadResult.SignedUrl);
     }
 }
