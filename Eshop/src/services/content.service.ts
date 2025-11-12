@@ -47,7 +47,7 @@ export const uploadProductFile = async (productId: number, file: File): Promise<
         method: 'PUT',
         body: new Blob([file]),
     });
-    alert("fetched")
+    alert(`fetched ${putResponse.status}`)
 
     const publicUrl = url.split('?')[0];
 
