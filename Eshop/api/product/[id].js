@@ -5,7 +5,8 @@ export const config = {
 
 export default async function handler(req) {
     const url = new URL(req.url);
-    const id = url.searchParams.get("id");
+    const pathname = url.pathname;
+    const id = pathname.split('/').pop();
 
     const headers = new Headers(req.headers);
     headers.set("x-api-key", apiKey);

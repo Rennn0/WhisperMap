@@ -16,11 +16,14 @@ export default async function handler(req) {
         headers
     });
 
-    if (apiResponse.ok)
-        apiResponse.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=20');
+    const responseHeaders = new Headers(apiResponse.headers);
+    if (apiResponse.ok) {
+        responseHeaders.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=20');
+    }
 
     return new Response(apiResponse.body, {
         status: apiResponse.status,
-        headers: apiResponse.headers,
+        statusText: apiResponse.statusText,
+        headers: responseHeaders,
     });
 }

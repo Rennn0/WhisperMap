@@ -49,8 +49,13 @@ const userInfo = inject<Readonly<Ref<UserInfo>>>(userInfoInjectionKey);
 const products = ref<Product[]>([]);
 
 const fetchProducts = debounce(async (q: string) => {
-  const ps = await getProducts(q);
-  products.value = ps?.slice(0, 10) || [];
+  try {
+    const ps = await getProducts(q);
+    products.value = ps?.slice(0, 10) || [];
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
+    products.value = [];
+  }
 }, 400);
 
 watch(query, async (newQuery) => {

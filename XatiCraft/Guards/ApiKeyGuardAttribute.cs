@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc;
 using XatiCraft.Settings;
 
 namespace XatiCraft.Guards;
@@ -16,9 +17,11 @@ public class ApiKeyGuardAttribute : AuthGuard
             serviceProvider.GetRequiredService<IOptionsSnapshot<ApiKeySettings>>();
         List<string> allowedList = settings.Value.AllowedKeys;
         string? apiKey = context.HttpContext.Request.Headers["x-api-key"];
-        if (!string.IsNullOrEmpty(apiKey) && allowedList.Contains(apiKey)) return;
 
-        context.HttpContext.Response.StatusCode = 401;
+        if (!string.IsNullOrEmpty(apiKey) && allowedList.Contains(apiKey))
+            return;
+
+        context.Result = new UnauthorizedResult();
     }
 
     /// <summary>
