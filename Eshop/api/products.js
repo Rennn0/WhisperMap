@@ -4,26 +4,23 @@ export const config = {
 };
 
 export default async function handler(req) {
-    const cookies = req.headers.get("cookie") || "";
-    const apiResponse = await fetch(`${backendUrl}/product`, {
-        method: 'GET',
-        headers: {
-            'content-type': 'application/json',
-            'x-api-key': apiKey,
-            ...(cookies ? { 'cookie': cookies } : {})
-        },
-        credentials: "include"
-    });
-    const bodyText = await apiResponse.text();
-    const headers = new Headers(apiResponse.headers);
-    // if (apiResponse.ok) {
-    //     headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=120');
-    // } else {
-    //     headers.set('Cache-Control', 'no-store');
-    // }
+    const url = new URL(req.url);
+    const query = url.searchParams.get("q") || "";
 
-    return new Response(bodyText, {
+    const headers = new Headers(req.headers);
+    headers.set("x-api-key", apiKey);
+
+    const apiUrl = `${backendUrl}/product?query=${encodeURIComponent(query)}`;
+    const apiResponse = await fetch(apiUrl, {
+        method: 'GET',
+        headers
+    });
+
+    if (apiResponse.ok)
+        apiResponse.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=20');
+
+    return new Response(apiResponse.body, {
         status: apiResponse.status,
-        headers,
+        headers: apiResponse.headers,
     });
 }

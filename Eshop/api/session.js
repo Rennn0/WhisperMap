@@ -1,27 +1,28 @@
-import { backendUrl } from "./variables.js"
+import { backendUrl, apiKey } from "./variables.js";
+
 export const config = {
-    runtime: 'nodejs',
+    runtime: "edge",
 };
 
-export default async function handler(req, res) {
-    const ip = req.headers['x-real-ip'] || req.headers['x-forwarded-for']?.split(',')[0].trim();
-    const apiResponse = await fetch(`${backendUrl}/session`, {
-        method: "GET",
-        headers: {
-            'x-public-ip': ip,
-            'content-type': 'application/json'
-        }
+export default async function handler(req) {
+    const ip =
+        req.headers.get("x-real-ip") ||
+        req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+        "";
+
+    const headers = new Headers({
+        "x-public-ip": ip,
+        "x-api-key": apiKey,
     });
-    const setCookies = apiResponse.headers.getSetCookie?.();
-    if (setCookies && setCookies.length > 0) {
-        res.setHeader('set-cookie', setCookies);
-    }
-    const bodyText = await apiResponse.text();
-    let data;
-    try {
-        data = JSON.parse(bodyText);
-    } catch (error) {
-        data = bodyText;
-    }
-    return res.status(apiResponse.status).send(data);
+
+    const apiUrl = `${backendUrl}/session`;
+    const apiResponse = await fetch(apiUrl, {
+        method: "GET",
+        headers,
+    });
+
+    return new Response(apiResponse.body, {
+        status: apiResponse.status,
+        headers: apiResponse.headers,
+    });
 }

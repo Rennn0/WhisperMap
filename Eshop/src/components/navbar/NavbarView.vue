@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, onActivated, onUnmounted, onUpdated, watch, toValue, inject, type Ref } from 'vue';
 import type { Product, ThemeDropdown, UserInfo } from '../../types';
-import { getProducts } from '../../mock.data';
 import { userInfoInjectionKey } from '../../injectionKeys';
 import TablerMenuIcon from '../freestyle/TablerMenuIcon.vue';
 import TablerPlusIcon from '../freestyle/TablerPlusIcon.vue';
@@ -10,6 +9,20 @@ import TablerMoonIcon from '../freestyle/TablerMoonIcon.vue';
 import TablerSunIcon from '../freestyle/TablerSunIcon.vue';
 import TablerContrastIcon from '../freestyle/TablerContrastIcon.vue';
 import TablerCometIcon from '../freestyle/TablerCometIcon.vue';
+import { getProducts } from '../../services/content.service';
+
+/** Lightweight debounce implementation to avoid requiring lodash.debounce and its types */
+function debounce<T extends (...args: any[]) => any>(fn: T, wait = 0) {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  return function (this: any, ...args: Parameters<T>) {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      timeout = null;
+      fn.apply(this, args);
+    }, wait);
+  };
+}
+
 
 const emit = defineEmits<{
   (e: 'menu-toggle'): void;
@@ -35,16 +48,15 @@ const userInfo = inject<Readonly<Ref<UserInfo>>>(userInfoInjectionKey);
 
 const products = ref<Product[]>([]);
 
+const fetchProducts = debounce(async (q: string) => {
+  const ps = await getProducts(q);
+  products.value = ps?.slice(0, 10) || [];
+}, 400);
+
 watch(query, async (newQuery) => {
   const q = newQuery.trim().toLowerCase();
-  const ps = await getProducts();
-
-  products.value = !q
-    ? ps.slice(0, 3)
-    : ps.filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      p.description.toLowerCase().includes(q)
-    ).slice(0, 5);
+  // if (q.length > 0)
+  fetchProducts(q);
 }, { immediate: true });
 
 const filteredProducts = computed(() => toValue(products));
@@ -126,43 +138,41 @@ onUnmounted(() => { })
         </button>
       </div>
 
-      <!-- Search (center, takes all free space) -->
-      <div class="flex-1 max-w-full flex justify-center">
-        <div class="w-full max-w-2xl relative">
-          <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+      <!-- Search (center) -->
+      <div class="flex-1 flex justify-center">
+        <div class="w-full max-w-2xl relative px-2 md:px-0">
+          <span class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
             <TablerSearchIcon class="w-5 h-5" />
           </span>
 
           <input id="nv1" v-model="query" ref="searchInput" @input="onInput" @keyup.enter="onEnter"
             @focus="searchPreviewOpen = true" @blur="closeSearchPreviewLater" type="search"
             :placeholder="$t('nav.search')"
-            class="w-full pl-10 pr-4 py-1 md:py-2 rounded-full border border-gray-300/40 bg-surface text-text shadow-sm focus:outline-none focus:ring-1 focus:ring-primary transition-colors duration-300 text-base md:text-sm"
-            aria-label="Search" />
+            class="w-full pl-10 pr-4 py-1 md:py-2 rounded-full border   bg-surface text-text outline-none md:text-sm" />
 
-          <transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0 translate-y-1"
-            enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100 ease-in"
-            leave-from-class="opacity-100" leave-to-class="opacity-0 translate-y-1">
-            <div v-if="searchPreviewOpen && filteredProducts.length" class="absolute mt-3 left-1/2 transform -translate-x-1/2
-         bg-surface border border-gray-300/40 shadow-xl rounded-2xl overflow-hidden z-50
-         max-h-[70vh] overflow-y-auto
-         w-[90vw] md:w-full md:max-w-2xl
-         p-2 md:p-0
-         ring-1 ring-primary/10">
-              <ul class="divide-y divide-gray-200/50">
-                <li v-for="p in filteredProducts" :key="p.id" @mousedown.prevent="onProductClick(p)"
-                  class="px-4 py-4 md:py-2 hover:bg-subtle cursor-pointer transition-colors duration-150 flex items-center gap-4 active:scale-[0.98]">
+          <!-- preview box -->
+          <div v-if="searchPreviewOpen && filteredProducts.length"
+            class="absolute left-0 right-0 mt-2 bg-surface border border-subtle shadow-lg rounded-xl z-50 overflow-y-auto max-h-[70vh] md:max-w-2xl mx-auto">
+            <ul>
+              <li v-for="p in filteredProducts" :key="p.id" @mousedown.prevent="onProductClick(p)"
+                class="flex items-center justify-between gap-4 px-4 py-3 hover:bg-subtle cursor-pointer">
+                <div class="flex items-center gap-4 min-w-0">
                   <img :src="p.preview_img || '/placeholder.png'"
-                    class="w-16 h-16 md:w-10 md:h-10 rounded-lg object-cover flex-shrink-0" alt="Product image" />
-                  <div class="flex flex-col">
-                    <span class="text-base md:text-sm font-semibold text-text">{{ p.title }}</span>
-                    <span class="text-sm md:text-xs text-text/70 truncate">{{ p.description }}</span>
+                    class="w-14 h-14 rounded-lg object-cover flex-shrink-0" alt="Product image" />
+                  <div class="flex flex-col overflow-hidden">
+                    <span class="font-semibold text-text">{{ p.title }}</span>
+                    <span class="text-sm text-text/70 truncate">{{ p.description }}</span>
                   </div>
-                </li>
-              </ul>
-            </div>
-          </transition>
+                </div>
+                <span class="text-sm font-semibold text-text whitespace-nowrap ml-2">
+                  {{ p.price ? '$' + p.price.toFixed(2) : '' }}
+                </span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
+
 
       <!-- Right side buttons -->
       <div class="relative flex items-center">

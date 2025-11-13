@@ -1,22 +1,21 @@
-import { backendUrl } from "./variables.js"
+import { backendUrl, apiKey } from "./variables.js"
 export const config = {
     runtime: 'edge',
 };
 
 export default async function handler(req) {
-    const cookies = req.headers.get("cookie") || "";
-    const apiResponse = await fetch(`${backendUrl}/session/me`, {
+    const headers = new Headers(req.headers);
+    headers.set("x-api-key", apiKey);
+
+    const apiUrl = `${backendUrl}/session/me`;
+    const apiResponse = await fetch(apiUrl, {
         method: 'GET',
-        headers: {
-            'content-type': 'application/json',
-            ...(cookies ? { 'cookie': cookies } : {})
-        },
+        headers,
         credentials: "include"
     });
-    const bodyText = await apiResponse.text();
-    const headers = new Headers(apiResponse.headers);
-    return new Response(bodyText, {
+
+    return new Response(apiResponse.body, {
         status: apiResponse.status,
-        headers,
+        headers: apiResponse.headers,
     });
 }

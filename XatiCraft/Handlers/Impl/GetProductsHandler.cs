@@ -30,12 +30,21 @@ public class GetProductsHandler : IGetProductsHandler
     public async ValueTask<ApiContract> HandleAsync(GetProductsContext context, CancellationToken cancellationToken)
     {
         List<Product> products = await _productRepo.SelectProductsAsync(cancellationToken);
+        if (!string.IsNullOrWhiteSpace(context.Query))
+            products = products
+                .Where(p =>
+                        p.Title.Contains(context.Query, StringComparison.InvariantCultureIgnoreCase) ||
+                        p.Description.Contains(context.Query, StringComparison.InvariantCultureIgnoreCase) ||
+                        (decimal.TryParse(context.Query, out decimal price) &&
+                         Math.Abs(p.Price - price) <= 5) //#NOTE can be customized
+                )
+                .ToList();
         GetProductsContract contract = new GetProductsContract(products.Select(p =>
             new Product(EraseIfLarger(p.Title, MaxLenTitle), EraseIfLarger(p.Description, MaxLenDesc), p.Price)
             {
                 Id = p.Id,
                 PreviewImg = p.ProductMetadata?.Where(pm => !string.IsNullOrEmpty(pm.Location)).MinBy(pm => pm.Id)
-                    ?.Location
+                    ?.Location //#NOTE maybe add order priority?
             }
         ))
         {

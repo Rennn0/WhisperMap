@@ -10,6 +10,7 @@ namespace XatiCraft.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
+[ApiKeyGuard]
 public class SessionController : ControllerBase
 {
     private readonly ILogger<SessionController> _logger;
@@ -47,7 +48,7 @@ public class SessionController : ControllerBase
             IsEssential = true
         };
         HttpContext.Response.Cookies.Append("session", protectedData, cookieOptions);
-        return NoContent();
+        return Ok();
     }
 
     /// <summary>

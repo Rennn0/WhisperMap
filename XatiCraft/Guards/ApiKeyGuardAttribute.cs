@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
 using XatiCraft.Settings;
 
@@ -7,6 +8,19 @@ namespace XatiCraft.Guards;
 /// </summary>
 public class ApiKeyGuardAttribute : AuthGuard
 {
+    /// <inheritdoc />
+    public override void OnAuthorization(AuthorizationFilterContext context)
+    {
+        IServiceProvider serviceProvider = context.HttpContext.RequestServices;
+        IOptionsSnapshot<ApiKeySettings> settings =
+            serviceProvider.GetRequiredService<IOptionsSnapshot<ApiKeySettings>>();
+        List<string> allowedList = settings.Value.AllowedKeys;
+        string? apiKey = context.HttpContext.Request.Headers["x-api-key"];
+        if (!string.IsNullOrEmpty(apiKey) && allowedList.Contains(apiKey)) return;
+
+        context.HttpContext.Response.StatusCode = 401;
+    }
+
     /// <summary>
     /// </summary>
     /// <param name="sessionData"></param>
@@ -16,10 +30,6 @@ public class ApiKeyGuardAttribute : AuthGuard
     protected override bool Validate(SessionData sessionData, IServiceProvider serviceProvider,
         Func<string, string?> fromHeader)
     {
-        IOptionsSnapshot<ApiKeySettings> settings =
-            serviceProvider.GetRequiredService<IOptionsSnapshot<ApiKeySettings>>();
-        List<string> allowedList = settings.Value.AllowedKeys;
-        string? apiKey = fromHeader("x-api-key");
-        return !string.IsNullOrEmpty(apiKey) && allowedList.Contains(apiKey);
+        throw new NotImplementedException();
     }
 }

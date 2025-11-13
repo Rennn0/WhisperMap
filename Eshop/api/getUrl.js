@@ -11,17 +11,18 @@ export default async function handler(req) {
 
     const headers = new Headers(req.headers);
     headers.set("x-api-key", apiKey);
-    const res = await fetch(
-        `${backendUrl}/product/${productId}/storage?fileName=${encodeURIComponent(fileName)}`,
+
+    const apiUrl = `${backendUrl}/product/${productId}/storage?fileName=${encodeURIComponent(fileName)}`;
+    const apiResponse = await fetch(
+        apiUrl,
         {
             method: "GET",
             headers
         }
     );
 
-    const data = await res.json();
-    return new Response(JSON.stringify(data), {
-        status: res.status,
-        headers: { "content-type": "application/json" },
+    return new Response(apiResponse.body, {
+        status: apiResponse.status,
+        headers: apiResponse.headers,
     });
 }

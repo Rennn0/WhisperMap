@@ -4,8 +4,14 @@ import type { UploadableProduct } from "../types";
 const headers = new Headers();
 headers.set("content-type", "application/json");
 
-export const getProducts = async (): Promise<Product[] | null> => {
-    const response = await fetch(`/api/products`, { method: "GET", credentials: "include" });
+export const getProducts = async (query?: string | null): Promise<Product[] | null> => {
+    var url;
+    if (query) {
+        url = `/api/products?q=${encodeURIComponent(query)}`
+    } else {
+        url = `/api/products`
+    }
+    const response = await fetch(url, { method: "GET", credentials: "include" });
     const data = await response.json();
     return data.products || null;
 }

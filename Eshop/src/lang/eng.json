@@ -18,17 +18,20 @@
             "create": "Create",
             "upload": "Upload",
             "chooseFile": "Choose photo/video material",
-            "chosen":"Selected files:"
+            "chosen": "Selected files:"
         }
     },
     "app": {
-        "title": "Gift Box",
+        "title": "საჩუქრების ზარდახშა",
         "back": "Back",
-        "wait":"Please Wait"
+        "wait": "Please Wait"
     },
     "product": {
         "price": "Price",
-        "add":"Add",
-        "contact":"Contact"
+        "add": "Add",
+        "contact": "Contact",
+        "email": "Email address",
+        "phone": "Phone number",
+        "info": "Contact info"
     }
 }

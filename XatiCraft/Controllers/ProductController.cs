@@ -12,6 +12,7 @@ namespace XatiCraft.Controllers;
 [ApiController]
 [Route("product")]
 [IpSessionGuard]
+[ApiKeyGuard]
 public class ProductController : ControllerBase
 {
     /// <summary>
@@ -34,13 +35,14 @@ public class ProductController : ControllerBase
     /// <summary>
     /// </summary>
     /// <param name="handler"></param>
+    /// <param name="query"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet]
-    public async Task<ApiContract> GetProducts([FromServices] IGetProductsHandler handler,
+    public async Task<ApiContract> GetProducts([FromServices] IGetProductsHandler handler, string? query,
         CancellationToken cancellationToken)
     {
-        return await handler.HandleAsync(new GetProductsContext(), cancellationToken);
+        return await handler.HandleAsync(new GetProductsContext(query), cancellationToken);
     }
 
     /// <summary>

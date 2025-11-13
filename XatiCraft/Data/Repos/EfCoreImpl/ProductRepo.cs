@@ -4,14 +4,14 @@ using XatiCraft.Objects;
 
 namespace XatiCraft.Data.Repos.EfCoreImpl;
 
-/// <summary>
-/// </summary>
+/// <inheritdoc />
 public class ProductRepo : IProductRepo
 {
     private readonly ApplicationContext _context;
     private readonly JsonSerializerOptions _serializerOptions;
 
     /// <summary>
+    ///     implementation using Npgsql.EntityFrameworkCore.PostgreSQL Version=8.0.0
     /// </summary>
     /// <param name="context"></param>
     public ProductRepo(ApplicationContext context)
@@ -24,10 +24,7 @@ public class ProductRepo : IProductRepo
         };
     }
 
-    /// <summary>
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <inheritdoc />
     public async Task<List<Product>> SelectProductsAsync(CancellationToken cancellationToken)
     {
         List<Product> result = await _context.VProducts.AsNoTracking()
@@ -44,11 +41,7 @@ public class ProductRepo : IProductRepo
         return result;
     }
 
-    /// <summary>
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <inheritdoc />
     public async Task<Product?> SelectProductAsync(long id, CancellationToken cancellationToken)
     {
         Product? result = await _context.VProducts.AsNoTracking()
@@ -66,11 +59,7 @@ public class ProductRepo : IProductRepo
         return result;
     }
 
-    /// <summary>
-    /// </summary>
-    /// <param name="product"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <inheritdoc />
     public async Task<Product> InsertAsync(Product product, CancellationToken cancellationToken)
     {
         Model.Product mp = new Model.Product
@@ -86,11 +75,7 @@ public class ProductRepo : IProductRepo
         return product;
     }
 
-    /// <summary>
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <inheritdoc />
     public async Task<bool> ExistsAsync(long id, CancellationToken cancellationToken)
     {
         return await _context.Products.AsNoTracking().AnyAsync(p => p.Id == id, cancellationToken);

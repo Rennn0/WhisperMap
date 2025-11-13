@@ -5,13 +5,11 @@ export const config = {
 };
 
 export default async function handler(req) {
-    const cookies = req.headers.get("cookie") || "";
-    const url = new URL(req.url);
-    const productId = url.pathname.split("/").pop();
-
     const headers = new Headers(req.headers);
     headers.set("x-api-key", apiKey);
-    const apiResponse = await fetch(`${backendUrl}/product`, {
+
+    const apiUrl=`${backendUrl}/product`;
+    const apiResponse = await fetch(apiUrl, {
         method: "POST",
         headers,
         body: req.body,

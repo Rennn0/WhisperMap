@@ -2,4 +2,4 @@ namespace XatiCraft.ApiContracts;
 
 /// <summary>
 /// </summary>
-public record GetProductsContext : ApiContract;
+public record GetProductsContext(string? Query = null) : ApiContract;

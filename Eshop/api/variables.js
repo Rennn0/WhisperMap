@@ -1,8 +1,9 @@
-const backendUrl = process.env.BACKEND_URL;
-const apiKey = process.env.CLIENT_API_KEY;
-// const backendUrl = 'http://localhost:5158';
-// const apiKey = 'dev';
-export {
-    backendUrl,
-    apiKey
-}
+const isDev = process.env.XC_ENV === 'local';
+
+export const backendUrl = isDev
+    ? 'http://localhost:5158'
+    : process.env.BACKEND_URL;
+
+export const apiKey = isDev
+    ? 'dev'
+    : process.env.CLIENT_API_KEY;

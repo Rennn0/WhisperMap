@@ -5,10 +5,19 @@ import { getProduct } from '../../services/content.service';
 import { useRouter } from 'vue-router';
 import SkeletonProductDetail from '../skeletons/SkeletonProductDetail.vue';
 import TablerLeftIcon from '../freestyle/TablerLeftIcon.vue';
+import TablerAddToCartIcon from '../freestyle/TablerAddToCartIcon.vue';
+import TablerPhoneCallIcon from '../freestyle/TablerPhoneCallIcon.vue';
+import IconParkCloseIcon from '../freestyle/IconParkCloseIcon.vue';
 
 const router = useRouter();
 const props = defineProps<{ id: string }>();
 const productRef = ref<Product | null>(null);
+const showContactModal = ref(false);
+const contactInfo = {
+    email: "lukadanelia056@gmail.com",
+    phone: "+995 599 288 177"
+}
+
 watchEffect(async () => {
     productRef.value = null;
     getProduct(props.id).then(p => productRef.value = p?.id ? p : null)
@@ -57,6 +66,10 @@ const toggleDescription = () => {
     showFullDescription.value = !showFullDescription.value;
 };
 
+const contactClicked = () => showContactModal.value = true;
+const addClicked = () => { };
+const closeContactModal = () => showContactModal.value = false;
+
 //#region lifecycle hooks
 onActivated(() => { });
 onUpdated(() => { });
@@ -96,7 +109,7 @@ onUnmounted(() => { })
                     <button v-for="(m, i) in mediaList" :key="m.src + i" @click="selectMedia(i)"
                         :aria-pressed="selectedIndex === i"
                         class="relative rounded-md overflow-hidden border transition-transform duration-150"
-                        :class="selectedIndex === i ? 'ring-2 ring-primary' : 'hover:scale-[1.01] border-transparent'">
+                        :class="selectedIndex === i ? 'ring ring-primary' : 'hover:scale-[1.01] border-transparent'">
                         <template v-if="m.type === 'image'">
                             <img :src="m.src" :alt="m.alt ?? 'thumb'" class="w-full h-20 object-cover" />
                         </template>
@@ -135,20 +148,55 @@ onUnmounted(() => { })
                 </div>
 
                 <div class="flex gap-2">
-                    <button class="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:opacity-95 transition">
-                        <span>{{ $t('product.add') }}</span>
-                    </button>
-                    <button class="flex-1 px-4 py-2 border rounded-md hover:bg-subtle transition">
+                    <button
+                        class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-subtle text-text rounded-md hover:shadow-sm hover:shadow-primary"
+                        @click="contactClicked">
+                        <TablerPhoneCallIcon class="w-5 h-5" />
                         <span>{{ $t('product.contact') }}</span>
+                    </button>
+
+                    <button
+                        class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md  hover:shadow-sm hover:shadow-primary"
+                        @click="addClicked">
+                        <TablerAddToCartIcon class="w-5 h-5" />
+                        <span>{{ $t('product.add') }}</span>
                     </button>
                 </div>
             </div>
         </div>
+        <transition name="fade">
+            <div v-if="showContactModal" class="fixed inset-0 flex items-center justify-center backdrop-blur-md z-50"
+                @click.self="closeContactModal">
+                <div class="bg-surface rounded-lg shadow-lg w-11/12 max-w-sm p-6 relative border border-subtle">
+                    <button @click="closeContactModal"
+                        class="absolute top-2 right-2 text-text hover:text-primary transition">
+                        <IconParkCloseIcon class="w-5 h-5" />
+                    </button>
+                    <h2 class="text-lg font-semibold mb-4 text-center">{{ $t('product.info') }}</h2>
+                    <div class="space-y-3 text-center">
+                        <p><span class="font-medium">{{ $t('product.email') }}:</span> {{ contactInfo.email ?? 'N/A' }}
+                        </p>
+                        <p><span class="font-medium">{{ $t('product.phone') }}:</span> {{ contactInfo.phone ?? 'N/A' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </transition>
     </div>
     <SkeletonProductDetail v-else />
 </template>
 
 <style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
 ::-webkit-scrollbar {
     width: 6px;
 }

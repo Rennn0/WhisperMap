@@ -11,9 +11,9 @@ namespace XatiCraft.Controllers;
 [ApiController]
 [Route("product/{productId:long}/storage")]
 [EnableRateLimiting("policy_session")]
-// [IpSessionGuard]
-// [IpAddressGuard]
-// [ApiKeyGuard]
+[IpSessionGuard]
+[IpAddressGuard]
+[ApiKeyGuard]
 public class StorageController : ControllerBase
 {
     /// <summary>
@@ -24,7 +24,6 @@ public class StorageController : ControllerBase
     /// <param name="cancellation"></param>
     /// <returns></returns>
     [HttpPost]
-    [ActionMonitor]
     public async Task<ApiContract> UploadProductFile(
         [FromServices] IUploadProductFileHandler handler,
         [FromRoute] long productId,
