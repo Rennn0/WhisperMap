@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onActivated, onUnmounted, onUpdated, watchEffect } from 'vue';
+import { ref, computed, onMounted, onActivated, onUnmounted, onUpdated, watchEffect, watch } from 'vue';
 import type { MediaItem, Product } from '../../types';
 import { getProduct } from '../../services/content.service';
 import { useRouter } from 'vue-router';
@@ -17,7 +17,12 @@ const contactInfo = {
     email: "lukadanelia056@gmail.com",
     phone: "+995 599 288 177"
 }
-
+watch(showContactModal, (visible) => {
+    if (visible)
+        document.body.style.overflow = 'hidden';
+    else
+        document.body.style.overflow = '';
+});
 watchEffect(async () => {
     productRef.value = null;
     getProduct(props.id).then(p => productRef.value = p?.id ? p : null)
