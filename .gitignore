@@ -1,5 +1,5 @@
 .vercel
 .env*.local
-appsettings.Development.json
+appsettings.json
 obj
 bin

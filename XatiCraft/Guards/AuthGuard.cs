@@ -13,11 +13,14 @@ namespace XatiCraft.Guards;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public abstract class AuthGuard : Attribute, IAuthorizationFilter
 {
+    private ILogger<AuthGuard> _logger;
+
     /// <summary>
     /// </summary>
     /// <param name="context"></param>
     public virtual void OnAuthorization(AuthorizationFilterContext context)
     {
+        _logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<AuthGuard>>();
         if (!TryGetSessionData(context.HttpContext, out SessionData? protectedSession) || protectedSession is null)
         {
             context.Result = new StatusCodeResult(StatusCodes.Status401Unauthorized);
@@ -45,7 +48,11 @@ public abstract class AuthGuard : Attribute, IAuthorizationFilter
     {
         sessionData = null;
         if (!context.Request.Cookies.TryGetValue("session", out string? protectedSession))
+        {
+            _logger.LogWarning("no session cookie");
             return false;
+        }
+
         try
         {
             IDataProtectionProvider protectionProvider =

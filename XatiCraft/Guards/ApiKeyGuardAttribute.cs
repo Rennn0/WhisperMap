@@ -1,6 +1,6 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Mvc;
 using XatiCraft.Settings;
 
 namespace XatiCraft.Guards;
@@ -15,12 +15,13 @@ public class ApiKeyGuardAttribute : AuthGuard
         IServiceProvider serviceProvider = context.HttpContext.RequestServices;
         IOptionsSnapshot<ApiKeySettings> settings =
             serviceProvider.GetRequiredService<IOptionsSnapshot<ApiKeySettings>>();
+        ILogger<ApiKeyGuardAttribute> logger = serviceProvider.GetRequiredService<ILogger<ApiKeyGuardAttribute>>();
         List<string> allowedList = settings.Value.AllowedKeys;
         string? apiKey = context.HttpContext.Request.Headers["x-api-key"];
 
-        if (!string.IsNullOrEmpty(apiKey) && allowedList.Contains(apiKey))
-            return;
+        if (!string.IsNullOrEmpty(apiKey) && allowedList.Contains(apiKey)) return;
 
+        logger.LogWarning("bad api key {apiKey}", apiKey);
         context.Result = new UnauthorizedResult();
     }
 

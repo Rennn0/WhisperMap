@@ -1,6 +1,8 @@
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using XatiCraft.Data;
@@ -26,6 +28,7 @@ public static class Program
     public static void Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+        // builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(8080); });
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -39,6 +42,14 @@ public static class Program
         builder.Services.Configure<IpRestrictionSettings>(
             builder.Configuration.GetSection(nameof(IpRestrictionSettings)));
         builder.Services.Configure<ApiKeySettings>(builder.Configuration.GetSection(nameof(ApiKeySettings)));
+
+        builder.Services.AddDataProtection()
+            .PersistKeysToFileSystem(new DirectoryInfo(
+                Environment.GetEnvironmentVariable("CERT_DIR") ?? throw new InvalidOperationException()))
+            .ProtectKeysWithCertificate(new X509Certificate2(
+                Environment.GetEnvironmentVariable("CERT_PATH") ?? throw new InvalidOperationException(),
+                Environment.GetEnvironmentVariable("CERT_PASS") ?? throw new InvalidOperationException()))
+            .SetApplicationName("XatiCraft");
 
         builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
         {
