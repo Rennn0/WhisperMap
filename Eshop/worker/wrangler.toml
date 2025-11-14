@@ -2,11 +2,16 @@ name = "xati-proxy"
 main = "src/worker.js"
 compatibility_date = "2025-11-14"
 account_id = "1b65cfce51e69bd0e110399aa03e30ed"
-
-[vars]
-XC_BACKEND_URL = ""
-API_KEY = ""
+workers_dev = true
+preview_urls = true
 
 [[routes]]
-pattern = "xati.org/api/*"
+pattern = "www.xati.org/cl/*"
 zone_id = "18f87b5864e58d78b947dedfd20ce3c6"
+
+[observability]
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
