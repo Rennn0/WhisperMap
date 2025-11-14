@@ -27,13 +27,18 @@ watchEffect(() => {
     if (!canUpload.value) router.push({ name: "root" });
 });
 
+let waitingForSubmit = false;
 const handleProductSubmit = (data: { title: string; price: number; description: string }) => {
+    if (waitingForSubmit) return;
+
+    waitingForSubmit = true;
     uploadProps.product = data;
     uploadProduct(uploadProps.product).then(res => {
         if (!res?.product_id) return;
 
         uploadProps.id = res.product_id;
         submited.value = true;
+        waitingForSubmit = false;
     })
 };
 
@@ -54,7 +59,7 @@ const onAttachmentsUploaded = () => router.push({ name: "root" }).then(() => {
 
         <div v-else class="p-4 rounded-lg border bg-subtle shadow-sm">
             <p class="text-text/80 text-sm">{{ uploadProps.product.title.slice(0, 16) }} — {{ uploadProps.product.price
-            }}$</p>
+                }}$</p>
             <p class="text-text/60 text-xs mt-1">{{ uploadProps.product.description.slice(0, 16) }}</p>
         </div>
 
