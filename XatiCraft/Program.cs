@@ -129,9 +129,13 @@ public static class Program
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
-        app.UseSwagger();
-        app.UseSwaggerUI();
         app.UseResponseCaching();
+          if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
         app.Run();
     }
 }

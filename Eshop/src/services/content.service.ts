@@ -7,9 +7,9 @@ headers.set("content-type", "application/json");
 export const getProducts = async (query?: string | null): Promise<Product[] | null> => {
     var url;
     if (query) {
-        url = `/api/products?q=${encodeURIComponent(query)}`
+        url = `/ve/products?q=${encodeURIComponent(query)}`
     } else {
-        url = `/api/products`
+        url = `/ve/products`
     }
     const response = await fetch(url, { method: "GET", credentials: "include", headers });
     const data = await response.json();
@@ -18,14 +18,14 @@ export const getProducts = async (query?: string | null): Promise<Product[] | nu
 
 
 export const getProduct = async (id: string): Promise<Product | null> => {
-    const response = await fetch(`/api/product/${id}`, { method: "GET", credentials: "include" });
+    const response = await fetch(`/ve/product/${id}`, { method: "GET", credentials: "include" });
     const data = await response.json();
     return data || null;
 }
 
 
 export const uploadProduct = async (product: UploadableProduct): Promise<{ product_id: number } | null> => {
-    const response = await fetch(`/api/addProduct`, {
+    const response = await fetch(`/ve/addProduct`, {
         method: "POST",
         headers,
         credentials: "include",
@@ -40,7 +40,7 @@ export const uploadProductFile = async (productId: number, file: File): Promise<
     const buffer = await file.arrayBuffer();
 
     const signedUrlResponse = await fetch(
-        `/api/getUrl?productId=${productId}&fileName=${encodeURIComponent(file.name)}`,
+        `/ve/getUrl?productId=${productId}&fileName=${encodeURIComponent(file.name)}`,
         {
             method: 'GET',
             credentials: 'include',
