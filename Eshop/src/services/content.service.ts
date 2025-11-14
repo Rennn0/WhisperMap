@@ -12,7 +12,7 @@ export const getProducts = async (query?: string | null): Promise<Product[] | nu
     } else {
         url += `/product`
     }
-    const response = await fetch(url, { method: "GET", credentials: "include" });
+    const response = await fetch(url, { method: "GET", credentials: "include", headers });
     const data = await response.json();
     return data.products || null;
 }
