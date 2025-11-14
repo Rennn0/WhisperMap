@@ -7,9 +7,9 @@ headers.set("content-type", "application/json");
 export const getProducts = async (query?: string | null): Promise<Product[] | null> => {
     var url;
     if (query) {
-        url = `/product?q=${encodeURIComponent(query)}`
+        url = `/api/products?q=${encodeURIComponent(query)}`
     } else {
-        url = `/product`
+        url = `/api/products`
     }
     const response = await fetch(url, { method: "GET", credentials: "include", headers });
     const data = await response.json();
