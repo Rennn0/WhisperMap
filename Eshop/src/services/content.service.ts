@@ -3,14 +3,13 @@ import type { UploadableProduct } from "../types";
 
 const headers = new Headers();
 headers.set("content-type", "application/json");
-headers.set("x-api-key", "zbaHcNlW4RSsI1y44zsVS8Sup8XKy1EG");
 
 export const getProducts = async (query?: string | null): Promise<Product[] | null> => {
-    var url = "https://api.xati.org";
+    var url;
     if (query) {
-        url += `/product?q=${encodeURIComponent(query)}`
+        url = `/product?q=${encodeURIComponent(query)}`
     } else {
-        url += `/product`
+        url = `/product`
     }
     const response = await fetch(url, { method: "GET", credentials: "include", headers });
     const data = await response.json();
