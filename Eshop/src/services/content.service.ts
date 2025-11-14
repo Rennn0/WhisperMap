@@ -5,11 +5,11 @@ const headers = new Headers();
 headers.set("content-type", "application/json");
 
 export const getProducts = async (query?: string | null): Promise<Product[] | null> => {
-    var url = "https://api.xati.org";
+    var url;
     if (query) {
-        url = `/products?q=${encodeURIComponent(query)}`
+        url = `/api/products?q=${encodeURIComponent(query)}`
     } else {
-        url = `/products`
+        url = `/api/products`
     }
     const response = await fetch(url, { method: "GET", credentials: "include" });
     const data = await response.json();
