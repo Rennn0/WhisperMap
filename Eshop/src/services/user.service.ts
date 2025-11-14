@@ -11,7 +11,7 @@ export const getSession = async (): Promise<void> => {
 }
 
 export const getMe = async (): Promise<UserInfo | null> => {
-    const response = await fetch(`/cl/me`, { method: "GET", credentials: "include" });
+    const response = await fetch(`/cl/session/me`, { method: "GET", credentials: "include" });
     const data = response.json();
     return data;
 }
