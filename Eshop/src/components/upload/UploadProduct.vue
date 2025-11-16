@@ -18,17 +18,14 @@ const uploadFiles = async () => {
     uploading.value = true;
     uploadProgress.value = 0;
 
-    for (let i = 0; i < selectedFiles.value.length; i++) {
-        const file = selectedFiles.value[i]!;
-        const buffer = await file.arrayBuffer();
-        getSignedUrl(props.upload.id ?? -1, file.name)
-            .request
-            .then(v => {
-                putOnUrl(v.url, buffer)
-            });
-
+    const uploadPromises = selectedFiles.value.map(async (f, i) => {
+        const buffer = await f.arrayBuffer();
+        const { url } = await getSignedUrl(props.upload.id ?? -1, f.name).request;
+        await putOnUrl(url, buffer);
         uploadProgress.value = Math.round(((i + 1) / selectedFiles.value.length) * 100);
-    }
+    });
+
+    await Promise.all(uploadPromises);
 
     uploading.value = false;
     emit('attachments-uploaded', selectedFiles.value);
