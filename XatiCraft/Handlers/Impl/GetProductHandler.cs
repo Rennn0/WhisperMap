@@ -29,8 +29,7 @@ public class GetProductHandler : IGetProductHandler
         Product? product = await _productRepo.SelectProductAsync(context.ProductId, cancellationToken);
         if (product is null) return new Error(ErrorCode.ArgumentMissmatchInDatabase);
 
-        GetProductContract contract = new GetProductContract(context.ProductId, product.Title, product.Description,
+        return new GetProductContract(context.ProductId, product.Title, product.Description,
             product.Price, product.ProductMetadata?.Select(pmd => pmd.Location));
-        return contract;
     }
 }

@@ -9,7 +9,7 @@ namespace XatiCraft.Controllers;
 /// <summary>
 /// </summary>
 [ApiController]
-[Route("product/{productId:long}/storage")]
+[Route("p/{productId:long}/s")]
 [EnableRateLimiting("policy_session")]
 [IpSessionGuard]
 [IpAddressGuard]
@@ -43,7 +43,7 @@ public class StorageController : ControllerBase
     /// <returns></returns>
     [HttpGet]
     public async Task<ApiContract> GetSignedUrl([FromServices] IUploadProductFileHandler handler,
-        [FromRoute] long productId, string fileName, CancellationToken cancellationToken)
+        [FromRoute] long productId, [FromQuery(Name = "fn")] string fileName, CancellationToken cancellationToken)
     {
         return await handler.HandleAsync(new GetSignedUrlContext(productId, fileName), cancellationToken);
     }

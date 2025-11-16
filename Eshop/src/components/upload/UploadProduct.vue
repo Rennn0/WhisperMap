@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { type UploadProps } from '../../types';
-import { uploadProductFile } from '../../services/content.service';
 import TablerLoaderBlockWave from '../freestyle/TablerLoaderBlockWave.vue';
 import TablerUploadIcon from '../freestyle/TablerUploadIcon.vue';
+import { getSignedUrl, putOnUrl } from '../../services/http';
 
 const props = defineProps<{ upload: UploadProps }>();
 const emit = defineEmits<{ (e: 'attachments-uploaded', files: File[]): void }>();
@@ -20,12 +20,12 @@ const uploadFiles = async () => {
 
     for (let i = 0; i < selectedFiles.value.length; i++) {
         const file = selectedFiles.value[i]!;
-
-        try {
-            await uploadProductFile(props.upload.id ?? -1, file);
-        } catch (err) {
-            console.error(`Failed to upload: ${file.name}, ${err}`);
-        }
+        const buffer = await file.arrayBuffer();
+        getSignedUrl(props.upload.id ?? -1, file.name)
+            .request
+            .then(v => {
+                putOnUrl(v.url, buffer)
+            });
 
         uploadProgress.value = Math.round(((i + 1) / selectedFiles.value.length) * 100);
     }

@@ -13,7 +13,7 @@ namespace XatiCraft.Guards;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public abstract class AuthGuard : Attribute, IAuthorizationFilter
 {
-    private ILogger<AuthGuard> _logger;
+    private ILogger<AuthGuard>? _logger;
 
     /// <summary>
     /// </summary>
@@ -49,7 +49,7 @@ public abstract class AuthGuard : Attribute, IAuthorizationFilter
         sessionData = null;
         if (!context.Request.Cookies.TryGetValue("session", out string? protectedSession))
         {
-            _logger.LogWarning("no session cookie");
+            _logger?.LogWarning("no session cookie");
             return false;
         }
 

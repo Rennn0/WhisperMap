@@ -9,7 +9,7 @@ import TablerMoonIcon from '../freestyle/TablerMoonIcon.vue';
 import TablerSunIcon from '../freestyle/TablerSunIcon.vue';
 import TablerContrastIcon from '../freestyle/TablerContrastIcon.vue';
 import TablerCometIcon from '../freestyle/TablerCometIcon.vue';
-import { getProducts } from '../../services/content.service';
+import { getProducts } from '../../services/http';
 
 /** Lightweight debounce implementation to avoid requiring lodash.debounce and its types */
 function debounce<T extends (...args: any[]) => any>(fn: T, wait = 0) {
@@ -22,7 +22,6 @@ function debounce<T extends (...args: any[]) => any>(fn: T, wait = 0) {
     }, wait);
   };
 }
-
 
 const emit = defineEmits<{
   (e: 'menu-toggle'): void;
@@ -49,20 +48,15 @@ const userInfo = inject<Readonly<Ref<UserInfo>>>(userInfoInjectionKey);
 const products = ref<Product[]>([]);
 
 const fetchProducts = debounce(async (q: string) => {
-  try {
-    const ps = await getProducts(q);
-    products.value = ps?.slice(0, 10) || [];
-  } catch (error) {
-    console.error('Failed to fetch products:', error);
-    products.value = [];
-  }
+  getProducts(q).request.then(v => {
+    products.value = v?.products?.slice(0, 10) || [];
+  })
 }, 400);
 
 watch(query, async (newQuery) => {
   const q = newQuery.trim().toLowerCase();
-  // if (q.length > 0)
   fetchProducts(q);
-}, { immediate: true });
+});
 
 const filteredProducts = computed(() => toValue(products));
 

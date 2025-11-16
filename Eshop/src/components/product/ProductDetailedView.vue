@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onActivated, onUnmounted, onUpdated, watchEffect, watch } from 'vue';
 import type { MediaItem, Product } from '../../types';
-import { getProduct } from '../../services/content.service';
 import { useRouter } from 'vue-router';
 import SkeletonProductDetail from '../skeletons/SkeletonProductDetail.vue';
 import TablerLeftIcon from '../freestyle/TablerLeftIcon.vue';
 import TablerAddToCartIcon from '../freestyle/TablerAddToCartIcon.vue';
 import TablerPhoneCallIcon from '../freestyle/TablerPhoneCallIcon.vue';
 import IconParkCloseIcon from '../freestyle/IconParkCloseIcon.vue';
+import { getProduct } from '../../services/http';
 
 const router = useRouter();
 const props = defineProps<{ id: string }>();
@@ -25,7 +25,7 @@ watch(showContactModal, (visible) => {
 });
 watchEffect(async () => {
     productRef.value = null;
-    getProduct(props.id).then(p => productRef.value = p?.id ? p : null)
+    getProduct(props.id).request.then(p => productRef.value = p?.id ? p : null)
 },)
 const product = computed(() => productRef.value);
 

@@ -9,7 +9,7 @@ namespace XatiCraft.Controllers;
 /// <summary>
 /// </summary>
 [ApiController]
-[Route("[controller]")]
+[Route("s")]
 [ApiKeyGuard]
 public class SessionController : ControllerBase
 {
@@ -48,7 +48,7 @@ public class SessionController : ControllerBase
             IsEssential = true
         };
         HttpContext.Response.Cookies.Append("session", protectedData, cookieOptions);
-        return Ok();
+        return NoContent();
     }
 
     /// <summary>

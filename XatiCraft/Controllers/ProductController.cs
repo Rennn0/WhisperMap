@@ -10,7 +10,7 @@ namespace XatiCraft.Controllers;
 ///     defines operations on product
 /// </summary>
 [ApiController]
-[Route("product")]
+[Route("p")]
 [IpSessionGuard]
 [ApiKeyGuard]
 public class ProductController : ControllerBase
@@ -39,7 +39,8 @@ public class ProductController : ControllerBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet]
-    public async Task<ApiContract> GetProducts([FromServices] IGetProductsHandler handler, string? query,
+    public async Task<ApiContract> GetProducts([FromServices] IGetProductsHandler handler,
+        [FromQuery(Name = "q")] string? query,
         CancellationToken cancellationToken)
     {
         return await handler.HandleAsync(new GetProductsContext(query), cancellationToken);
@@ -52,7 +53,7 @@ public class ProductController : ControllerBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("{productId:long}")]
-    public async Task<ApiContract> GetProduct(long productId, [FromServices] IGetProductHandler handler,
+    public async Task<ApiContract> GetProduct([FromRoute] long productId, [FromServices] IGetProductHandler handler,
         CancellationToken cancellationToken)
     {
         return await handler.HandleAsync(new GetProductContext(productId), cancellationToken);

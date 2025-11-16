@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, onUpdated, ref } from 'vue';
 import type { Product } from '../../types';
-import { getProducts } from '../../services/content.service';
 import { useRouter } from 'vue-router';
 import ProductItem from './ProductItem.vue';
 import SkeletonProductItem from '../skeletons/SkeletonProductItem.vue';
+import { getProducts } from '../../services/http';
 
 const router = useRouter();
 const emit = defineEmits<{ (e: 'select', product: Product): void }>();
@@ -21,7 +21,7 @@ const onSelect = (product: Product) => {
 //#region lifecycle hooks
 onUpdated(() => { });
 onMounted(() => {
-    getProducts().then(ps => productsRef.value = ps)
+    getProducts().request.then(ps => productsRef.value = ps.products ?? [])
 });
 onUnmounted(() => { })
 //#endregion

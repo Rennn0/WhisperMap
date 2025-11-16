@@ -10,7 +10,6 @@ import { ensureProductDetailAccess } from './guards/productDetail.guard'
 import Root from './components/Root.vue'
 import UploadView from './components/upload/UploadView.vue'
 import { createI18n } from 'vue-i18n'
-// import VueFlags from "@growthbunker/vueflags"
 
 import eng from "./lang/eng.json"
 import ka from "./lang/ka.json"

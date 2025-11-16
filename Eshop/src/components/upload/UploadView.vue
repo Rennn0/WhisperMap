@@ -7,7 +7,7 @@ import { useRouter } from 'vue-router';
 import CreateProduct from './CreateProduct.vue';
 import CreateAttachment from './CreateAttachment.vue';
 import UploadProduct from './UploadProduct.vue';
-import { uploadProduct } from '../../services/content.service';
+import { uploadProduct } from '../../services/http';
 
 const router = useRouter();
 const userInfo = inject<Readonly<Ref<UserInfo>>>(userInfoInjectionKey);
@@ -33,22 +33,24 @@ const handleProductSubmit = (data: { title: string; price: number; description: 
 
     waitingForSubmit = true;
     uploadProps.product = data;
-    uploadProduct(uploadProps.product).then(res => {
-        if (!res?.product_id) return;
+    uploadProduct(uploadProps.product)
+        .request.then(res => {
+            if (!res?.product_id) return;
 
-        uploadProps.id = res.product_id;
-        submited.value = true;
-        waitingForSubmit = false;
-    })
+            uploadProps.id = res.product_id;
+            submited.value = true;
+            waitingForSubmit = false;
+        })
 };
 
 const handleAttachmentsSelected = (files: File[]) => {
     uploadProps.existingFiles = [...files]
 };
 
-const onAttachmentsUploaded = () => router.push({ name: "root" }).then(() => {
-    window.location.reload();
-});;
+const onAttachmentsUploaded = () => { }
+// router.push({ name: "root" }).then(() => {
+//     window.location.reload();
+// });
 
 </script>
 
@@ -59,7 +61,7 @@ const onAttachmentsUploaded = () => router.push({ name: "root" }).then(() => {
 
         <div v-else class="p-4 rounded-lg border bg-subtle shadow-sm">
             <p class="text-text/80 text-sm">{{ uploadProps.product.title.slice(0, 16) }} — {{ uploadProps.product.price
-                }}$</p>
+            }}$</p>
             <p class="text-text/60 text-xs mt-1">{{ uploadProps.product.description.slice(0, 16) }}</p>
         </div>
 
