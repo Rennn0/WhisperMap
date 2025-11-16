@@ -33,7 +33,7 @@ const makeGet = <T>(url: string, options?: Options) => {
     const controller = new AbortController();
     return {
         request: httpClint.get(url, { ...options, signal: controller.signal }).json<T>(),
-        cancel: () => controller.abort()
+        cancel: (reason?: any) => controller.abort(reason ?? { abort: url })
     };
 }
 
@@ -41,7 +41,7 @@ const makePost = <T>(url: string, body: any, options?: Options) => {
     const controller = new AbortController();
     return {
         request: httpClint.post(url, { json: body, ...options, signal: controller.signal }).json<T>(),
-        cancel: () => controller.abort()
+        cancel: (reason?: any) => controller.abort(reason ?? { abort: url })
     };
 }
 

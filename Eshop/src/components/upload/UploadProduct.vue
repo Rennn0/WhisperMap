@@ -24,7 +24,6 @@ const uploadFiles = async () => {
         await putOnUrl(url, buffer);
         uploadProgress.value = Math.round(((i + 1) / selectedFiles.value.length) * 100);
     });
-
     await Promise.all(uploadPromises);
 
     uploading.value = false;
