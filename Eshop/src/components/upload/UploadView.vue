@@ -47,7 +47,9 @@ const handleAttachmentsSelected = (files: File[]) => {
     uploadProps.existingFiles = [...files]
 };
 
-const onAttachmentsUploaded = () => { }
+const onAttachmentsUploaded = () => {
+    uploadProps.existingFiles = [];
+}
 // router.push({ name: "root" }).then(() => {
 //     window.location.reload();
 // });
@@ -61,7 +63,7 @@ const onAttachmentsUploaded = () => { }
 
         <div v-else class="p-4 rounded-lg border bg-subtle shadow-sm">
             <p class="text-text/80 text-sm">{{ uploadProps.product.title.slice(0, 16) }} — {{ uploadProps.product.price
-            }}$</p>
+                }}$</p>
             <p class="text-text/60 text-xs mt-1">{{ uploadProps.product.description.slice(0, 16) }}</p>
         </div>
 

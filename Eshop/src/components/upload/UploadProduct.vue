@@ -10,19 +10,16 @@ const emit = defineEmits<{ (e: 'attachments-uploaded', files: File[]): void }>()
 
 const selectedFiles = computed<File[]>(() => [...props.upload.existingFiles]);
 const uploading = ref(false);
-const uploadProgress = ref(0);
 
 const uploadFiles = async () => {
     if (!selectedFiles.value.length) return;
 
     uploading.value = true;
-    uploadProgress.value = 0;
 
     const uploadPromises = selectedFiles.value.map(async (f, i) => {
         const buffer = await f.arrayBuffer();
         const { url } = await getSignedUrl(props.upload.id ?? -1, f.name).request;
         await putOnUrl(url, buffer);
-        uploadProgress.value = Math.round(((i + 1) / selectedFiles.value.length) * 100);
     });
     await Promise.all(uploadPromises);
 
@@ -50,7 +47,7 @@ const uploadFiles = async () => {
             @click="uploadFiles" :disabled="uploading">
             <TablerUploadIcon v-if="!uploading" class="w-5 h-5" />
             <TablerLoaderBlockWave v-else class="w-5 h-5" />
-            <span>{{ uploading ? `${uploadProgress}%` : $t('upload.inputs.upload') }}</span>
+            <span>{{ $t('upload.inputs.upload') }}</span>
         </button>
     </div>
 </template>

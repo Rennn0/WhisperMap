@@ -12,6 +12,7 @@ const emit = defineEmits<{
 
 // Local state
 const files = ref<File[]>(props.existingFiles ? [...props.existingFiles] : []);
+const isDraggingOver = ref(false);
 
 // Sync if parent updates
 watch(() => props.existingFiles, (v) => {
@@ -69,17 +70,55 @@ const previews = computed(() =>
         isVideo: file.type.startsWith('video/')
     }))
 );
+
+// Handle drag events
+const handleDragOver = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isDraggingOver.value = true;
+};
+
+const handleDragLeave = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isDraggingOver.value = false;
+};
+
+const handleDrop = async (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isDraggingOver.value = false;
+
+    const droppedFiles = e.dataTransfer?.files;
+    if (!droppedFiles?.length) return;
+
+    const newFiles: File[] = Array.from(droppedFiles).filter(file =>
+        file.type.startsWith('image/') || file.type.startsWith('video/')
+    );
+
+    const stableFiles = await Promise.all(
+        newFiles.map(async (file) => {
+            const buffer = await file.arrayBuffer();
+            return new File([buffer], file.name, { type: file.type });
+        })
+    );
+
+    files.value = [...files.value, ...stableFiles];
+    emit('attachments-selected', files.value);
+};
 </script>
 
 <template>
     <div class="p-4 rounded-lg bg-subtle border shadow-sm">
-        <label
-            class="flex flex-row items-center justify-center gap-2 border-2 border-dashed border-primary rounded-lg p-6 cursor-pointer">
-            <TablerChooseFileIcon class="w-6 h-6 flex-shrink-0" />
-            <span class="text-text leading-none">{{ $t('upload.inputs.chooseFile') }}</span>
-            <input type="file" multiple accept="image/*,video/*" class="hidden" @change="onFilesChange" />
-        </label>
-
+        <div class="flex flex-row items-center justify-center gap-2 border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors"
+            :class="isDraggingOver ? 'border-primary' : 'border'" @dragover="handleDragOver"
+            @dragleave="handleDragLeave" @drop="handleDrop">
+            <label class="flex flex-row items-center justify-center gap-2 cursor-pointer w-full">
+                <TablerChooseFileIcon class="w-6 h-6 flex-shrink-0" />
+                <span class="text-text leading-none">{{ $t('upload.inputs.chooseFile') }}</span>
+                <input type="file" multiple accept="image/*,video/*" class="hidden" @change="onFilesChange" />
+            </label>
+        </div>
 
         <div v-if="previews.length" class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div v-for="(p, index) in previews" :key="p.url"

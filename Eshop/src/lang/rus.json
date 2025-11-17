@@ -32,6 +32,15 @@
         "contact": "Контакт",
         "email": "Адрес электронной почты",
         "phone": "Номер телефона",
-        "info": "Контактная информация"
+        "info": "Контактная информация",
+        "delete": "Удалить",
+        "modals": {
+            "delete": {
+                "title": "Delete Product",
+                "desc": "Are you sure you want to delete this product? This action cannot be undone.",
+                "cancel": "No",
+                "confirm": "Yes"
+            }
+        }
     }
 }

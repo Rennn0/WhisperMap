@@ -8,8 +8,9 @@ namespace XatiCraft.Guards;
 /// </summary>
 public class UserManager : AuthGuard
 {
-    private readonly HttpContext _context;
-    private readonly IOptionsSnapshot<IpRestrictionSettings> _ipRestrictionSettings;
+    private readonly ApplicationClaims[] _applicationClaims;
+    private HttpContext? _context;
+    private IOptionsSnapshot<IpRestrictionSettings>? _ipRestrictionSettings;
 
     /// <summary>
     /// </summary>
@@ -20,6 +21,13 @@ public class UserManager : AuthGuard
         ArgumentNullException.ThrowIfNull(context.HttpContext);
         _context = context.HttpContext;
         _ipRestrictionSettings = ipRestrictionSettings;
+        _applicationClaims = [];
+    }
+
+    /// <inheritdoc />
+    public UserManager(params ApplicationClaims[] applicationClaims)
+    {
+        _applicationClaims = applicationClaims;
     }
 
     /// <summary>
@@ -28,7 +36,10 @@ public class UserManager : AuthGuard
     /// <returns></returns>
     public bool TryGetUserInfo(out UserInfo? userInfo)
     {
+        ArgumentNullException.ThrowIfNull(_context);
+        ArgumentNullException.ThrowIfNull(_ipRestrictionSettings);
         userInfo = null;
+
         if (!TryGetSessionData(_context, out SessionData? sessionData)) return false;
         ArgumentNullException.ThrowIfNull(sessionData);
 
@@ -37,7 +48,9 @@ public class UserManager : AuthGuard
         if (_ipRestrictionSettings.Value.AllowedIpAddresses.Contains(sessionData.Ip))
         {
             userInfo.CanUpload = true;
+            userInfo.CanDelete = true;
             userInfo.Claims.Add(ApplicationClaims.Upload);
+            userInfo.Claims.Add(ApplicationClaims.Delete);
         }
 
         userInfo.Claims.Add(ApplicationClaims.Read);
@@ -50,7 +63,15 @@ public class UserManager : AuthGuard
     /// <exception cref="NotImplementedException"></exception>
     public override void OnAuthorization(AuthorizationFilterContext context)
     {
-        throw new NotImplementedException();
+        _context = context.HttpContext;
+        _ipRestrictionSettings = context.HttpContext.RequestServices
+            .GetRequiredService<IOptionsSnapshot<IpRestrictionSettings>>();
+
+        if (TryGetUserInfo(out UserInfo? userInfo) &&
+            userInfo is not null &&
+            _applicationClaims.All(ac => userInfo.Claims.Contains(ac))) return;
+
+        context.HttpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
     }
 
     /// <summary>

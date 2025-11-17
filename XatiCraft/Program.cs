@@ -58,7 +58,7 @@ public static class Program
 
                 return RateLimitPartition.GetFixedWindowLimiter(session, f => new FixedWindowRateLimiterOptions
                 {
-                    PermitLimit = 60,
+                    PermitLimit = 20,
                     Window = TimeSpan.FromMinutes(1),
                     QueueLimit = 0,
                     QueueProcessingOrder = QueueProcessingOrder.OldestFirst
@@ -109,6 +109,7 @@ public static class Program
         builder.Services.AddTransient<IUploadProductFileHandler, UploadProductFileHandler>();
         builder.Services.AddTransient<IGetProductHandler, GetProductHandler>();
         builder.Services.AddTransient<IGetProductsHandler, GetProductsHandler>();
+        builder.Services.AddTransient<IDeleteProductHandler, DeleteProductHandler>();
 
 #if USE_CERT
         builder.Services.AddCert();

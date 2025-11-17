@@ -10,5 +10,9 @@ public record UserInfo
 
     /// <summary>
     /// </summary>
+    public bool CanDelete { get; set; }
+
+    /// <summary>
+    /// </summary>
     public HashSet<ApplicationClaims> Claims { get; } = [];
 }

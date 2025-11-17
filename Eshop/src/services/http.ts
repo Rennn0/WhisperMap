@@ -10,7 +10,7 @@ const httpClint = ky.create({
     credentials: "include",
     retry:
     {
-        afterStatusCodes: [401, 403, 429],
+        afterStatusCodes: [401, 429],
         retryOnTimeout: true,
         limit: 10,
         jitter: true,
@@ -37,6 +37,15 @@ const makeGet = <T>(url: string, options?: Options) => {
     };
 }
 
+const makeDelete = <T>(url: string, options?: Options) => {
+    const controller = new AbortController();
+    return {
+        request: httpClint.delete(url, { ...options, signal: controller.signal }).json<T>(),
+        cancel: (reason?: any) => controller.abort(reason ?? { abort: url })
+    };
+}
+
+
 const makePost = <T>(url: string, body: any, options?: Options) => {
     const controller = new AbortController();
     return {
@@ -55,6 +64,9 @@ export const getProduct = (id: string) => makeGet<Product & ApiMeta>(`p/${id}`);
 
 export const uploadProduct = (product: UploadableProduct) => makePost<{ product_id: number } & ApiMeta>("p", product);
 
-export const getSignedUrl = (productId: number, fileName: string) => makeGet<{ url: string } & ApiMeta>(`p/${productId}/s?fn=${encodeURIComponent(fileName)}`)
+export const getSignedUrl = (productId: number, fileName: string) =>
+    makeGet<{ url: string } & ApiMeta>(`p/${productId}/s?fn=${encodeURIComponent(fileName)}`)
 
 export const putOnUrl = (url: string, buffer: ArrayBuffer) => ky(url, { method: "put", body: buffer });
+
+export const deleteProduct = (id: string) => makeDelete<void>(`p/${id}/s`);

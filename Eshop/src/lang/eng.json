@@ -17,7 +17,7 @@
             "price": "price",
             "create": "Create",
             "upload": "Upload",
-            "chooseFile": "Choose photo/video material",
+            "chooseFile": "Choose/Drop photo/video material",
             "chosen": "Selected files:"
         }
     },
@@ -32,6 +32,15 @@
         "contact": "Contact",
         "email": "Email address",
         "phone": "Phone number",
-        "info": "Contact info"
+        "info": "Contact info",
+        "delete": "Delete",
+        "modals": {
+            "delete": {
+                "title": "Delete Product",
+                "desc": "Are you sure you want to delete this product? This action cannot be undone.",
+                "cancel": "No",
+                "confirm": "Yes"
+            }
+        }
     }
 }

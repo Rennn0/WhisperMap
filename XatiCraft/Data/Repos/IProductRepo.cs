@@ -38,4 +38,11 @@ public interface IProductRepo
     /// <param name="cancellationToken">token from caller</param>
     /// <returns></returns>
     Task<bool> ExistsAsync(long id, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<bool> DeleteAsync(long id, CancellationToken cancellationToken);
 }

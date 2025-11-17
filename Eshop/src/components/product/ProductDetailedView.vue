@@ -1,22 +1,27 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onActivated, onUnmounted, onUpdated, watchEffect, watch } from 'vue';
-import type { MediaItem, Product } from '../../types';
+import { ref, computed, watchEffect, watch, inject, type Ref } from 'vue';
+import type { MediaItem, Product, UserInfo } from '../../types';
 import { useRouter } from 'vue-router';
 import SkeletonProductDetail from '../skeletons/SkeletonProductDetail.vue';
 import TablerLeftIcon from '../freestyle/TablerLeftIcon.vue';
 import TablerAddToCartIcon from '../freestyle/TablerAddToCartIcon.vue';
 import TablerPhoneCallIcon from '../freestyle/TablerPhoneCallIcon.vue';
 import IconParkCloseIcon from '../freestyle/IconParkCloseIcon.vue';
-import { getProduct } from '../../services/http';
+import { deleteProduct, getProduct } from '../../services/http';
+import TablerDeleteIcon from '../freestyle/TablerDeleteIcon.vue';
+import ConfirmationModal from '../modals/ConfirmationModal.vue';
+import { userInfoInjectionKey } from '../../injectionKeys';
 
 const router = useRouter();
 const props = defineProps<{ id: string }>();
 const productRef = ref<Product | null>(null);
 const showContactModal = ref(false);
+const showDeleteConfirmation = ref(false);
 const contactInfo = {
     email: "lukadanelia056@gmail.com",
     phone: "+995 599 288 177"
 }
+const userInfo = inject<Readonly<Ref<UserInfo>>>(userInfoInjectionKey);
 watch(showContactModal, (visible) => {
     if (visible)
         document.body.style.overflow = 'hidden';
@@ -75,12 +80,21 @@ const contactClicked = () => showContactModal.value = true;
 const addClicked = () => { };
 const closeContactModal = () => showContactModal.value = false;
 
-//#region lifecycle hooks
-onActivated(() => { });
-onUpdated(() => { });
-onMounted(() => { });
-onUnmounted(() => { })
-//#endregion
+const handleDeleteConfirmed = async () => {
+    showDeleteConfirmation.value = false;
+    deleteProduct(props.id).request.then(() =>
+        router.push({ name: "root" }).then(() => {
+            window.location.reload();
+        }));
+};
+
+const handleDeleteCancelled = () => {
+    showDeleteConfirmation.value = false;
+};
+
+const deleteClicked = () => {
+    showDeleteConfirmation.value = true;
+};
 </script>
 
 <template>
@@ -92,9 +106,11 @@ onUnmounted(() => { })
                 <span>{{ $t('app.back') }}</span>
             </button>
 
-            <!-- <div class="text-sm  ">
-                Sold by <span class="font-medium">{{ product.seller }}</span>
-            </div> -->
+            <button v-if="userInfo?.can_delete" type="button" @click="deleteClicked" aria-label="Delete product"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-subtle hover:bg-subtle/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition text-sm font-medium">
+                <TablerDeleteIcon class="w-4 h-4" />
+                <span class="font-medium">{{ $t('product.delete') }}</span>
+            </button>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2">
@@ -169,6 +185,12 @@ onUnmounted(() => { })
                 </div>
             </div>
         </div>
+
+        <ConfirmationModal :isOpen="showDeleteConfirmation" :title="$t('product.modals.delete.title')"
+            :description="$t('product.modals.delete.desc')" :cancel-text="$t('product.modals.delete.cancel')"
+            :confirm-text="$t('product.modals.delete.confirm')" @confirmed="handleDeleteConfirmed"
+            @cancelled="handleDeleteCancelled" />
+
         <transition name="fade">
             <div v-if="showContactModal" class="fixed inset-0 flex items-center justify-center backdrop-blur-md z-50"
                 @click.self="closeContactModal">

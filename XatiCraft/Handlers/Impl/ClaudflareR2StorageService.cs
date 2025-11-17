@@ -112,6 +112,12 @@ public class ClaudflareR2StorageService : IUploader, IReader
         return new SignedUrlUploadResult(signedUrl, fileName, keyBuilder.ToString(), folder, location);
     }
 
+    /// <inheritdoc />
+    public Task DeleteObjectAsync(string key, CancellationToken cancellation)
+    {
+        return _s3Client.DeleteObjectAsync(_settings.Bucket, key, cancellation);
+    }
+
     private static string NormalizeFileName(string fileName)
     {
         string extension = Path.GetExtension(fileName).ToLowerInvariant();

@@ -80,4 +80,14 @@ public class ProductRepo : IProductRepo
     {
         return await _context.Products.AsNoTracking().AnyAsync(p => p.Id == id, cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
+    {
+        Model.Product entity = new Model.Product { Id = id };
+        _context.Products.Attach(entity);
+        _context.Products.Remove(entity);
+        int affected = await _context.SaveChangesAsync(cancellationToken);
+        return affected > 0;
+    }
 }

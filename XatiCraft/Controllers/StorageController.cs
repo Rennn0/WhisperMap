@@ -47,4 +47,18 @@ public class StorageController : ControllerBase
     {
         return await handler.HandleAsync(new GetSignedUrlContext(productId, fileName), cancellationToken);
     }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="handler"></param>
+    /// <param name="productId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [UserManager(ApplicationClaims.Delete)]
+    public async Task<ApiContract> DeleteProduct([FromServices] IDeleteProductHandler handler,
+        [FromRoute] long productId, CancellationToken cancellationToken)
+    {
+        return await handler.HandleAsync(new DeleteProductContext(productId), cancellationToken);
+    }
 }

@@ -18,4 +18,11 @@ public interface IUploader
     /// <param name="cancellation"></param>
     /// <returns></returns>
     Task<SignedUrlUploadResult> GetSignedUrlAsync(string fileName, CancellationToken cancellation);
+
+    /// <summary>
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellation"></param>
+    /// <returns></returns>
+    Task DeleteObjectAsync(string key, CancellationToken cancellation);
 }

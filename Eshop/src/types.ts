@@ -13,6 +13,7 @@ export interface Product {
 
 export interface UserInfo {
     can_upload: boolean,
+    can_delete: boolean,
     claims: number[]
 }
 

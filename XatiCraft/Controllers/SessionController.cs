@@ -55,7 +55,7 @@ public class SessionController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet("me")]
-    public IActionResult Me([FromServices] UserManager usermanager)
+    public IActionResult Me([FromServices] UserManager usermanager, IHttpContextAccessor accessor)
     {
         if (!usermanager.TryGetUserInfo(out UserInfo? userInfo)) return Unauthorized();
         return Ok(userInfo);

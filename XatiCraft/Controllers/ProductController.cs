@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using XatiCraft.ApiContracts;
 using XatiCraft.Guards;
 using XatiCraft.Handlers.Api;
@@ -11,6 +12,7 @@ namespace XatiCraft.Controllers;
 /// </summary>
 [ApiController]
 [Route("p")]
+[EnableRateLimiting("policy_session")]
 [IpSessionGuard]
 [ApiKeyGuard]
 public class ProductController : ControllerBase
