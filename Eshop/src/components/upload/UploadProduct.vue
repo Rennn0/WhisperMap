@@ -17,6 +17,7 @@ const uploadFiles = async () => {
     uploading.value = true;
 
     const uploadPromises = selectedFiles.value.map(async (f, i) => {
+        i;
         const buffer = await f.arrayBuffer();
         const { url } = await getSignedUrl(props.upload.id ?? -1, f.name).request;
         await putOnUrl(url, buffer);
