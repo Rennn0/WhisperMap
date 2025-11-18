@@ -1,9 +1,16 @@
 <script setup lang="ts">
-const orders = [
+import { onMounted, reactive } from 'vue';
+import { getProducts } from '../../services/http';
+
+const orders = reactive([
     { id: 'o1', title: 'Order #1', status: 'Processing' },
     { id: 'o2', title: 'Order #2', status: 'Shipped' },
     { id: 'o3', title: 'Order #3', status: 'Delivered' },
-];
+]);
+onMounted(() => {
+    const { request } = getProducts({ fromCookie: true });
+    request.then(data => data.products.forEach(p => orders.push({ id: p.id, status: p.title, title: p.title })))
+})
 </script>
 
 <template>

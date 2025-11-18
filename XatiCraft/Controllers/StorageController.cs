@@ -10,7 +10,7 @@ namespace XatiCraft.Controllers;
 /// </summary>
 [ApiController]
 [Route("p/{productId:long}/s")]
-[EnableRateLimiting("policy_session")]
+[EnableRateLimiting(AuthGuard.SessionPolicy)]
 [IpSessionGuard]
 [IpAddressGuard]
 [ApiKeyGuard]
@@ -24,6 +24,7 @@ public class StorageController : ControllerBase
     /// <param name="cancellation"></param>
     /// <returns></returns>
     [HttpPost]
+    [UserGuard(ApplicationClaims.Upload)]
     public async Task<ApiContract> UploadProductFile(
         [FromServices] IUploadProductFileHandler handler,
         [FromRoute] long productId,
@@ -42,6 +43,7 @@ public class StorageController : ControllerBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet]
+    [UserGuard(ApplicationClaims.Upload)]
     public async Task<ApiContract> GetSignedUrl([FromServices] IUploadProductFileHandler handler,
         [FromRoute] long productId, [FromQuery(Name = "fn")] string fileName, CancellationToken cancellationToken)
     {
@@ -55,7 +57,7 @@ public class StorageController : ControllerBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpDelete]
-    [UserManager(ApplicationClaims.Delete)]
+    [UserGuard(ApplicationClaims.Delete)]
     public async Task<ApiContract> DeleteProduct([FromServices] IDeleteProductHandler handler,
         [FromRoute] long productId, CancellationToken cancellationToken)
     {

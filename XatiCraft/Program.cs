@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using XatiCraft.ApiContracts;
 using XatiCraft.Data;
 using XatiCraft.Data.Repos;
 using XatiCraft.Data.Repos.EfCoreImpl;
@@ -52,13 +53,13 @@ public static class Program
         });
         builder.Services.AddRateLimiter(opt =>
         {
-            opt.AddPolicy("policy_session", context =>
+            opt.AddPolicy(AuthGuard.SessionPolicy, context =>
             {
-                string session = context.Request.Cookies["session"] ?? "";
+                string session = context.Request.Cookies[AuthGuard.SessionCookie] ?? "";
 
                 return RateLimitPartition.GetFixedWindowLimiter(session, f => new FixedWindowRateLimiterOptions
                 {
-                    PermitLimit = 20,
+                    PermitLimit = 60,
                     Window = TimeSpan.FromMinutes(1),
                     QueueLimit = 0,
                     QueueProcessingOrder = QueueProcessingOrder.OldestFirst
@@ -100,7 +101,8 @@ public static class Program
         });
 
         builder.Services.AddSingleton<SystemHealthMonitor>();
-        builder.Services.AddScoped<UserManager>();
+        builder.Services.AddScoped<UserGuard>();
+        builder.Services.AddTransient<Security, AspDataProtector>();
         builder.Services.AddTransient<IProductRepo, ProductRepo>();
         builder.Services.AddTransient<IProductMetadaRepo, ProductMetadataRepo>();
         builder.Services.AddTransient<IUploader, ClaudflareR2StorageService>();
@@ -109,6 +111,9 @@ public static class Program
         builder.Services.AddTransient<IUploadProductFileHandler, UploadProductFileHandler>();
         builder.Services.AddTransient<IGetProductHandler, GetProductHandler>();
         builder.Services.AddTransient<IGetProductsHandler, GetProductsHandler>();
+        builder.Services.AddTransient<IProductCartHandler, ProductCartHandler>();
+        builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, GetProductsHandler>();
+        builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, ProductCartHandler>();
         builder.Services.AddTransient<IDeleteProductHandler, DeleteProductHandler>();
 
 #if USE_CERT

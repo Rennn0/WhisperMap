@@ -6,9 +6,9 @@ namespace XatiCraft.Guards;
 
 /// <summary>
 /// </summary>
-public class UserManager : AuthGuard
+public class UserGuard : AuthGuard
 {
-    private readonly ApplicationClaims[] _applicationClaims;
+    private readonly ApplicationClaims[] _requiredClaims;
     private HttpContext? _context;
     private IOptionsSnapshot<IpRestrictionSettings>? _ipRestrictionSettings;
 
@@ -16,18 +16,18 @@ public class UserManager : AuthGuard
     /// </summary>
     /// <param name="context"></param>
     /// <param name="ipRestrictionSettings"></param>
-    public UserManager(IHttpContextAccessor context, IOptionsSnapshot<IpRestrictionSettings> ipRestrictionSettings)
+    public UserGuard(IHttpContextAccessor context, IOptionsSnapshot<IpRestrictionSettings> ipRestrictionSettings)
     {
         ArgumentNullException.ThrowIfNull(context.HttpContext);
         _context = context.HttpContext;
         _ipRestrictionSettings = ipRestrictionSettings;
-        _applicationClaims = [];
+        _requiredClaims = [];
     }
 
     /// <inheritdoc />
-    public UserManager(params ApplicationClaims[] applicationClaims)
+    public UserGuard(params ApplicationClaims[] requiredClaims)
     {
-        _applicationClaims = applicationClaims;
+        _requiredClaims = requiredClaims;
     }
 
     /// <summary>
@@ -69,7 +69,7 @@ public class UserManager : AuthGuard
 
         if (TryGetUserInfo(out UserInfo? userInfo) &&
             userInfo is not null &&
-            _applicationClaims.All(ac => userInfo.Claims.Contains(ac))) return;
+            _requiredClaims.All(ac => userInfo.Claims.Contains(ac))) return;
 
         context.HttpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
     }

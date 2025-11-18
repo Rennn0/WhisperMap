@@ -48,7 +48,7 @@ const userInfo = inject<Readonly<Ref<UserInfo>>>(userInfoInjectionKey);
 const products = ref<Product[]>([]);
 
 const fetchProducts = debounce(async (q: string) => {
-  getProducts(q).request.then(v => {
+  getProducts({ query: q }).request.then(v => {
     products.value = v?.products?.slice(0, 10) || [];
   })
 }, 400);

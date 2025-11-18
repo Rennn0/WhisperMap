@@ -8,9 +8,11 @@ const httpClint = ky.create({
     headers,
     prefixUrl: "cl",
     credentials: "include",
+    timeout: 30000,
     retry:
     {
-        afterStatusCodes: [401, 429],
+        afterStatusCodes: [],
+        statusCodes: [401, 429, 500],
         retryOnTimeout: true,
         limit: 10,
         jitter: true,
@@ -54,11 +56,24 @@ const makePost = <T>(url: string, body: any, options?: Options) => {
     };
 }
 
+const makePut = <T>(url: string, body?: any, options?: Options) => {
+    const controller = new AbortController();
+    return {
+        request: httpClint.put(url, { json: body, ...options, signal: controller.signal }).json<T>(),
+        cancel: (reason?: any) => controller.abort(reason ?? { abort: url })
+    };
+}
+
 export const getSession = () => makeGet<void>("s");
 
 export const getMe = () => makeGet<UserInfo>("s/me");
 
-export const getProducts = (query?: string | null) => makeGet<{ products: Product[] } & ApiMeta>(`p?q=${encodeURIComponent(query || "")}`);
+export const getProducts = (args: { query?: string | null, fromCookie?: boolean | null } = { fromCookie: null, query: null }) => {
+    const params = new URLSearchParams();
+    if (args.query) params.set('q', args.query);
+    if (args.fromCookie) params.set("fc", args.fromCookie.toString());
+    return makeGet<{ products: Product[] } & ApiMeta>(`p?${params.toString()}`);
+}
 
 export const getProduct = (id: string) => makeGet<Product & ApiMeta>(`p/${id}`);
 
@@ -70,3 +85,5 @@ export const getSignedUrl = (productId: number, fileName: string) =>
 export const putOnUrl = (url: string, buffer: ArrayBuffer) => ky(url, { method: "put", body: buffer });
 
 export const deleteProduct = (id: string) => makeDelete<void>(`p/${id}/s`);
+
+export const includeProduct = (id: string) => makePut<ApiMeta>(`p/${id}`)

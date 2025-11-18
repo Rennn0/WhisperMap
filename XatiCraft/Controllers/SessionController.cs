@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using XatiCraft.Guards;
@@ -13,16 +12,16 @@ namespace XatiCraft.Controllers;
 [ApiKeyGuard]
 public class SessionController : ControllerBase
 {
+    private readonly Security _aspProtector;
     private readonly ILogger<SessionController> _logger;
-    private readonly IDataProtector _protector;
 
     /// <summary>
     /// </summary>
-    /// <param name="dataProtectionProvider"></param>
+    /// <param name="securities"></param>
     /// <param name="logger"></param>
-    public SessionController(IDataProtectionProvider dataProtectionProvider, ILogger<SessionController> logger)
+    public SessionController(IEnumerable<Security> securities, ILogger<SessionController> logger)
     {
-        _protector = dataProtectionProvider.CreateProtector(AuthGuard.GetProtectionPurpose());
+        _aspProtector = securities.First(s => s is AspDataProtector);
         _logger = logger;
     }
 
@@ -32,13 +31,13 @@ public class SessionController : ControllerBase
     [HttpGet]
     public IActionResult InitSession()
     {
-        if (!HttpContext.Request.Headers.TryGetValue("x-public-ip", out StringValues forwardHeader))
+        if (!HttpContext.Request.Headers.TryGetValue(AuthGuard.InitHeader, out StringValues forwardHeader))
             return Unauthorized();
 
         string ip = forwardHeader.ToString().Split(',')[0].Trim();
         _logger.LogInformation("public ip {ip}", ip);
         string protectedData =
-            _protector.Protect(JsonSerializer.Serialize(new SessionData(ip, Guid.NewGuid().ToString("N"))));
+            _aspProtector.Pack(JsonSerializer.Serialize(new SessionData(ip, Guid.NewGuid().ToString("N"))));
         CookieOptions cookieOptions = new CookieOptions
         {
             HttpOnly = true,
@@ -47,7 +46,7 @@ public class SessionController : ControllerBase
             Expires = DateTimeOffset.Now.AddDays(1),
             IsEssential = true
         };
-        HttpContext.Response.Cookies.Append("session", protectedData, cookieOptions);
+        HttpContext.Response.Cookies.Append(AuthGuard.SessionCookie, protectedData, cookieOptions);
         return NoContent();
     }
 
@@ -55,9 +54,9 @@ public class SessionController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet("me")]
-    public IActionResult Me([FromServices] UserManager usermanager, IHttpContextAccessor accessor)
+    public IActionResult Me([FromServices] UserGuard userGuard)
     {
-        if (!usermanager.TryGetUserInfo(out UserInfo? userInfo)) return Unauthorized();
+        if (!userGuard.TryGetUserInfo(out UserInfo? userInfo)) return Unauthorized();
         return Ok(userInfo);
     }
 }

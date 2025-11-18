@@ -6,10 +6,10 @@ import SkeletonProductDetail from '../skeletons/SkeletonProductDetail.vue';
 import TablerLeftIcon from '../freestyle/TablerLeftIcon.vue';
 import TablerAddToCartIcon from '../freestyle/TablerAddToCartIcon.vue';
 import TablerPhoneCallIcon from '../freestyle/TablerPhoneCallIcon.vue';
-import IconParkCloseIcon from '../freestyle/IconParkCloseIcon.vue';
-import { deleteProduct, getProduct } from '../../services/http';
+import { deleteProduct, getProduct, includeProduct } from '../../services/http';
 import TablerDeleteIcon from '../freestyle/TablerDeleteIcon.vue';
 import ConfirmationModal from '../modals/ConfirmationModal.vue';
+import InformationalModal from '../modals/InformationalModal.vue';
 import { userInfoInjectionKey } from '../../injectionKeys';
 
 const router = useRouter();
@@ -77,7 +77,7 @@ const toggleDescription = () => {
 };
 
 const contactClicked = () => showContactModal.value = true;
-const addClicked = () => { };
+const addClicked = () => { includeProduct(props.id) };
 const closeContactModal = () => showContactModal.value = false;
 
 const handleDeleteConfirmed = async () => {
@@ -191,39 +191,14 @@ const deleteClicked = () => {
             :confirm-text="$t('product.modals.delete.confirm')" @confirmed="handleDeleteConfirmed"
             @cancelled="handleDeleteCancelled" />
 
-        <transition name="fade">
-            <div v-if="showContactModal" class="fixed inset-0 flex items-center justify-center backdrop-blur-md z-50"
-                @click.self="closeContactModal">
-                <div class="bg-surface rounded-lg shadow-lg w-11/12 max-w-sm p-6 relative border border-subtle">
-                    <button @click="closeContactModal"
-                        class="absolute top-2 right-2 text-text hover:text-primary transition">
-                        <IconParkCloseIcon class="w-5 h-5" />
-                    </button>
-                    <h2 class="text-lg font-semibold mb-4 text-center">{{ $t('product.info') }}</h2>
-                    <div class="space-y-3 text-center">
-                        <p><span class="font-medium">{{ $t('product.email') }}:</span> {{ contactInfo.email ?? 'N/A' }}
-                        </p>
-                        <p><span class="font-medium">{{ $t('product.phone') }}:</span> {{ contactInfo.phone ?? 'N/A' }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </transition>
+        <InformationalModal :isOpen="showContactModal" :title="$t('product.info')"
+            :text="`${$t('product.email')}: ${contactInfo.email}\n${$t('product.phone')}: ${contactInfo.phone}`"
+            @closed="closeContactModal" />
     </div>
     <SkeletonProductDetail v-else />
 </template>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
-
 ::-webkit-scrollbar {
     width: 6px;
 }

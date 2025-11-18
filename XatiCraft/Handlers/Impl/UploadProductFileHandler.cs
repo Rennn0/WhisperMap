@@ -6,8 +6,7 @@ using XatiCraft.Objects;
 
 namespace XatiCraft.Handlers.Impl;
 
-/// <summary>
-/// </summary>
+/// <inheritdoc />
 public class UploadProductFileHandler : IUploadProductFileHandler
 {
     // private const long MaxFileSize = 5 * 1024 * 1024; //#NOTE ~ 5mb
