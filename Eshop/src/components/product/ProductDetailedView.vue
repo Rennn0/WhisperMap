@@ -34,12 +34,12 @@ watchEffect(async () => {
     getProduct(props.id).request
         .then(p => {
             productRef.value = p?.id ? p : null;
-            console.log("SENDING AUDIT")
             const log: AuditLog = {
                 requestId: p.request_id,
-                requestBody: '{}',
+                requestBody: JSON.stringify({ id: props.id }),
                 responseBody: JSON.stringify(p),
-                status: 0
+                route: "getProduct",
+                status: 200
             }
             sendAudit(log);
         })

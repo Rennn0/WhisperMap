@@ -1,0 +1,2 @@
+-- Migration number: 0002 	 2025-11-19T18:36:18.844Z
+ALTER TABLE RequestLogs ADD COLUMN [Route] TEXT NOT NULL DEFAULT '' ;

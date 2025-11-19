@@ -40,6 +40,7 @@ export interface AuditLog {
     requestId: string,
     requestBody: string,
     responseBody: string,
+    route: string,
     status: number,
 }
 
