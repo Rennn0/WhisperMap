@@ -1,6 +1,4 @@
-using System.Text;
 using XatiCraft.ApiContracts;
-using XatiCraft.Data.Repos;
 using XatiCraft.Guards;
 using XatiCraft.Handlers.Api;
 using XatiCraft.Objects;
@@ -12,50 +10,83 @@ public class ProductCartHandler : IProductCartHandler
 {
     private const string CookieKey = "_pcc";
     private const char Delimiter = ';';
-    private readonly IProductRepo _productRepo;
+    private readonly IGetProductsHandler _getProductsHandler;
+    private readonly HttpContext _httpContext;
     private readonly Security _security;
 
     /// <summary>
     /// </summary>
-    public ProductCartHandler(IEnumerable<Security> securities, IProductRepo productRepo)
+    public ProductCartHandler(IEnumerable<Security> securities, IGetProductsHandler getProductsHandler,
+        IHttpContextAccessor httpContextAccessor)
     {
-        _productRepo = productRepo;
+        _getProductsHandler = getProductsHandler;
         _security = securities.First(s => s is AspDataProtector);
+        _httpContext = httpContextAccessor.HttpContext ??
+                       throw new NullReferenceException(nameof(httpContextAccessor.HttpContext));
     }
 
     /// <inheritdoc />
     public ValueTask<ApiContract> HandleAsync(AddProductInCartContext context, CancellationToken cancellationToken)
     {
-        context.ExistingCookies.TryGetValue(CookieKey, out string? existingCookie);
-        StringBuilder cookieBuilder = new StringBuilder();
-        if (!string.IsNullOrEmpty(existingCookie))
-        {
-            string unpackedCookie = _security.UnPack(existingCookie);
-            cookieBuilder.Append(unpackedCookie);
-        }
-
-        cookieBuilder.Append(context.ProductId);
-        cookieBuilder.Append(Delimiter);
-
+        string cookie = GetPlainCookie();
+        string newCookie = string.Join(Delimiter,
+            [..cookie.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries).Distinct(), $"{context.ProductId};"]);
         AddProductInCartContract contract =
-            new AddProductInCartContract(true, _security.Pack(cookieBuilder.ToString()), cookieBuilder.ToString(),
-                CookieKey);
+            new AddProductInCartContract(true, _security.Pack(newCookie), newCookie,
+                CookieKey, context);
         return ValueTask.FromResult<ApiContract>(contract);
     }
 
     /// <inheritdoc />
     public async ValueTask<ApiContract> HandleAsync(GetProductsContext context, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(context.Cookies);
-        ArgumentNullException.ThrowIfNull(context.FromCookies);
+        ApiContract contract = await _getProductsHandler.HandleAsync(new GetProductsContext(), cancellationToken);
+        return new GetProductsContract(
+            ((GetProductsContract)contract).Products.Where(d =>
+                d.Id.HasValue && GetProductIdsFromCookies().Any(id => id == d.Id.Value)),
+            context);
+    }
 
-        if (!context.Cookies.TryGetValue(CookieKey, out string? productsCookie))
-            return new GetProductsContract([]);
+    /// <inheritdoc />
+    public ValueTask<ApiContract> HandleAsync(RemoveProductFromCartContext context, CancellationToken cancellationToken)
+    {
+        string plainCookie = GetPlainCookie();
+        if (string.IsNullOrEmpty(plainCookie)) return ValueTask.FromResult(new ApiContract(context));
 
-        HashSet<long> products = new HashSet<long>(_security.UnPack(productsCookie)
-            .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse));
+        string newCookie = string.Join(Delimiter,
+            plainCookie.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries).Where(id =>
+                long.TryParse(id, out long lid) &&
+                lid != context.ProductId));
 
-        List<Product> data = await _productRepo.SelectProductsAsync(cancellationToken);
-        return new GetProductsContract(data.Where(d => d.Id.HasValue && products.Contains(d.Id.Value)));
+        return new ValueTask<ApiContract>(
+            new AddProductInCartContract(true, _security.Pack(newCookie), newCookie,
+                CookieKey, context));
+    }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="product"></param>
+    /// <returns></returns>
+    public bool ExistsInCart(Product product)
+    {
+        return GetProductIdsFromCookies().Any(id => product.Id == id);
+    }
+
+    private HashSet<long> GetProductIdsFromCookies()
+    {
+        return
+        [
+            ..GetPlainCookie()
+                .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse)
+        ];
+    }
+
+    private string GetPlainCookie()
+    {
+        Dictionary<string, string> cookies = _httpContext.Request.Cookies.ToDictionary();
+
+        return !cookies.TryGetValue(CookieKey, out string? protectedCookie)
+            ? string.Empty
+            : _security.UnPack(protectedCookie);
     }
 }

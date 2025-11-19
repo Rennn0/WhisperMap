@@ -4,5 +4,6 @@ namespace XatiCraft.Handlers.Api;
 
 /// <summary>
 /// </summary>
-public interface IUploadProductFileHandler : IHandler<ApiContract, UploadProductFileContext>,
+public interface IUploadProductFileHandler :
+    IHandler<ApiContract, UploadProductFileContext>,
     IHandler<ApiContract, GetSignedUrlContext>;

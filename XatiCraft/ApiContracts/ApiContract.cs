@@ -1,3 +1,5 @@
+// ReSharper disable MemberCanBePrivate.Global
+
 namespace XatiCraft.ApiContracts;
 
 /// <summary>
@@ -6,9 +8,26 @@ public record ApiContract
 {
     /// <summary>
     /// </summary>
-    public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.Now;
+    protected ApiContract()
+    {
+        Timestamp = DateTimeOffset.Now;
+        RequestId = Guid.NewGuid().ToString("N");
+    }
 
     /// <summary>
     /// </summary>
-    public string RequestId { get; init; } = Guid.NewGuid().ToString("N");
+    /// <param name="context"></param>
+    public ApiContract(ApiContext context)
+    {
+        Timestamp = context.Timestamp;
+        RequestId = context.RequestId;
+    }
+
+    /// <summary>
+    /// </summary>
+    public DateTimeOffset Timestamp { get; }
+
+    /// <summary>
+    /// </summary>
+    public string RequestId { get; }
 }

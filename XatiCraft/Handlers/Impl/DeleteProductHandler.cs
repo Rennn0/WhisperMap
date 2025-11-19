@@ -32,6 +32,6 @@ public class DeleteProductHandler : IDeleteProductHandler
             ?.Select(pm => _uploader.DeleteObjectAsync(pm.FileKey, cancellationToken)).ToList() ?? [];
         tasks.Add(_ = _productRepo.DeleteAsync(context.Product, cancellationToken));
         await Task.WhenAll(tasks);
-        return new ApiContract { RequestId = context.RequestId };
+        return new ApiContract(context);
     }
 }

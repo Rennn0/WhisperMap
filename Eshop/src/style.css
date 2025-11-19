@@ -7,6 +7,9 @@
   --color-text: #172B4D;
   --color-primary: #0052CC;
   --color-subtle: #F4F5F7;
+  --color-hover: rgba(0, 0, 0, 0.04);
+  --color-danger-bg: rgba(255, 0, 0, 0.10);
+  --color-danger-text: #D14343;
 }
 
 /* Dark theme */
@@ -15,6 +18,9 @@ html.dark {
   --color-text: #B6C2CF;
   --color-primary: #4C9AFF;
   --color-subtle: #2C333A;
+  --color-hover: rgba(255, 255, 255, 0.06);
+  --color-danger-bg: rgba(255, 77, 77, 0.15);
+  --color-danger-text: #FF6B6B;
 }
 
 /* Solarized theme */
@@ -23,6 +29,9 @@ html.solarized {
   --color-text: #657B83;
   --color-primary: #268BD2;
   --color-subtle: #EEE8D5;
+  --color-hover: rgba(0, 0, 0, 0.05);
+  --color-danger-bg: rgba(220, 50, 47, 0.15);
+  --color-danger-text: #DC322F;
 }
 
 /* High Contrast theme */
@@ -31,4 +40,11 @@ html.highcontrast {
   --color-text: #FFFFFF;
   --color-primary: #FF00FF;
   --color-subtle: #222222;
+  --color-hover: rgba(255, 255, 255, 0.15);
+  --color-danger-bg: rgba(255, 0, 0, 0.4);
+  --color-danger-text: #FF4444;
+}
+
+.text-danger-text {
+  color: var(--color-danger-text);
 }

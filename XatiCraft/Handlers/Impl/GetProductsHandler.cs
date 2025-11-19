@@ -46,10 +46,7 @@ public class GetProductsHandler : IGetProductsHandler
                 PreviewImg = p.ProductMetadata?.Where(pm => !string.IsNullOrEmpty(pm.Location)).MinBy(pm => pm.Id)
                     ?.Location //#NOTE maybe add order priority?
             }
-        ))
-        {
-            RequestId = context.RequestId
-        };
+        ), context);
         return contract;
     }
 

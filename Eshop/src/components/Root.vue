@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onActivated, onUpdated, onUnmounted, onBeforeMount } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import NavBar from './navbar/NavbarView.vue';
 import Sidebar from './sidebar/Sidebar.vue';
 import { CurrentViewSelection, type Product } from '../types';
@@ -35,8 +35,8 @@ const onOptionSelect = (key: CurrentViewSelection) => {
             router.push({ name: "products" })
             break;
 
-        case CurrentViewSelection.Order:
-            router.push({ name: "orders" })
+        case CurrentViewSelection.Cart:
+            router.push({ name: "cart" })
             break;
 
         case CurrentViewSelection.Setting:
@@ -47,17 +47,8 @@ const onOptionSelect = (key: CurrentViewSelection) => {
 
 const onUpload = () => router.push("upload");
 
-onActivated(() => { });
-onBeforeMount(() => {
-
-});
-onUpdated(() => { });
-onMounted(() => {
-    window.addEventListener("scroll", handleScroll, false)
-});
-onUnmounted(() => {
-    window.removeEventListener("scroll", handleScroll, false)
-})
+onMounted(() => { window.addEventListener("scroll", handleScroll, false) });
+onUnmounted(() => { window.removeEventListener("scroll", handleScroll, false) })
 //#endregion
 </script>
 

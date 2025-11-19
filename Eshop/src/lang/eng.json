@@ -1,7 +1,7 @@
 {
     "sidebar": {
         "product": "Products",
-        "order": "Orders",
+        "cart": "Basket",
         "settings": "Settings",
         "lang": "Language"
     },
@@ -42,5 +42,8 @@
                 "confirm": "Yes"
             }
         }
+    },
+    "cart":{
+        "title":"Basket"
     }
 }

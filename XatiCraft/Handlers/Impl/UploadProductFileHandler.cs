@@ -40,7 +40,7 @@ public class UploadProductFileHandler : IUploadProductFileHandler
         await _productMetadaRepo.InsertAsync(
             new ProductMetadata(uploadResult.OriginalFileName, uploadResult.Key, uploadResult.Location,
                 context.Product), cancellationToken);
-        return new UploadProductFileContract { RequestId = context.RequestId };
+        return new UploadProductFileContract(context);
     }
 
     /// <inheritdoc />
@@ -52,6 +52,6 @@ public class UploadProductFileHandler : IUploadProductFileHandler
         await _productMetadaRepo.InsertAsync(
             new ProductMetadata(uploadResult.OriginalFileName, uploadResult.Key, uploadResult.Location,
                 context.Product), cancellationToken);
-        return new GetSignedUrlContract(uploadResult.SignedUrl);
+        return new GetSignedUrlContract(uploadResult.SignedUrl, context);
     }
 }

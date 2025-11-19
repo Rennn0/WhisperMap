@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, onActivated, onUnmounted, onUpdated, watch, toValue, inject, type Ref } from 'vue';
+import { ref, onMounted, computed, onActivated, onUnmounted, onUpdated, watch, inject, type Ref } from 'vue';
 import type { Product, ThemeDropdown, UserInfo } from '../../types';
 import { userInfoInjectionKey } from '../../injectionKeys';
 import TablerMenuIcon from '../freestyle/TablerMenuIcon.vue';
 import TablerPlusIcon from '../freestyle/TablerPlusIcon.vue';
-import TablerSearchIcon from '../freestyle/TablerSearchIcon.vue';
 import TablerMoonIcon from '../freestyle/TablerMoonIcon.vue';
 import TablerSunIcon from '../freestyle/TablerSunIcon.vue';
 import TablerContrastIcon from '../freestyle/TablerContrastIcon.vue';
 import TablerCometIcon from '../freestyle/TablerCometIcon.vue';
+import SearchBar from './SearchBar.vue';
 import { getProducts } from '../../services/http';
 
 /** Lightweight debounce implementation to avoid requiring lodash.debounce and its types */
@@ -42,7 +42,6 @@ const query = ref('');
 const dropdownOpen = ref(false);
 const searchPreviewOpen = ref(false);
 const currentTheme = ref('light');
-const searchInput = ref<HTMLInputElement | null>(null);
 const userInfo = inject<Readonly<Ref<UserInfo>>>(userInfoInjectionKey);
 
 const products = ref<Product[]>([]);
@@ -57,8 +56,6 @@ watch(query, async (newQuery) => {
   const q = newQuery.trim().toLowerCase();
   fetchProducts(q);
 });
-
-const filteredProducts = computed(() => toValue(products));
 
 const currentThemeIcon = computed(() => {
   const t = themes.find((t) => t.name === currentTheme.value);
@@ -81,27 +78,28 @@ const onMenu = () => {
   emit('menu-toggle');
 }
 
-const onInput = () => {
-  emit('input', query.value);
-  searchPreviewOpen.value = !!query.value;
+const onInput = (value: string) => {
+  query.value = value;
+  searchPreviewOpen.value = !!value;
 }
 
-const onEnter = () => {
-  emit('search', query.value);
+const onSearch = (value: string) => {
+  emit('search', value);
   searchPreviewOpen.value = false;
 }
 
-const onProductClick = (product: Product) => {
+const onProductChosen = (product: Product) => {
   emit('product-chosen', product);
   query.value = '';
   searchPreviewOpen.value = false;
-  searchInput.value?.blur();
 }
 
-const closeSearchPreviewLater = () => {
-  setTimeout(() => {
-    searchPreviewOpen.value = false;
-  }, 100);
+const onSearchFocus = () => {
+  searchPreviewOpen.value = true;
+}
+
+const onSearchBlur = () => {
+  searchPreviewOpen.value = false;
 }
 
 //#region lifecycle hooks
@@ -138,40 +136,8 @@ onUnmounted(() => { })
       </div>
 
       <!-- Search (center) -->
-      <div class="flex-1 flex justify-center">
-        <div class="w-full max-w-2xl relative px-2 md:px-0">
-          <span class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <TablerSearchIcon class="w-5 h-5" />
-          </span>
-
-          <input id="nv1" v-model="query" ref="searchInput" @input="onInput" @keyup.enter="onEnter"
-            @focus="searchPreviewOpen = true" @blur="closeSearchPreviewLater" type="search"
-            :placeholder="$t('nav.search')"
-            class="w-full pl-10 pr-4 py-1 md:py-2 rounded-full border   bg-surface text-text outline-none md:text-sm" />
-
-          <!-- preview box -->
-          <div v-if="searchPreviewOpen && filteredProducts.length"
-            class="absolute left-0 right-0 mt-2 bg-surface border border-subtle shadow-lg rounded-xl z-50 overflow-y-auto max-h-[70vh] md:max-w-2xl mx-auto">
-            <ul>
-              <li v-for="p in filteredProducts" :key="p.id" @mousedown.prevent="onProductClick(p)"
-                class="flex items-center justify-between gap-4 px-4 py-3 hover:bg-subtle cursor-pointer">
-                <div class="flex items-center gap-4 min-w-0">
-                  <img :src="p.preview_img || '/placeholder.png'"
-                    class="w-14 h-14 rounded-lg object-cover flex-shrink-0" alt="Product image" />
-                  <div class="flex flex-col overflow-hidden">
-                    <span class="font-semibold text-text">{{ p.title }}</span>
-                    <span class="text-sm text-text/70 truncate">{{ p.description }}</span>
-                  </div>
-                </div>
-                <span class="text-sm font-semibold text-text whitespace-nowrap ml-2">
-                  {{ p.price ? '$' + p.price.toFixed(2) : '' }}
-                </span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
+      <SearchBar :products="products" :isOpen="searchPreviewOpen" :query="query" @input="onInput" @search="onSearch"
+        @product-chosen="onProductChosen" @focus="onSearchFocus" @blur="onSearchBlur" />
 
       <!-- Right side buttons -->
       <div class="relative flex items-center">

@@ -1,6 +1,12 @@
+using System.Text.Json.Serialization;
+
 namespace XatiCraft.ApiContracts;
 
-/// <summary>
-/// </summary>
-/// <param name="ProductId"></param>
-public record CreateProductContract(long ProductId) : ApiContract;
+/// <inheritdoc />
+public record CreateProductContract(long ProductId, ApiContext Context) : ApiContract(Context)
+{
+    /// <summary>
+    /// </summary>
+    [JsonIgnore]
+    public ApiContext Context { get; init; } = Context;
+}

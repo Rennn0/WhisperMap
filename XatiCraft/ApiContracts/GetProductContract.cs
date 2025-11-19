@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace XatiCraft.ApiContracts;
 
 /// <summary>
@@ -12,4 +14,13 @@ public record GetProductContract(
     string Title,
     string Description,
     decimal Price,
-    IEnumerable<string>? Resources) : ApiContract;
+    bool InCart,
+    IEnumerable<string>? Resources,
+    ApiContext Context)
+    : ApiContract(Context)
+{
+    /// <summary>
+    /// </summary>
+    [JsonIgnore]
+    public ApiContext Context { get; init; } = Context;
+}

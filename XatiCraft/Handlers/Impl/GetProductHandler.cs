@@ -9,14 +9,17 @@ namespace XatiCraft.Handlers.Impl;
 /// </summary>
 public class GetProductHandler : IGetProductHandler
 {
+    private readonly IProductCartHandler _productCartHandler;
     private readonly IProductRepo _productRepo;
 
     /// <summary>
     /// </summary>
     /// <param name="productRepo"></param>
-    public GetProductHandler(IProductRepo productRepo)
+    /// <param name="productCartHandler"></param>
+    public GetProductHandler(IProductRepo productRepo, IProductCartHandler productCartHandler)
     {
         _productRepo = productRepo;
+        _productCartHandler = productCartHandler;
     }
 
     /// <summary>
@@ -29,7 +32,9 @@ public class GetProductHandler : IGetProductHandler
         Product? product = await _productRepo.SelectProductAsync(context.ProductId, cancellationToken);
         if (product is null) return new Error(ErrorCode.ArgumentMissmatchInDatabase);
 
+        bool inCart = ((ProductCartHandler)_productCartHandler).ExistsInCart(product);
+
         return new GetProductContract(context.ProductId, product.Title, product.Description,
-            product.Price, product.ProductMetadata?.Select(pmd => pmd.Location));
+            product.Price, inCart, product.ProductMetadata?.Select(pmd => pmd.Location), context);
     }
 }

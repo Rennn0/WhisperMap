@@ -14,7 +14,7 @@ const { locale } = useI18n();
 
 const options: SidebarOptions[] = [
     { title: "sidebar.product", key: CurrentViewSelection.Product, icon: GiftIcon },
-    { title: "sidebar.order", key: CurrentViewSelection.Order, icon: ShoppingBagIcon },
+    { title: "sidebar.cart", key: CurrentViewSelection.Cart, icon: ShoppingBagIcon },
     { title: "sidebar.settings", key: CurrentViewSelection.Setting, icon: TablerSettingsIcon }
 ];
 

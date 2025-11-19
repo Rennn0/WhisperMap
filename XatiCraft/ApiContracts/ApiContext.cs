@@ -1,4 +1,4 @@
 namespace XatiCraft.ApiContracts;
 
 /// <inheritdoc />
-public record ApiContext : ApiContract;
+public abstract record ApiContext : ApiContract;

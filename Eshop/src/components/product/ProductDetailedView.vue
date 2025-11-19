@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect, watch, inject, type Ref } from 'vue';
+import { ref, computed, watchEffect, inject, type Ref } from 'vue';
 import type { MediaItem, Product, UserInfo } from '../../types';
 import { useRouter } from 'vue-router';
 import SkeletonProductDetail from '../skeletons/SkeletonProductDetail.vue';
@@ -13,25 +13,30 @@ import InformationalModal from '../modals/InformationalModal.vue';
 import { userInfoInjectionKey } from '../../injectionKeys';
 
 const router = useRouter();
-const props = defineProps<{ id: string }>();
+const props = defineProps<{ id: number }>();
 const productRef = ref<Product | null>(null);
 const showContactModal = ref(false);
 const showDeleteConfirmation = ref(false);
+const showAddButton = ref<boolean | undefined>(false);
 const contactInfo = {
     email: "lukadanelia056@gmail.com",
     phone: "+995 599 288 177"
 }
 const userInfo = inject<Readonly<Ref<UserInfo>>>(userInfoInjectionKey);
-watch(showContactModal, (visible) => {
-    if (visible)
+watchEffect(() => {
+    if (showContactModal)
         document.body.style.overflow = 'hidden';
     else
         document.body.style.overflow = '';
 });
 watchEffect(async () => {
     productRef.value = null;
-    getProduct(props.id).request.then(p => productRef.value = p?.id ? p : null)
-},)
+    getProduct(props.id).request
+        .then(p => productRef.value = p?.id ? p : null)
+        .then(() => {
+            showAddButton.value = !productRef.value?.in_cart;
+        })
+})
 const product = computed(() => productRef.value);
 
 const mediaList = computed<MediaItem[]>(() => {
@@ -77,7 +82,9 @@ const toggleDescription = () => {
 };
 
 const contactClicked = () => showContactModal.value = true;
-const addClicked = () => { includeProduct(props.id) };
+const addClicked = () => {
+    includeProduct(props.id).request.then((_) => showAddButton.value = false);
+};
 const closeContactModal = () => showContactModal.value = false;
 
 const handleDeleteConfirmed = async () => {
@@ -100,18 +107,21 @@ const deleteClicked = () => {
 <template>
     <div v-if="product" class="max-w-5xl mx-auto bg-surface border border-subtle rounded-lg shadow-sm p-4">
         <div class="flex justify-between items-center mb-4">
+            <!-- Back -->
             <button type="button" @click="router.back()" aria-label="Back to product list"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-subtle hover:bg-subtle/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition text-sm font-medium">
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition border border-subtle bg-surface text-text hover:bg-subtle hover:shadow-md">
                 <TablerLeftIcon class="w-4 h-4" />
                 <span>{{ $t('app.back') }}</span>
             </button>
 
+            <!-- Delete -->
             <button v-if="userInfo?.can_delete" type="button" @click="deleteClicked" aria-label="Delete product"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-subtle hover:bg-subtle/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition text-sm font-medium">
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition border border-subtle bg-surface text-text    hover:bg-subtle hover:shadow-md">
                 <TablerDeleteIcon class="w-4 h-4" />
                 <span class="font-medium">{{ $t('product.delete') }}</span>
             </button>
         </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2">
                 <div v-if="selectedMedia" class="w-full rounded-md overflow-hidden bg-black/5">
@@ -170,19 +180,20 @@ const deleteClicked = () => {
 
                 <div class="flex gap-2">
                     <button
-                        class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-subtle text-text rounded-md hover:shadow-sm hover:shadow-primary"
+                        class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition border border-subtle bg-surface text-text hover:bg-subtle hover:shadow-md"
                         @click="contactClicked">
                         <TablerPhoneCallIcon class="w-5 h-5" />
                         <span>{{ $t('product.contact') }}</span>
                     </button>
 
-                    <button
-                        class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md  hover:shadow-sm hover:shadow-primary"
+                    <button v-if="showAddButton"
+                        class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transitionborder border-subtle bg-surface text-text hover:bg-subtle hover:shadow-md"
                         @click="addClicked">
                         <TablerAddToCartIcon class="w-5 h-5" />
                         <span>{{ $t('product.add') }}</span>
                     </button>
                 </div>
+
             </div>
         </div>
 

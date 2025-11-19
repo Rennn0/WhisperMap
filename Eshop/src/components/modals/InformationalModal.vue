@@ -26,7 +26,7 @@ watchEffect(() => {
 <template>
     <transition enter-active-class="transition opacity duration-200"
         leave-active-class="transition opacity duration-200" enter-from-class="opacity-0" leave-to-class="opacity-0">
-        <div v-if="isOpen" class="fixed inset-0 flex items-center justify-center backdrop-blur-md z-50"
+        <div v-if="isOpen" class="fixed inset-0 flex items-center justify-center backdrop-blur-md"
             @click.self="handleClose">
             <div class="bg-surface rounded-lg shadow-lg w-11/12 max-w-sm p-6 relative border border-subtle">
                 <button @click="handleClose" class="absolute top-2 right-2 text-text hover:text-primary transition">

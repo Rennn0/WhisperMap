@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, onUpdated, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import type { Product } from '../../types';
 import { useRouter } from 'vue-router';
 import ProductItem from './ProductItem.vue';
@@ -10,7 +10,6 @@ const router = useRouter();
 const emit = defineEmits<{ (e: 'select', product: Product): void }>();
 
 const productsRef = ref<Product[] | null>(null);
-// watchEffect(() => );
 const products = computed(() => productsRef.value);
 
 const onSelect = (product: Product) => {
@@ -18,13 +17,9 @@ const onSelect = (product: Product) => {
     emit('select', product);
 };
 
-//#region lifecycle hooks
-onUpdated(() => { });
 onMounted(() => {
     getProducts().request.then(ps => productsRef.value = ps.products ?? [])
 });
-onUnmounted(() => { })
-//#endregion
 </script>
 
 <template>

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { onActivated, onMounted, onUnmounted, onUpdated } from 'vue';
 import type { Product } from '../../types';
 
 const emits = defineEmits<{
@@ -8,12 +7,6 @@ const emits = defineEmits<{
 
 defineProps<{ product: Product }>();
 
-//#region lifecycle hooks
-onActivated(() => { });
-onUpdated(() => { });
-onMounted(() => { });
-onUnmounted(() => { })
-//#endregion
 </script>
 
 <template>

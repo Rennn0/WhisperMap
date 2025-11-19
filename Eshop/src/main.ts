@@ -4,7 +4,7 @@ import App from './App.vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import ProductDetail from './components/product/ProductDetailedView.vue'
 import ProductsView from './components/product/ProductsView.vue'
-import OrdersView from './components/orders/OrdersView.vue'
+import CartView from './components/orders/CartView.vue'
 import SettingsView from './components/settings/SettingsView.vue'
 import { ensureProductDetailAccess } from './guards/productDetail.guard'
 import Root from './components/Root.vue'
@@ -36,9 +36,9 @@ const router = createRouter({
                     beforeEnter: ensureProductDetailAccess
                 },
                 {
-                    path: "/orders",
-                    component: OrdersView,
-                    name: "orders"
+                    path: "/cart",
+                    component: CartView,
+                    name: "cart"
                 },
                 {
                     path: "/settings",

@@ -1,14 +1,21 @@
 export enum CurrentViewSelection {
-    Product, Order, Setting
+    Product, Cart, Setting
 }
 
 export interface Product {
-    id: string;
+    id: number;
     title: string;
     description: string;
     price?: number;
     preview_img?: string,
+    in_cart?: boolean,
     resources?: string[]
+}
+
+export interface TCartItem {
+    id: number,
+    title: string,
+    price?: number
 }
 
 export interface UserInfo {

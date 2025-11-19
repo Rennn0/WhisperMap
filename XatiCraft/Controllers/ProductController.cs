@@ -55,7 +55,7 @@ public class ProductController : ControllerBase
             false => handlers.First(h => h is GetProductsHandler)
         };
         return await handler.HandleAsync(
-            new GetProductsContext(query, fromCookies, HttpContext.Request.Cookies.ToDictionary()), cancellationToken);
+            new GetProductsContext(query), cancellationToken);
     }
 
     /// <summary>
@@ -77,18 +77,41 @@ public class ProductController : ControllerBase
     /// <param name="productId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [HttpPut("{productId:long}")]
+    [HttpPut("{productId:long}/cart")]
     public async Task<ApiContract> AddProductInCart([FromServices] IProductCartHandler handler,
         [FromRoute] long productId, CancellationToken cancellationToken)
     {
+        AddProductInCartContext context = new AddProductInCartContext(productId);
         ApiContract contract = await handler.HandleAsync(
-            new AddProductInCartContext(productId, HttpContext.Request.Cookies.ToDictionary()), cancellationToken);
+            context, cancellationToken);
         if (contract is AddProductInCartContract { AsCookie: true } cartContract)
             HttpContext.Response.Cookies.Append(cartContract.CookieKey, cartContract.ProtectedCookie, new CookieOptions
             {
                 HttpOnly = true, Secure = true, SameSite = SameSiteMode.Strict
             });
 
-        return contract;
+        return new ApiContract(context);
+    }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="handler"></param>
+    /// <param name="productId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpDelete("{productId:long}/cart")]
+    public async Task<ApiContract> RemoveProductFromCart([FromServices] IProductCartHandler handler,
+        [FromRoute] long productId, CancellationToken cancellationToken)
+    {
+        ApiContext context = new RemoveProductFromCartContext(productId);
+        ApiContract contract = await handler.HandleAsync(
+            (RemoveProductFromCartContext)context, cancellationToken);
+        if (contract is AddProductInCartContract { AsCookie: true } cartContract)
+            HttpContext.Response.Cookies.Append(cartContract.CookieKey, cartContract.ProtectedCookie, new CookieOptions
+            {
+                HttpOnly = true, Secure = true, SameSite = SameSiteMode.Strict
+            });
+
+        return new ApiContract(context);
     }
 }

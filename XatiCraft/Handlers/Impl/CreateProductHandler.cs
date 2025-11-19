@@ -32,7 +32,7 @@ public class CreateProductHandler : ICreateProductHandler
             cancellationToken);
 
         ArgumentNullException.ThrowIfNull(product.Id);
-        return new CreateProductContract((long)product.Id) { RequestId = context.RequestId };
+        return new CreateProductContract((long)product.Id, context);
     }
 
     /// <summary>
