@@ -87,7 +87,7 @@ public class ProductController : ControllerBase
         if (contract is AddProductInCartContract { AsCookie: true } cartContract)
             HttpContext.Response.Cookies.Append(cartContract.CookieKey, cartContract.ProtectedCookie, new CookieOptions
             {
-                HttpOnly = true, Secure = true, SameSite = SameSiteMode.Strict
+                HttpOnly = true, Secure = true, SameSite = SameSiteMode.Lax
             });
 
         return new ApiContract(context);

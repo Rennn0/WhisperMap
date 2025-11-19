@@ -1,5 +1,5 @@
 import ky, { type Options } from "ky";
-import type { UserInfo, Product, UploadableProduct, ApiMeta } from "../types";
+import type { UserInfo, Product, UploadableProduct, ApiMeta, AuditLog } from "../types";
 
 const headers = new Headers();
 headers.set("content-type", "application/json");
@@ -89,3 +89,5 @@ export const deleteProduct = (id: number) => makeDelete<void>(`p/${id}/s`);
 export const includeProduct = (id: number) => makePut<ApiMeta>(`p/${id}/cart`)
 
 export const removeProduct = (id: number) => makeDelete<ApiMeta>(`p/${id}/cart`)
+
+export const sendAudit = (arg: AuditLog) => makePost<void>("audit", arg);

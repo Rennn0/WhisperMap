@@ -42,7 +42,7 @@ public class SessionController : ControllerBase
         {
             HttpOnly = true,
             Secure = true,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.Lax,
             Expires = DateTimeOffset.Now.AddDays(1),
             IsEssential = true
         };

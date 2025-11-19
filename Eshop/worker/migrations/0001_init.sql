@@ -1,0 +1,9 @@
+-- Migration number: 0001 	 2025-11-19T17:36:53.325Z
+CREATE TABLE IF NOT EXISTS RequestLogs (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    RequestId TEXT NOT NULL,
+    RequestBody TEXT,
+    ResponseBody TEXT,
+    Status INTEGER NOT NULL,
+    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+);

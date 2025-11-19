@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect, inject, type Ref } from 'vue';
-import type { MediaItem, Product, UserInfo } from '../../types';
+import type { AuditLog, MediaItem, Product, UserInfo } from '../../types';
 import { useRouter } from 'vue-router';
 import SkeletonProductDetail from '../skeletons/SkeletonProductDetail.vue';
 import TablerLeftIcon from '../freestyle/TablerLeftIcon.vue';
 import TablerAddToCartIcon from '../freestyle/TablerAddToCartIcon.vue';
 import TablerPhoneCallIcon from '../freestyle/TablerPhoneCallIcon.vue';
-import { deleteProduct, getProduct, includeProduct } from '../../services/http';
+import { deleteProduct, getProduct, includeProduct, sendAudit } from '../../services/http';
 import TablerDeleteIcon from '../freestyle/TablerDeleteIcon.vue';
 import ConfirmationModal from '../modals/ConfirmationModal.vue';
 import InformationalModal from '../modals/InformationalModal.vue';
@@ -32,7 +32,17 @@ watchEffect(() => {
 watchEffect(async () => {
     productRef.value = null;
     getProduct(props.id).request
-        .then(p => productRef.value = p?.id ? p : null)
+        .then(p => {
+            productRef.value = p?.id ? p : null;
+            console.log("SENDING AUDIT")
+            const log: AuditLog = {
+                requestId: p.request_id,
+                requestBody: '{}',
+                responseBody: JSON.stringify(p),
+                status: 0
+            }
+            sendAudit(log);
+        })
         .then(() => {
             showAddButton.value = !productRef.value?.in_cart;
         })

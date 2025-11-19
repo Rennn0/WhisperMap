@@ -16,5 +16,10 @@ head_sampling_rate = 1
 invocation_logs = true
 persist = true
 
+[[d1_databases]]
+binding = "xati_db"
+database_name = "xati-db"
+database_id = "46cb2a6c-7bb4-4f4e-8ad8-2f2407bb48be"
+
 [dev]
 port =  18070

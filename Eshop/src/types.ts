@@ -36,6 +36,13 @@ export interface UploadProps {
     id: number | null
 }
 
+export interface AuditLog {
+    requestId: string,
+    requestBody: string,
+    responseBody: string,
+    status: number,
+}
+
 export type ThemeDropdown = { name: string, label: string, icon: any };
 
 export type MediaItem = { type: 'image' | 'video'; src: string; alt?: string };
