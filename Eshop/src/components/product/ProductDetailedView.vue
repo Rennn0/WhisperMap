@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect, inject, type Ref } from 'vue';
-import type { AuditLog, MediaItem, Product, UserInfo } from '../../types';
+import type { MediaItem, Product, UserInfo } from '../../types';
 import { useRouter } from 'vue-router';
 import SkeletonProductDetail from '../skeletons/SkeletonProductDetail.vue';
 import TablerLeftIcon from '../freestyle/TablerLeftIcon.vue';
 import TablerAddToCartIcon from '../freestyle/TablerAddToCartIcon.vue';
 import TablerPhoneCallIcon from '../freestyle/TablerPhoneCallIcon.vue';
-import { deleteProduct, getProduct, includeProduct, sendAudit } from '../../services/http';
+import { deleteProduct, getProduct, includeProduct } from '../../services/http';
 import TablerDeleteIcon from '../freestyle/TablerDeleteIcon.vue';
 import ConfirmationModal from '../modals/ConfirmationModal.vue';
 import InformationalModal from '../modals/InformationalModal.vue';
