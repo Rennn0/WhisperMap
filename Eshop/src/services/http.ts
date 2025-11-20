@@ -2,8 +2,12 @@ import ky, { type Options } from "ky";
 import type { UserInfo, Product, UploadableProduct, ApiMeta, AuditLog } from "../types";
 
 const headers = new Headers();
-headers.set("content-type", "application/json");
+headers.set("content-type", "application/json; charset=utf-8");
 const auditClient = ky.create({ prefixUrl: "cl" })
+const appHeaders = {
+    auditHeader: "xc-audit"
+}
+const noAudit = () => ({ [appHeaders.auditHeader]: "0" });
 const httpClint = ky.create({
     headers,
     prefixUrl: "cl",
@@ -28,26 +32,31 @@ const httpClint = ky.create({
                 }
             },
             async (req, _, res,) => {
+                const reqClone = req.clone();
+                if (reqClone.headers.get(appHeaders.auditHeader) == "0") return;
                 const resClone = res.clone();
                 if (resClone.status == 204) return;
                 const apiMeta: ApiMeta = await resClone.json();
                 if (!apiMeta.request_id) return;
                 let requestBody = "{}";
+                let responseBody = "{}";
 
                 if (req.method === "POST") {
                     try {
-                        const clonedReq = req.clone();
-                        const text = await clonedReq.text();
+                        let text = await reqClone.text();
                         requestBody = text || "{}";
+                        text = await resClone.text();
+                        responseBody = text || "{}";
                     }
                     catch {
-                        requestBody = "{}";
+                        requestBody = "{e:1}";
+                        responseBody = "{e:1}";
                     }
                 }
                 const auditLog: AuditLog = {
                     requestId: apiMeta.request_id,
                     requestBody: requestBody,
-                    responseBody: "{}",
+                    responseBody: responseBody,
                     route: resClone.url,
                     status: resClone.status
                 }
@@ -99,7 +108,7 @@ export const getProducts = (args: { query?: string | null, fromCookie?: boolean 
     const params = new URLSearchParams();
     if (args.query) params.set('q', args.query);
     if (args.fromCookie) params.set("fc", args.fromCookie.toString());
-    return makeGet<{ products: Product[] } & ApiMeta>(`p?${params.toString()}`);
+    return makeGet<{ products: Product[] } & ApiMeta>(`p?${params.toString()}`, { headers: noAudit() });
 }
 
 export const getProduct = (id: number) => makeGet<Product & ApiMeta>(`p/${id}`);
