@@ -34,7 +34,6 @@ function handleProxy(request, env) {
 
 async function handleAudit(request, env) {
     const body = await request.json();
-    console.log(body)
     await env.xati_db.prepare(
         `INSERT INTO RequestLogs (RequestId, RequestBody, ResponseBody, Status,Route)
            VALUES (?, ?, ?, ?, ?)`

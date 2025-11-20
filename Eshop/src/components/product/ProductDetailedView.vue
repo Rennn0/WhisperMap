@@ -34,14 +34,6 @@ watchEffect(async () => {
     getProduct(props.id).request
         .then(p => {
             productRef.value = p?.id ? p : null;
-            const log: AuditLog = {
-                requestId: p.request_id,
-                requestBody: JSON.stringify({ id: props.id }),
-                responseBody: JSON.stringify(p),
-                route: "getProduct",
-                status: 200
-            }
-            sendAudit(log);
         })
         .then(() => {
             showAddButton.value = !productRef.value?.in_cart;

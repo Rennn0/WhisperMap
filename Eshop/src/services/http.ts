@@ -3,7 +3,7 @@ import type { UserInfo, Product, UploadableProduct, ApiMeta, AuditLog } from "..
 
 const headers = new Headers();
 headers.set("content-type", "application/json");
-
+const auditClient = ky.create({ prefixUrl: "cl" })
 const httpClint = ky.create({
     headers,
     prefixUrl: "cl",
@@ -26,7 +26,34 @@ const httpClint = ky.create({
                     const data = await res.text();
                     console.error(`api err ${data}`);
                 }
-            }
+            },
+            async (req, _, res,) => {
+                const resClone = res.clone();
+                if (resClone.status == 204) return;
+                const apiMeta: ApiMeta = await resClone.json();
+                if (!apiMeta.request_id) return;
+                let requestBody = "{}";
+
+                if (req.method === "POST") {
+                    try {
+                        const clonedReq = req.clone();
+                        const text = await clonedReq.text();
+                        requestBody = text || "{}";
+                    }
+                    catch {
+                        requestBody = "{}";
+                    }
+                }
+                const auditLog: AuditLog = {
+                    requestId: apiMeta.request_id,
+                    requestBody: requestBody,
+                    responseBody: "{}",
+                    route: resClone.url,
+                    status: resClone.status
+                }
+
+                auditClient.post("audit", { body: JSON.stringify(auditLog) });
+            },
         ]
     }
 });
