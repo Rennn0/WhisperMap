@@ -1,9 +1,16 @@
 ﻿services:
-  xc-api:
+  api:
     image: xaticraft
+    container_name: xc-api
     build:
       context: .
       dockerfile: XatiCraft/Dockerfile
+    environment:
+      - CERT_DIR=${CERT_DIR}
+      - CERT_PATH=${CERT_PATH}
+      - CERT_PASS=${CERT_PASS}
+    volumes:
+      - ./ProtectionKeys:/app/keys
     networks:
       - xc-network
 
@@ -29,7 +36,7 @@
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - xc-api
+      - api
     networks:
       - xc-network
 
