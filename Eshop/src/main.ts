@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
-import {createRouter, createWebHashHistory, createWebHistory} from 'vue-router'
+import {createRouter, createWebHistory} from 'vue-router'
 import ProductDetail from './components/product/ProductDetailedView.vue'
 import ProductsView from './components/product/ProductsView.vue'
 import CartView from './components/orders/CartView.vue'
