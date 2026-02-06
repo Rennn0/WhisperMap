@@ -1,24 +1,25 @@
 using XatiCraft.ApiContracts;
+using XatiCraft.Data.Objects;
 using XatiCraft.Data.Repos;
+using XatiCraft.Data.Repos.EfCoreImpl;
 using XatiCraft.Handlers.Api;
 using XatiCraft.Handlers.Upload;
-using XatiCraft.Objects;
 
 namespace XatiCraft.Handlers.Impl;
 
 /// <inheritdoc />
-public class DeleteProductHandler : IDeleteProductHandler
+internal class DeleteProductHandler : IDeleteProductHandler
 {
     private readonly IProductRepo _productRepo;
     private readonly IUploader _uploader;
 
     /// <summary>
     /// </summary>
-    /// <param name="productRepo"></param>
+    /// <param name="productRepos"></param>
     /// <param name="uploader"></param>
-    public DeleteProductHandler(IProductRepo productRepo, IUploader uploader)
+    public DeleteProductHandler(IEnumerable<IProductRepo> productRepos, IUploader uploader)
     {
-        _productRepo = productRepo;
+        _productRepo = productRepos.First(p => p is ProductRepo);
         _uploader = uploader;
     }
 

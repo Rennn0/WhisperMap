@@ -33,24 +33,28 @@ const httpClint = ky.create({
             },
             async (req, _, res,) => {
                 const reqClone = req.clone();
+
                 if (reqClone.headers.get(appHeaders.auditHeader) == "0") return;
+                if (res.status == 204) return;
+
                 const resClone = res.clone();
-                if (resClone.status == 204) return;
-                const apiMeta: ApiMeta = await resClone.json();
-                if (!apiMeta.request_id) return;
+
+                let apiMeta: ApiMeta | null = null;
                 let requestBody = "{}";
                 let responseBody = "{}";
-
+                try {
+                    responseBody = await resClone.text();
+                    apiMeta = responseBody ? JSON.parse(responseBody) : null;
+                } catch {
+                    responseBody = "{e:1}";
+                }
+                if (!apiMeta?.request_id) return;
                 if (req.method === "POST") {
                     try {
-                        let text = await reqClone.text();
-                        requestBody = text || "{}";
-                        text = await resClone.text();
-                        responseBody = text || "{}";
+                        requestBody = (await reqClone.text()) || "{}";
                     }
                     catch {
                         requestBody = "{e:1}";
-                        responseBody = "{e:1}";
                     }
                 }
                 const auditLog: AuditLog = {

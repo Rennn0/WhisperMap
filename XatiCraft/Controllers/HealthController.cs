@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using XatiCraft.Objects;
+using XatiCraft.Data.Objects;
 
 namespace XatiCraft.Controllers;
 

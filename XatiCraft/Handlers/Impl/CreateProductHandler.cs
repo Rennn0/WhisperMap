@@ -1,22 +1,23 @@
 using XatiCraft.ApiContracts;
+using XatiCraft.Data.Objects;
 using XatiCraft.Data.Repos;
+using XatiCraft.Data.Repos.EfCoreImpl;
 using XatiCraft.Handlers.Api;
-using XatiCraft.Objects;
 
 namespace XatiCraft.Handlers.Impl;
 
 /// <summary>
 /// </summary>
-public class CreateProductHandler : ICreateProductHandler
+internal class CreateProductHandler : ICreateProductHandler
 {
     private readonly IProductRepo _productRepo;
 
     /// <summary>
     /// </summary>
-    /// <param name="productRepo"></param>
-    public CreateProductHandler(IProductRepo productRepo)
+    /// <param name="productRepos"></param>
+    public CreateProductHandler(IEnumerable<IProductRepo> productRepos)
     {
-        _productRepo = productRepo;
+        _productRepo = productRepos.First(p => p is ProductRepo);
     }
 
     /// <summary>

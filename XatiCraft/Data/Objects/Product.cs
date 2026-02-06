@@ -1,4 +1,4 @@
-namespace XatiCraft.Objects;
+namespace XatiCraft.Data.Objects;
 
 /// <summary>
 /// </summary>
@@ -17,7 +17,7 @@ public record Product(
 
     /// <summary>
     /// </summary>
-    public ICollection<ProductMetadata>? ProductMetadata { get; set; }
+    public ICollection<ProductMetadata>? ProductMetadata { get; init; }
 
     /// <summary>
     /// </summary>

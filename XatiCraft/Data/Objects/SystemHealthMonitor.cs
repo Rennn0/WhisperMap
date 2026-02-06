@@ -1,4 +1,4 @@
-namespace XatiCraft.Objects;
+namespace XatiCraft.Data.Objects;
 
 /// <summary>
 /// </summary>

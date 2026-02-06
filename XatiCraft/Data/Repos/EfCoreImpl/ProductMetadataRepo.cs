@@ -1,9 +1,9 @@
-using XatiCraft.Objects;
+using XatiCraft.Data.Objects;
 
 namespace XatiCraft.Data.Repos.EfCoreImpl;
 
 /// <inheritdoc />
-public class ProductMetadataRepo : IProductMetadaRepo
+internal class ProductMetadataRepo : IProductMetadaRepo
 {
     private readonly ApplicationContext _context;
 

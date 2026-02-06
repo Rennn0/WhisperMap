@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace XatiCraft.Data;
+namespace XatiCraft.Data.Repos.EfCoreImpl;
 
 /// <inheritdoc />
 public class ApplicationContextFactory 

@@ -1,11 +1,11 @@
-using XatiCraft.Objects;
+using XatiCraft.Data.Objects;
 
 namespace XatiCraft.Data.Repos;
 
 /// <summary>
 ///     defines functionality needed to manipulate ProductMetadata entity
 /// </summary>
-public interface IProductMetadaRepo
+internal interface IProductMetadaRepo
 {
     /// <summary>
     ///     adds new row in ProductsMetadata table.

@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using XatiCraft.ApiContracts;
+using XatiCraft.Data.Objects;
 using XatiCraft.Guards;
 using XatiCraft.Handlers.Api;
 using XatiCraft.Handlers.Impl;
-using XatiCraft.Objects;
 
 namespace XatiCraft.Controllers;
 

@@ -1,11 +1,11 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using XatiCraft.Objects;
+using XatiCraft.Data.Objects;
 
 namespace XatiCraft.Data.Repos.EfCoreImpl;
 
 /// <inheritdoc />
-public class ProductRepo : IProductRepo
+internal class ProductRepo : IProductRepo
 {
     private readonly ApplicationContext _context;
     private readonly JsonSerializerOptions _serializerOptions;

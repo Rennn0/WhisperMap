@@ -1,12 +1,12 @@
 using XatiCraft.ApiContracts;
+using XatiCraft.Data.Objects;
 using XatiCraft.Guards;
 using XatiCraft.Handlers.Api;
-using XatiCraft.Objects;
 
 namespace XatiCraft.Handlers.Impl;
 
 /// <inheritdoc />
-public class ProductCartHandler : IProductCartHandler
+internal class ProductCartHandler : IProductCartHandler
 {
     private const string CookieKey = "_pcc";
     private const char Delimiter = ';';

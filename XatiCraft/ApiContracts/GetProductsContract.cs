@@ -1,12 +1,13 @@
 using System.Text.Json.Serialization;
-using XatiCraft.Objects;
+using XatiCraft.Data.Objects;
 
 namespace XatiCraft.ApiContracts;
 
 /// <summary>
 /// </summary>
 /// <param name="Products"></param>
-public record GetProductsContract(
+/// /// <param name="Context"></param>
+internal record GetProductsContract(
     IEnumerable<Product> Products,
     ApiContext Context)
     : ApiContract(Context)

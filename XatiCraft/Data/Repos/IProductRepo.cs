@@ -1,11 +1,11 @@
-using XatiCraft.Objects;
+using XatiCraft.Data.Objects;
 
 namespace XatiCraft.Data.Repos;
 
 /// <summary>
 ///     defines functionality needed to manipulate Product entity
 /// </summary>
-public interface IProductRepo
+internal interface IProductRepo
 {
     /// <summary>
     ///     returns data from VProducts (not paginated)

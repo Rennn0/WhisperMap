@@ -1,25 +1,26 @@
 using System.Text;
 using XatiCraft.ApiContracts;
+using XatiCraft.Data.Objects;
 using XatiCraft.Data.Repos;
+using XatiCraft.Data.Repos.EfCoreImpl;
 using XatiCraft.Handlers.Api;
-using XatiCraft.Objects;
 
 namespace XatiCraft.Handlers.Impl;
 
 /// <summary>
 /// </summary>
-public class GetProductsHandler : IGetProductsHandler
+internal class GetProductsHandler : IGetProductsHandler
 {
     private const int MaxLenDesc = 44;
     private const int MaxLenTitle = 32;
-    private readonly IProductRepo _productRepo;
+    private readonly IProductRepo _productRepos;
 
     /// <summary>
     /// </summary>
-    /// <param name="productRepo"></param>
-    public GetProductsHandler(IProductRepo productRepo)
+    /// <param name="productRepos"></param>
+    public GetProductsHandler(IEnumerable<IProductRepo> productRepos)
     {
-        _productRepo = productRepo;
+        _productRepos = productRepos.First(p => p is ProductRepo);
     }
 
     /// <summary>
@@ -29,7 +30,7 @@ public class GetProductsHandler : IGetProductsHandler
     /// <returns></returns>
     public async ValueTask<ApiContract> HandleAsync(GetProductsContext context, CancellationToken cancellationToken)
     {
-        List<Product> products = await _productRepo.SelectProductsAsync(cancellationToken);
+        List<Product> products = await _productRepos.SelectProductsAsync(cancellationToken);
         if (!string.IsNullOrWhiteSpace(context.Query))
             products = products
                 .Where(p =>

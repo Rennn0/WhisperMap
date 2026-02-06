@@ -4,7 +4,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using XatiCraft.ApiContracts;
-using XatiCraft.Data;
+using XatiCraft.Data.Objects;
 using XatiCraft.Data.Repos;
 using XatiCraft.Data.Repos.EfCoreImpl;
 using XatiCraft.Guards;
@@ -12,7 +12,6 @@ using XatiCraft.Handlers.Api;
 using XatiCraft.Handlers.Impl;
 using XatiCraft.Handlers.Read;
 using XatiCraft.Handlers.Upload;
-using XatiCraft.Objects;
 using XatiCraft.Settings;
 
 namespace XatiCraft;
@@ -41,7 +40,6 @@ public static class Program
             builder.Configuration.GetSection(nameof(IpRestrictionSettings)));
         builder.Services.Configure<ApiKeySettings>(builder.Configuration.GetSection(nameof(ApiKeySettings)));
 
-
         builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
         {
             options.SuppressMapClientErrors = true;
@@ -57,7 +55,7 @@ public static class Program
             {
                 string session = context.Request.Cookies[AuthGuard.SessionCookie] ?? "";
 
-                return RateLimitPartition.GetFixedWindowLimiter(session, f => new FixedWindowRateLimiterOptions
+                return RateLimitPartition.GetFixedWindowLimiter(session, _ => new FixedWindowRateLimiterOptions
                 {
                     PermitLimit = 60,
                     Window = TimeSpan.FromMinutes(1),
@@ -69,7 +67,7 @@ public static class Program
             opt.OnRejected = (context, token) =>
             {
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                // context.HttpContext.Response.WriteAsync("rate_limit_exc", token);
+                context.HttpContext.Response.WriteAsync("rate_limit_exc", token);
                 return ValueTask.CompletedTask;
             };
         });
@@ -105,6 +103,11 @@ public static class Program
         builder.Services.AddTransient<Security, AspDataProtector>();
         builder.Services.AddTransient<IProductRepo, ProductRepo>();
         builder.Services.AddTransient<IProductMetadaRepo, ProductMetadataRepo>();
+        string mongoConn = builder.Configuration.GetConnectionString("Mongo") ?? throw new Exception();
+        builder.Services.AddTransient<IProductRepo, Data.Repos.MongoImpl.ProductRepo>(_ =>
+            new Data.Repos.MongoImpl.ProductRepo(mongoConn));
+        builder.Services.AddTransient<IProductMetadaRepo, Data.Repos.MongoImpl.ProductMetadataRepo>(_ =>
+            new Data.Repos.MongoImpl.ProductMetadataRepo(mongoConn));
         builder.Services.AddTransient<IUploader, ClaudflareR2StorageService>();
         builder.Services.AddTransient<IReader, ClaudflareR2StorageService>();
         builder.Services.AddTransient<ICreateProductHandler, CreateProductHandler>();
@@ -115,7 +118,7 @@ public static class Program
         builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, GetProductsHandler>();
         builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, ProductCartHandler>();
         builder.Services.AddTransient<IDeleteProductHandler, DeleteProductHandler>();
-
+        
 #if USE_CERT
         builder.Services.AddCert();
 #endif
@@ -135,7 +138,6 @@ public static class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-
         app.Run();
     }
 }

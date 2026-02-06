@@ -7,8 +7,10 @@ namespace XatiCraft.ApiContracts;
 /// <param name="Id"></param>
 /// <param name="Title"></param>
 /// <param name="Description"></param>
+/// <param name="InCart"></param>
 /// <param name="Price"></param>
 /// <param name="Resources"></param>
+/// <param name="Context"></param>
 public record GetProductContract(
     long Id,
     string Title,

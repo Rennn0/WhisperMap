@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using XatiCraft.Data;
+using XatiCraft.Data.Repos.EfCoreImpl;
 
 #nullable disable
 
