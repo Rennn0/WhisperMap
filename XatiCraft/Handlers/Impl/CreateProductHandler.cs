@@ -11,13 +11,16 @@ namespace XatiCraft.Handlers.Impl;
 internal class CreateProductHandler : ICreateProductHandler
 {
     private readonly IProductRepo _productRepo;
+    private readonly IProductRepo _productRepoMongo;
 
     /// <summary>
     /// </summary>
     /// <param name="productRepos"></param>
     public CreateProductHandler(IEnumerable<IProductRepo> productRepos)
     {
-        _productRepo = productRepos.First(p => p is ProductRepo);
+        IEnumerable<IProductRepo> repos = productRepos.ToList();
+        _productRepo = repos.First(p => p is ProductRepo);
+        _productRepoMongo = repos.First(p => p is Data.Repos.MongoImpl.ProductRepo);
     }
 
     /// <summary>
@@ -31,7 +34,7 @@ internal class CreateProductHandler : ICreateProductHandler
         Product product = await _productRepo.InsertAsync(
             new Product(context.Title, context.Description, Normalize(context.Price, 10, 3)),
             cancellationToken);
-
+        // product = await _productRepoMongo.InsertAsync(product, cancellationToken);
         ArgumentNullException.ThrowIfNull(product.Id);
         return new CreateProductContract((long)product.Id, context);
     }

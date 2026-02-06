@@ -4,19 +4,31 @@ namespace XatiCraft.Data.Repos.MongoImpl;
 
 /// <summary>
 /// </summary>
-internal class MongoBase<T>
+internal class MongoBase<T> : MongoConnector
 {
-    private readonly IMongoDatabase _db;
-
+    
     /// <summary>
     /// </summary>
     /// <param name="connection"></param>
     /// <param name="db"></param>
-    protected MongoBase(string connection, string db = "xc-db")
+    protected MongoBase(string connection, string db = "xc-db") : base(connection, db)
     {
-        MongoClient client = new(connection);
-        _db = client.GetDatabase(db);
     }
 
-    protected IMongoCollection<T> GetCollection => _db.GetCollection<T>(typeof(T).Name);
+    protected IMongoCollection<T> Collection => Database!.Value.GetCollection<T>(typeof(T).Name);
+    protected IClientSession Session => Client!.Value.StartSession();
+}
+
+internal class MongoConnector
+{
+    protected static Lazy<MongoClient>? Client;
+    protected static Lazy<IMongoDatabase>? Database;
+
+    protected MongoConnector(string connection, string db)
+    {
+        Client ??= new Lazy<MongoClient>(() => new MongoClient(connection),
+            LazyThreadSafetyMode.ExecutionAndPublication);
+        Database ??= new Lazy<IMongoDatabase>(() => Client.Value.GetDatabase(db),
+            LazyThreadSafetyMode.ExecutionAndPublication);
+    }
 }

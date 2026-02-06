@@ -10,12 +10,9 @@ public record ProductMetadata(
     string OriginalFile,
     string FileKey,
     string Location,
-    long ProductId)
+    long ProductId) : ApplicationObject
 {
-    /// <summary>
-    /// </summary>
-    public long? Id { get; set; }
-
+    
     /// <summary>
     /// </summary>
     public DateTime? Timestamp { get; set; }

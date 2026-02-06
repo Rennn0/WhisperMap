@@ -9,11 +9,8 @@ public record Product(
     string Title,
     string Description,
     decimal Price
-)
+) : ApplicationObject
 {
-    /// <summary>
-    /// </summary>
-    public long? Id { get; set; }
 
     /// <summary>
     /// </summary>

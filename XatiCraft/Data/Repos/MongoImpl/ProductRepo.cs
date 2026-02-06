@@ -1,4 +1,5 @@
-﻿using XatiCraft.Data.Repos.MongoImpl.Model;
+﻿using MongoDB.Driver;
+using Product = XatiCraft.Data.Repos.MongoImpl.Model.Product;
 
 namespace XatiCraft.Data.Repos.MongoImpl;
 
@@ -22,9 +23,13 @@ internal class ProductRepo : MongoBase<Product>, IProductRepo
     }
 
     /// <inheritdoc />
-    public Task<Objects.Product> InsertAsync(Objects.Product product, CancellationToken cancellationToken)
+    public async Task<Objects.Product> InsertAsync(Objects.Product product, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        Product pDoc = new(product.Title, product.Description, product.Price);
+        await Collection.InsertOneAsync(pDoc,
+            new InsertOneOptions { Comment = "xui tebe" }, cancellationToken);
+        product.ObjId = pDoc.Id;
+        return product;
     }
 
     /// <inheritdoc />

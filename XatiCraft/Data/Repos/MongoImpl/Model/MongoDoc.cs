@@ -5,7 +5,7 @@ namespace XatiCraft.Data.Repos.MongoImpl.Model;
 
 /// <summary>
 /// </summary>
-internal record MongoDoc
+internal abstract record MongoDoc
 {
     /// <summary>
     /// </summary>
