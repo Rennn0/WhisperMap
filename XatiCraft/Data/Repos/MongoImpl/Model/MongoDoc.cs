@@ -11,5 +11,5 @@ internal abstract record MongoDoc
     /// </summary>
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
-    public string Id { get; init; } = ObjectId.GenerateNewId().ToString();
+    public string Id { get; } = ObjectId.GenerateNewId().ToString();
 }

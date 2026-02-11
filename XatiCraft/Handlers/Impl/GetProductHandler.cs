@@ -12,6 +12,7 @@ internal class GetProductHandler : IGetProductHandler
 {
     private readonly IProductCartHandler _productCartHandler;
     private readonly IProductRepo _productRepos;
+    private readonly IProductRepo _productObjRepos;
 
     /// <summary>
     /// </summary>
@@ -19,7 +20,9 @@ internal class GetProductHandler : IGetProductHandler
     /// <param name="productCartHandler"></param>
     public GetProductHandler(IEnumerable<IProductRepo> productRepos, IProductCartHandler productCartHandler)
     {
-        _productRepos = productRepos.First(p => p is ProductRepo);
+        IEnumerable<IProductRepo> repos = productRepos.ToList();
+        _productRepos = repos.First(p => p is ProductRepo);
+        _productObjRepos = repos.First(p => p is Data.Repos.MongoImpl.ProductRepo);
         _productCartHandler = productCartHandler;
     }
 
@@ -30,12 +33,19 @@ internal class GetProductHandler : IGetProductHandler
     /// <returns></returns>
     public async ValueTask<ApiContract> HandleAsync(GetProductContext context, CancellationToken cancellationToken)
     {
-        Product? product = await _productRepos.SelectProductAsync(context.ProductId, cancellationToken);
+        Product? product;
+
+        if (long.TryParse(context.Id, out long id))
+            product = await _productRepos.SelectProductAsync(id, cancellationToken);
+        else
+            product = await _productObjRepos.SelectProductAsync(context.Id,
+                cancellationToken); //#NOTE usually this data mustnt be in nosql storage but anyway
+        
         if (product is null) return new Error(ErrorCode.ArgumentMissmatchInDatabase);
 
         bool inCart = ((ProductCartHandler)_productCartHandler).ExistsInCart(product);
 
-        return new GetProductContract(context.ProductId, product.Title, product.Description,
+        return new GetProductContract(context.Id, product.Title, product.Description,
             product.Price, inCart, product.ProductMetadata?.Select(pmd => pmd.Location), context);
     }
 }

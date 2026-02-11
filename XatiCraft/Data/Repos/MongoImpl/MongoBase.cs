@@ -15,20 +15,6 @@ internal class MongoBase<T> : MongoConnector
     {
     }
 
-    protected IMongoCollection<T> Collection => Database!.Value.GetCollection<T>(typeof(T).Name);
-    protected IClientSession Session => Client!.Value.StartSession();
-}
-
-internal class MongoConnector
-{
-    protected static Lazy<MongoClient>? Client;
-    protected static Lazy<IMongoDatabase>? Database;
-
-    protected MongoConnector(string connection, string db)
-    {
-        Client ??= new Lazy<MongoClient>(() => new MongoClient(connection),
-            LazyThreadSafetyMode.ExecutionAndPublication);
-        Database ??= new Lazy<IMongoDatabase>(() => Client.Value.GetDatabase(db),
-            LazyThreadSafetyMode.ExecutionAndPublication);
-    }
+    protected static IMongoCollection<T> Collection => Database!.Value.GetCollection<T>(typeof(T).Name);
+    protected static IClientSession Session => Client!.Value.StartSession();
 }

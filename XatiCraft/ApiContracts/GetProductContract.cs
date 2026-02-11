@@ -12,7 +12,7 @@ namespace XatiCraft.ApiContracts;
 /// <param name="Resources"></param>
 /// <param name="Context"></param>
 public record GetProductContract(
-    long Id,
+    string Id,
     string Title,
     string Description,
     decimal Price,

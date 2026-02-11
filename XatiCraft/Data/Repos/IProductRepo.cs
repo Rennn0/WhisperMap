@@ -22,6 +22,8 @@ internal interface IProductRepo
     /// <returns></returns>
     Task<Product?> SelectProductAsync(long id, CancellationToken cancellationToken);
 
+    Task<Product?> SelectProductAsync(string objId, CancellationToken cancellationToken);
+
     /// <summary>
     ///     adds new row in Products table.
     ///     product object then be populated
@@ -39,10 +41,14 @@ internal interface IProductRepo
     /// <returns></returns>
     Task<bool> ExistsAsync(long id, CancellationToken cancellationToken);
 
+    Task<bool> ExistsAsync(string objId, CancellationToken cancellationToken);
+
     /// <summary>
     /// </summary>
     /// <param name="id"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public Task<bool> DeleteAsync(long id, CancellationToken cancellationToken);
+
+    public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken);
 }

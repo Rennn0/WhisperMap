@@ -59,6 +59,11 @@ internal class ProductRepo : IProductRepo
         return result;
     }
 
+    public Task<Product?> SelectProductAsync(string objId, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
     /// <inheritdoc />
     public async Task<Product> InsertAsync(Product product, CancellationToken cancellationToken)
     {
@@ -81,6 +86,11 @@ internal class ProductRepo : IProductRepo
         return await _context.Products.AsNoTracking().AnyAsync(p => p.Id == id, cancellationToken);
     }
 
+    public Task<bool> ExistsAsync(string objId, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
     /// <inheritdoc />
     public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
     {
@@ -89,5 +99,10 @@ internal class ProductRepo : IProductRepo
         _context.Products.Remove(entity);
         int affected = await _context.SaveChangesAsync(cancellationToken);
         return affected > 0;
+    }
+
+    public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using XatiCraft.ApiContracts;
 using XatiCraft.Data.Objects;
 using XatiCraft.Guards;
@@ -13,9 +12,9 @@ namespace XatiCraft.Controllers;
 /// </summary>
 [ApiController]
 [Route("p")]
-[EnableRateLimiting(AuthGuard.SessionPolicy)]
-[IpSessionGuard]
-[ApiKeyGuard]
+// [EnableRateLimiting(AuthGuard.SessionPolicy)]
+// [IpSessionGuard]
+// [ApiKeyGuard]
 public class ProductController : ControllerBase
 {
     /// <summary>
@@ -60,15 +59,15 @@ public class ProductController : ControllerBase
 
     /// <summary>
     /// </summary>
-    /// <param name="productId"></param>
+    /// <param name="id"></param>
     /// <param name="handler"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [HttpGet("{productId:long}")]
-    public async Task<ApiContract> GetProduct([FromServices] IGetProductHandler handler, [FromRoute] long productId,
+    [HttpGet("{id}")]
+    public async Task<ApiContract> GetProduct([FromServices] IGetProductHandler handler, [FromRoute] string id,
         CancellationToken cancellationToken)
     {
-        return await handler.HandleAsync(new GetProductContext(productId), cancellationToken);
+        return await handler.HandleAsync(new GetProductContext(id), cancellationToken);
     }
 
     /// <summary>
