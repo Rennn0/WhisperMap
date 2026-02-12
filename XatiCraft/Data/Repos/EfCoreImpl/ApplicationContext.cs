@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using XatiCraft.Data.Repos.EfCoreImpl.Model;
 
 namespace XatiCraft.Data.Repos.EfCoreImpl;
 
 /// <inheritdoc />
-public partial class ApplicationContext : DbContext
+public partial class ApplicationContext : DbContext, IDataProtectionKeyContext
 {
     /// <inheritdoc />
     public ApplicationContext(DbContextOptions<ApplicationContext> options)
@@ -92,4 +93,7 @@ public partial class ApplicationContext : DbContext
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+    /// <inheritdoc />
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 }
