@@ -115,19 +115,19 @@ export const getProducts = (args: { query?: string | null, fromCookie?: boolean 
     return makeGet<{ products: Product[] } & ApiMeta>(`p?${params.toString()}`, { headers: noAudit() });
 }
 
-export const getProduct = (id: number) => makeGet<Product & ApiMeta>(`p/${id}`);
+export const getProduct = (id: number) => makeGet<Product & ApiMeta>(`p/${id}`, { headers: noAudit() });
 
 export const uploadProduct = (product: UploadableProduct) => makePost<{ product_id: number } & ApiMeta>("p", product);
 
 export const getSignedUrl = (productId: number, fileName: string) =>
-    makeGet<{ url: string } & ApiMeta>(`p/${productId}/s?fn=${encodeURIComponent(fileName)}`)
+    makeGet<{ url: string } & ApiMeta>(`p/${productId}/s?fn=${encodeURIComponent(fileName)}`, { headers: noAudit() })
 
 export const putOnUrl = (url: string, buffer: ArrayBuffer) => ky(url, { method: "put", body: buffer });
 
 export const deleteProduct = (id: number) => makeDelete<void>(`p/${id}/s`);
 
-export const includeProduct = (id: number) => makePut<ApiMeta>(`p/${id}/cart`)
+export const includeProduct = (id: number) => makePut<ApiMeta>(`p/${id}/cart`, { headers: noAudit() })
 
-export const removeProduct = (id: number) => makeDelete<ApiMeta>(`p/${id}/cart`)
+export const removeProduct = (id: number) => makeDelete<ApiMeta>(`p/${id}/cart`, { headers: noAudit() })
 
 export const sendAudit = (arg: AuditLog) => makePost<void>("audit", arg);

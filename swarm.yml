@@ -4,7 +4,7 @@ services:
   api:
     image: rennn0/xaticraft:latest
     deploy:
-      replicas: 2
+      replicas: 3
       resources:
         limits:
           memory: 512M
@@ -77,9 +77,9 @@ services:
       - xc-network
     deploy:
       replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
+      #      placement:
+      #        constraints:
+      #          - node.role == manager
       resources:
         limits:
           memory: 1G
@@ -96,8 +96,6 @@ volumes:
   mongo-config:
 
 secrets:
-  cert_pass:
-    external: true
   mongo_password:
     external: true
   mongo_user:
@@ -108,8 +106,6 @@ secrets:
     external: true
 
 configs:
-  key_xml:
-    external: true
   xc_pfx:
     external: true
   nginx_conf:
