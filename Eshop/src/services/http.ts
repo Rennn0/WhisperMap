@@ -117,14 +117,14 @@ export const getProducts = (args: { query?: string | null, fromCookie?: boolean 
 
 export const getProduct = (id: number) => makeGet<Product & ApiMeta>(`p/${id}`, { headers: noAudit() });
 
-export const uploadProduct = (product: UploadableProduct) => makePost<{ product_id: number } & ApiMeta>("p", product);
+export const uploadProduct = (product: UploadableProduct) => makePost<{ product_id: number } & ApiMeta>("p", product, { headers: noAudit() });
 
 export const getSignedUrl = (productId: number, fileName: string) =>
     makeGet<{ url: string } & ApiMeta>(`p/${productId}/s?fn=${encodeURIComponent(fileName)}`, { headers: noAudit() })
 
 export const putOnUrl = (url: string, buffer: ArrayBuffer) => ky(url, { method: "put", body: buffer });
 
-export const deleteProduct = (id: number) => makeDelete<void>(`p/${id}/s`);
+export const deleteProduct = (id: number) => makeDelete<void>(`p/${id}/s`, { headers: noAudit() });
 
 export const includeProduct = (id: number) => makePut<ApiMeta>(`p/${id}/cart`, { headers: noAudit() })
 
