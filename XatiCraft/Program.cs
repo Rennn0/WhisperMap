@@ -9,6 +9,7 @@ using XatiCraft.Data.Repos;
 using XatiCraft.Data.Repos.EfCoreImpl;
 using XatiCraft.Data.Repos.MongoImpl;
 using XatiCraft.Guards;
+using XatiCraft.Handlers;
 using XatiCraft.Handlers.Api;
 using XatiCraft.Handlers.Impl;
 using XatiCraft.Handlers.Read;
@@ -101,6 +102,9 @@ public static class Program
             options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(ApplicationContext)));
         });
 
+        builder.Services.AddExceptionHandler<GeneralExceptionHandler>();
+        builder.Services.AddProblemDetails();
+
         builder.Services.AddSingleton<SystemHealthMonitor>();
         builder.Services.AddScoped<UserGuard>();
         builder.Services.AddTransient<Security, AspDataProtector>();
@@ -138,6 +142,7 @@ public static class Program
         app.UseRateLimiter();
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseExceptionHandler();
         app.MapControllers();
         app.UseResponseCaching();
         if (app.Environment.IsDevelopment())

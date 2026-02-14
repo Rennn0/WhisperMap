@@ -10,5 +10,9 @@ public enum ErrorCode
 
     /// <summary>
     /// </summary>
-    ArgumentMissmatchInDatabase
+    ArgumentMissmatchInDatabase,
+
+    /// <summary>
+    /// </summary>
+    UnhandledException = -1000
 }
