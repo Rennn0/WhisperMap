@@ -14,12 +14,16 @@ public abstract class AuthGuard : Attribute, IAuthorizationFilter
     /// <summary>
     ///     client must have cookie
     /// </summary>
-    public const string SessionCookie = "_se";
+    public const string SessionCookie = "__xc_se";
 
     /// <summary>
     ///     policy for rate limiting by session
     /// </summary>
-    public const string SessionPolicy = "se_policy";
+    public const string SessionPolicy = "__xc_se_policy";
+
+    /// <summary>
+    /// </summary>
+    public const string UserIdCookie = "__xc_uid";
 
     /// <summary>
     ///     must header for initializing session cookie

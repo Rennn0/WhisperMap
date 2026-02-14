@@ -34,9 +34,9 @@ internal class CreateProductHandler : ICreateProductHandler
         Product product = await _productRepo.InsertAsync(
             new Product(context.Title, context.Description, Normalize(context.Price, 10, 3)),
             cancellationToken);
-        // product = await _productRepoMongo.InsertAsync(product, cancellationToken);
+        product = await _productRepoMongo.InsertAsync(product, cancellationToken);
         ArgumentNullException.ThrowIfNull(product.Id);
-        return new CreateProductContract((long)product.Id, context);
+        return new CreateProductContract(product.Id.Value, context) { ObjId = product.ObjId };
     }
 
     /// <summary>

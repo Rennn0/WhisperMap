@@ -7,12 +7,15 @@ using XatiCraft.ApiContracts;
 using XatiCraft.Data.Objects;
 using XatiCraft.Data.Repos;
 using XatiCraft.Data.Repos.EfCoreImpl;
+using XatiCraft.Data.Repos.MongoImpl;
 using XatiCraft.Guards;
 using XatiCraft.Handlers.Api;
 using XatiCraft.Handlers.Impl;
 using XatiCraft.Handlers.Read;
 using XatiCraft.Handlers.Upload;
 using XatiCraft.Settings;
+using ProductMetadataRepo = XatiCraft.Data.Repos.EfCoreImpl.ProductMetadataRepo;
+using ProductRepo = XatiCraft.Data.Repos.EfCoreImpl.ProductRepo;
 
 namespace XatiCraft;
 
@@ -23,7 +26,7 @@ public static class Program
     /// <summary>
     /// </summary>
     /// <param name="args"></param>
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -108,6 +111,8 @@ public static class Program
             new Data.Repos.MongoImpl.ProductRepo(mongoConn));
         builder.Services.AddTransient<IProductMetadaRepo, Data.Repos.MongoImpl.ProductMetadataRepo>(_ =>
             new Data.Repos.MongoImpl.ProductMetadataRepo(mongoConn));
+        builder.Services.AddTransient<IAuthorizationRepo, AuthorizationRepo>(_ =>
+            new AuthorizationRepo(mongoConn));
         builder.Services.AddTransient<IUploader, ClaudflareR2StorageService>();
         builder.Services.AddTransient<IReader, ClaudflareR2StorageService>();
         builder.Services.AddTransient<ICreateProductHandler, CreateProductHandler>();
@@ -118,11 +123,13 @@ public static class Program
         builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, GetProductsHandler>();
         builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, ProductCartHandler>();
         builder.Services.AddTransient<IDeleteProductHandler, DeleteProductHandler>();
-        
+        builder.Services.AddTransient<IAuthorizationHandler, GoogleAuthHandler>();
+
+        builder.Services.AddTransient<IBootstrap, MongoBootstrap>(_ => new MongoBootstrap(mongoConn));
+
 #if USE_CERT
         builder.Services.AddCert();
 #endif
-
         WebApplication app = builder.Build();
         app.Services.GetRequiredService<SystemHealthMonitor>();
         app.UseForwardedHeaders();
@@ -138,6 +145,10 @@ public static class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        app.Run();
+
+        foreach (IBootstrap boot in app.Services.GetRequiredService<IEnumerable<IBootstrap>>())
+            await boot.RunAsync();
+
+        await app.RunAsync();
     }
 }

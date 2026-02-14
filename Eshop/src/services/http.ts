@@ -10,7 +10,7 @@ const appHeaders = {
 const noAudit = () => ({ [appHeaders.auditHeader]: "0" });
 const httpClint = ky.create({
     headers,
-    prefixUrl: "cl",
+    prefixUrl: "/cl",
     credentials: "include",
     timeout: 30000,
     retry:
@@ -115,7 +115,7 @@ export const getProducts = (args: { query?: string | null, fromCookie?: boolean 
     return makeGet<{ products: Product[] } & ApiMeta>(`p?${params.toString()}`, { headers: noAudit() });
 }
 
-export const getProduct = (id: number) => makeGet<Product & ApiMeta>(`p/${id}`, { headers: noAudit() });
+export const getProduct = (id: number | string) => makeGet<Product & ApiMeta>(`p/${id}`, { headers: noAudit() });
 
 export const uploadProduct = (product: UploadableProduct) => makePost<{ product_id: number } & ApiMeta>("p", product, { headers: noAudit() });
 
@@ -124,10 +124,12 @@ export const getSignedUrl = (productId: number, fileName: string) =>
 
 export const putOnUrl = (url: string, buffer: ArrayBuffer) => ky(url, { method: "put", body: buffer });
 
-export const deleteProduct = (id: number) => makeDelete<void>(`p/${id}/s`, { headers: noAudit() });
+export const deleteProduct = (id: number | string) => makeDelete<void>(`p/${id}/s`, { headers: noAudit() });
 
-export const includeProduct = (id: number) => makePut<ApiMeta>(`p/${id}/cart`, { headers: noAudit() })
+export const includeProduct = (id: number | string) => makePut<ApiMeta>(`p/${id}/cart`, { headers: noAudit() })
 
 export const removeProduct = (id: number) => makeDelete<ApiMeta>(`p/${id}/cart`, { headers: noAudit() })
+
+export const sendGoogleToken = (token: string) => makeGet<void>(`s/gt/${token}`, { headers: noAudit() });
 
 export const sendAudit = (arg: AuditLog) => makePost<void>("audit", arg);

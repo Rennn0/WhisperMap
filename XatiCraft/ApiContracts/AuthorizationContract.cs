@@ -3,14 +3,11 @@ using System.Text.Json.Serialization;
 namespace XatiCraft.ApiContracts;
 
 /// <inheritdoc />
-public record CreateProductContract(long ProductId, ApiContext Context) : ApiContract(Context)
+public record AuthorizationContract(string Uid, string Username, string? ProfilePicture, ApiContext Context)
+    : ApiContract(Context)
 {
     /// <summary>
     /// </summary>
     [JsonIgnore]
     public ApiContext Context { get; init; } = Context;
-
-    /// <summary>
-    /// </summary>
-    public string? ObjId { get; init; }
 }

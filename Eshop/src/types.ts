@@ -22,6 +22,9 @@ export interface UserInfo {
     can_upload: boolean,
     can_delete: boolean,
     claims: number[]
+    username?: string,
+    picture?: string,
+    uid?: string
 }
 
 export interface UploadableProduct {

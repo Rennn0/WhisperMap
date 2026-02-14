@@ -26,17 +26,16 @@ internal class ProductRepo : MongoBase<Product>, IProductRepo
     {
         Product? pDoc = await Collection.Find(p => p.Id == objId, new FindOptions { BatchSize = 1 })
             .FirstOrDefaultAsync(cancellationToken);
-        return new Objects.Product(pDoc.Title, pDoc.Description, pDoc.Price) { ObjId = pDoc.Id };
+        return pDoc is null ? null : new Objects.Product(pDoc.Title, pDoc.Description, pDoc.Price) { ObjId = pDoc.Id };
     }
 
     /// <inheritdoc />
     public async Task<Objects.Product> InsertAsync(Objects.Product product, CancellationToken cancellationToken)
     {
-        Product pDoc = new(product.Title, product.Description, product.Price);
+        Product pDoc = new Product(product.Title, product.Description, product.Price);
         await Collection.InsertOneAsync(pDoc,
             new InsertOneOptions { BypassDocumentValidation = false }, cancellationToken);
-        product.ObjId = pDoc.Id;
-        return product;
+        return product with { ObjId = pDoc.Id };
     }
 
     /// <inheritdoc />

@@ -13,7 +13,7 @@ import InformationalModal from '../modals/InformationalModal.vue';
 import { userInfoInjectionKey } from '../../injectionKeys';
 
 const router = useRouter();
-const props = defineProps<{ id: number }>();
+const props = defineProps<{ id: number | string }>();
 const productRef = ref<Product | null>(null);
 const showContactModal = ref(false);
 const showDeleteConfirmation = ref(false);

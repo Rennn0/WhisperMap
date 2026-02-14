@@ -10,6 +10,7 @@ import TablerContrastIcon from '../freestyle/TablerContrastIcon.vue';
 import TablerCometIcon from '../freestyle/TablerCometIcon.vue';
 import SearchBar from './SearchBar.vue';
 import { getProducts } from '../../services/http';
+import TablerUserIcon from '../freestyle/TablerUserIcon.vue';
 
 /** Lightweight debounce implementation to avoid requiring lodash.debounce and its types */
 function debounce<T extends (...args: any[]) => any>(fn: T, wait = 0) {
@@ -29,6 +30,7 @@ const emit = defineEmits<{
   (e: 'product-chosen', value: Product): void;
   (e: 'input', value: string): void;
   (e: 'upload'): void;
+  (e: 'auth'): void;
 }>();
 
 const themes: ThemeDropdown[] = [
@@ -108,7 +110,6 @@ onUpdated(() => { });
 onMounted(() => {
   const saved = localStorage.getItem('theme') || 'light';
   currentTheme.value = saved;
-  document.documentElement.classList.add(saved);
 });
 onUnmounted(() => { })
 //#endregion
@@ -160,6 +161,16 @@ onUnmounted(() => { })
           </div>
         </transition>
       </div>
+
+
+      <!-- Auth -->
+      <button v-if="!userInfo?.uid" @click="emit('auth')"
+        class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
+        aria-label="Upload product">
+        <TablerUserIcon class="w-6 h-6" />
+      </button>
+      <img v-else :src="userInfo.picture"
+        class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"></img>
     </div>
   </nav>
 </template>

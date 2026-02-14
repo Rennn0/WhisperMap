@@ -1,7 +1,10 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
+using XatiCraft.ApiContracts;
 using XatiCraft.Guards;
+using XatiCraft.Handlers.Api;
+using XatiCraft.Handlers.Impl;
 
 namespace XatiCraft.Controllers;
 
@@ -13,6 +16,7 @@ namespace XatiCraft.Controllers;
 public class SessionController : ControllerBase
 {
     private readonly Security _aspProtector;
+    private readonly CookieOptions _cookieOptions;
     private readonly ILogger<SessionController> _logger;
 
     /// <summary>
@@ -23,6 +27,14 @@ public class SessionController : ControllerBase
     {
         _aspProtector = securities.First(s => s is AspDataProtector);
         _logger = logger;
+        _cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.Now.AddDays(7),
+            IsEssential = true
+        };
     }
 
     /// <summary>
@@ -38,15 +50,7 @@ public class SessionController : ControllerBase
         _logger.LogInformation("public ip {ip}", ip);
         string protectedData =
             _aspProtector.Pack(JsonSerializer.Serialize(new SessionData(ip, Guid.NewGuid().ToString("N"))));
-        CookieOptions cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Lax,
-            Expires = DateTimeOffset.Now.AddDays(1),
-            IsEssential = true
-        };
-        HttpContext.Response.Cookies.Append(AuthGuard.SessionCookie, protectedData, cookieOptions);
+        SetSessionCookie(protectedData);
         return NoContent();
     }
 
@@ -54,9 +58,44 @@ public class SessionController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet("me")]
-    public IActionResult Me([FromServices] UserGuard userGuard)
+    public async Task<IActionResult> Me([FromServices] UserGuard userGuard,
+        [FromServices] IEnumerable<IAuthorizationHandler> handlers, CancellationToken cancellationToken)
     {
         if (!userGuard.TryGetUserInfo(out UserInfo? userInfo)) return Unauthorized();
+        if (userInfo is not { Uid.Length: > 0 }) return Ok(userInfo);
+
+        AuthorizationContract contract = (AuthorizationContract)await handlers.First(h => h is GoogleAuthHandler)
+            .HandleAsync(new UserInfoContext(userInfo.Uid), cancellationToken);
+        userInfo.Username = contract.Username;
+        userInfo.Picture = contract.ProfilePicture;
+
         return Ok(userInfo);
+    }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="token"></param>
+    /// <param name="handlers"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet("gt/{token}")]
+    public async Task<IActionResult> VerifyGoogleToken([FromRoute] string token,
+        [FromServices] IEnumerable<IAuthorizationHandler> handlers, CancellationToken cancellationToken)
+    {
+        AuthorizationContract contract = (AuthorizationContract)await handlers.First(h => h is GoogleAuthHandler)
+            .HandleAsync(new AuthorizationContext(token, "Google"), cancellationToken);
+        SetUserIdCookie(contract.Uid);
+        return NoContent();
+    }
+
+    private void SetSessionCookie(string data)
+    {
+        HttpContext.Response.Cookies.Append(AuthGuard.SessionCookie, data, _cookieOptions);
+    }
+
+
+    private void SetUserIdCookie(string data)
+    {
+        HttpContext.Response.Cookies.Append(AuthGuard.UserIdCookie, data, _cookieOptions);
     }
 }

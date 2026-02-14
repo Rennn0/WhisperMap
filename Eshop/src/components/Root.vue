@@ -46,6 +46,7 @@ const onOptionSelect = (key: CurrentViewSelection) => {
 }
 
 const onUpload = () => router.push("upload");
+const onAuth = () => router.push("auth")
 
 onMounted(() => { window.addEventListener("scroll", handleScroll, false) });
 onUnmounted(() => { window.removeEventListener("scroll", handleScroll, false) })
@@ -58,7 +59,7 @@ onUnmounted(() => { window.removeEventListener("scroll", handleScroll, false) })
 
         <NavBar :class="navbarOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'"
             @menu-toggle="onMenuToggle" @profile-click="onProfileClick" @product-chosen="onProductChosen"
-            @upload="onUpload" />
+            @upload="onUpload" @auth="onAuth" />
         <Sidebar :open="sidebarOpen" @close="sidebarOpen = false" @select="onOptionSelect" />
 
         <main class="max-w-6xl mx-auto p-4">

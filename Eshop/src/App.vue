@@ -17,6 +17,8 @@ onMounted(() => {
       sessionEnabled.value = true;
     })
   })
+  const saved = localStorage.getItem('theme') || 'light';
+  document.documentElement.classList.add(saved);
 })
 </script>
 <template>
