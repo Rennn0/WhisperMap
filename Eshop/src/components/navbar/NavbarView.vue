@@ -141,7 +141,7 @@ onUnmounted(() => { })
         @product-chosen="onProductChosen" @focus="onSearchFocus" @blur="onSearchBlur" />
 
       <!-- Right side buttons -->
-      <div class="relative flex items-center">
+      <div class="relative flex items-center gap-1">
         <button @click="toggleDropdown()"
           class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
           aria-label="Select theme">
@@ -160,17 +160,15 @@ onUnmounted(() => { })
             </div>
           </div>
         </transition>
+
+        <!-- Auth -->
+        <button
+          class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
+          aria-label="auth">
+          <TablerUserIcon @click="emit('auth')" v-if="!userInfo?.uid" class="w-6 h-6" />
+          <img v-else :src="userInfo.picture" alt="Profile" class="p-1 rounded-full object-cover"></img>
+        </button>
       </div>
-
-
-      <!-- Auth -->
-      <button v-if="!userInfo?.uid" @click="emit('auth')"
-        class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
-        aria-label="Upload product">
-        <TablerUserIcon class="w-6 h-6" />
-      </button>
-      <img v-else :src="userInfo.picture"
-        class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"></img>
     </div>
   </nav>
 </template>
