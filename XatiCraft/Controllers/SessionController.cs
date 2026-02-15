@@ -75,15 +75,23 @@ public class SessionController : ControllerBase
     /// <summary>
     /// </summary>
     /// <param name="token"></param>
+    /// <param name="provider"></param>
     /// <param name="handlers"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [HttpGet("gt/{token}")]
-    public async Task<IActionResult> VerifyGoogleToken([FromRoute] string token,
+    [HttpGet("gt/{provider}")]
+    public async Task<IActionResult> VerifyGoogleToken(
+        [FromRoute] ApplicationAuthProvider provider,
+        [FromQuery(Name = "t")] string token,
         [FromServices] IEnumerable<IAuthorizationHandler> handlers, CancellationToken cancellationToken)
     {
-        AuthorizationContract contract = (AuthorizationContract)await handlers.First(h => h is GoogleAuthHandler)
-            .HandleAsync(new AuthorizationContext(token, "Google"), cancellationToken);
+        AuthorizationContract contract = (AuthorizationContract)await handlers.First(h => provider switch
+            {
+                ApplicationAuthProvider.Google => h is GoogleAuthHandler,
+                ApplicationAuthProvider.Github => h is GithubAuthHandler,
+                _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null)
+            })
+            .HandleAsync(new AuthorizationContext(token, provider), cancellationToken);
         SetUserIdCookie(contract.Uid);
         return NoContent();
     }

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
-import { getProducts, removeProduct } from '../../services/http';
 import type { TCartItem } from '../../types';
 import CartItem from './CartItem.vue';
 import { useRouter } from 'vue-router';
+import { getProducts, removeProduct } from '../../services/http';
 
 const router = useRouter();
 const orders = reactive<TCartItem[]>([]);

@@ -43,6 +43,8 @@ public static class Program
         builder.Services.Configure<IpRestrictionSettings>(
             builder.Configuration.GetSection(nameof(IpRestrictionSettings)));
         builder.Services.Configure<ApiKeySettings>(builder.Configuration.GetSection(nameof(ApiKeySettings)));
+        builder.Services.Configure<GithubAuthSettings>(builder.Configuration.GetSection(nameof(GithubAuthSettings)));
+        builder.Services.Configure<GoogleAuthSettings>(builder.Configuration.GetSection(nameof(GoogleAuthSettings)));
 
         builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
         {
@@ -104,6 +106,7 @@ public static class Program
 
         builder.Services.AddExceptionHandler<GeneralExceptionHandler>();
         builder.Services.AddProblemDetails();
+        builder.Services.AddHttpClient();
 
         builder.Services.AddSingleton<SystemHealthMonitor>();
         builder.Services.AddScoped<UserGuard>();
@@ -128,6 +131,7 @@ public static class Program
         builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, ProductCartHandler>();
         builder.Services.AddTransient<IDeleteProductHandler, DeleteProductHandler>();
         builder.Services.AddTransient<IAuthorizationHandler, GoogleAuthHandler>();
+        builder.Services.AddTransient<IAuthorizationHandler, GithubAuthHandler>();
 
         builder.Services.AddTransient<IBootstrap, MongoBootstrap>(_ => new MongoBootstrap(mongoConn));
 

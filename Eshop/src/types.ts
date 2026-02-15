@@ -24,7 +24,7 @@ export interface UserInfo {
     claims: number[]
     username?: string,
     picture?: string,
-    uid?: string
+    uid?: string,
 }
 
 export interface UploadableProduct {

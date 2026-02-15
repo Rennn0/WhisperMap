@@ -1,5 +1,6 @@
 import ky, { type Options } from "ky";
 import type { UserInfo, Product, UploadableProduct, ApiMeta, AuditLog } from "../types";
+import type { authProvider } from "../components/auth/AuthView.vue";
 
 const headers = new Headers();
 headers.set("content-type", "application/json; charset=utf-8");
@@ -130,6 +131,9 @@ export const includeProduct = (id: number | string) => makePut<ApiMeta>(`p/${id}
 
 export const removeProduct = (id: number) => makeDelete<ApiMeta>(`p/${id}/cart`, { headers: noAudit() })
 
-export const sendGoogleToken = (token: string) => makeGet<void>(`s/gt/${token}`, { headers: noAudit() });
+export const sendAuthToken = (token: string, provider: authProvider) => makeGet<void>(`s/gt/${provider}?t=${token}`, { headers: noAudit() });
 
 export const sendAudit = (arg: AuditLog) => makePost<void>("audit", arg);
+
+
+// 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

@@ -166,7 +166,7 @@ onUnmounted(() => { })
           class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
           aria-label="auth">
           <TablerUserIcon @click="emit('auth')" v-if="!userInfo?.uid" class="w-6 h-6" />
-          <img v-else :src="userInfo.picture" alt="Profile" class="p-1 rounded-full object-cover"></img>
+          <img v-else :src="userInfo.picture" referrerpolicy="no-referrer" class="p-1 rounded-full object-cover"></img>
         </button>
       </div>
     </div>

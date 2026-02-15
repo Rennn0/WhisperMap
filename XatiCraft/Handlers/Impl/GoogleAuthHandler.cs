@@ -1,42 +1,73 @@
+using System.Net.Http.Headers;
+using System.Text.Json;
 using Google.Apis.Auth;
+using Microsoft.Extensions.Options;
 using XatiCraft.ApiContracts;
 using XatiCraft.Data.Objects;
 using XatiCraft.Data.Repos;
 using XatiCraft.Data.Repos.MongoImpl;
 using XatiCraft.Handlers.Api;
+using XatiCraft.Settings;
 
 namespace XatiCraft.Handlers.Impl;
 
 /// <inheritdoc />
 public class GoogleAuthHandler : IAuthorizationHandler
 {
-    private readonly IAuthorizationRepo _dbMongo;
+    private readonly GoogleAuthSettings _googleAuthSettings;
+    private readonly HttpClient _httpClient;
+
+    /// <summary>
+    /// </summary>
+    protected readonly IAuthorizationRepo AuthorizationRepo;
 
     /// <summary>
     /// </summary>
     /// <param name="repos"></param>
-    public GoogleAuthHandler(IEnumerable<IAuthorizationRepo> repos)
+    /// <param name="httpClientFactory"></param>
+    /// <param name="googleAuthSettings"></param>
+    // ReSharper disable once MemberCanBeProtected.Global
+    public GoogleAuthHandler(IEnumerable<IAuthorizationRepo> repos, IHttpClientFactory httpClientFactory,
+        IOptionsMonitor<GoogleAuthSettings> googleAuthSettings)
     {
-        _dbMongo = repos.First(r => r is AuthorizationRepo);
+        _googleAuthSettings = googleAuthSettings.CurrentValue;
+        AuthorizationRepo = repos.First(r => r is AuthorizationRepo);
+        _httpClient = httpClientFactory.CreateClient(nameof(GoogleAuthHandler));
+        _httpClient.DefaultRequestHeaders.Accept
+            .Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
     /// <inheritdoc />
-    public async ValueTask<ApiContract> HandleAsync(AuthorizationContext context, CancellationToken cancellationToken)
+    public virtual async ValueTask<ApiContract> HandleAsync(AuthorizationContext context,
+        CancellationToken cancellationToken)
     {
+        using HttpResponseMessage tokenResponse = await _httpClient.PostAsync(
+            "https://oauth2.googleapis.com/token",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["client_id"] = _googleAuthSettings.ClientId,
+                ["client_secret"] = _googleAuthSettings.ClientSecret,
+                ["code"] = context.Token,
+                ["redirect_uri"] = _googleAuthSettings.Redirect,
+                ["grant_type"] = "authorization_code"
+            }),
+            cancellationToken);
+        tokenResponse.EnsureSuccessStatusCode();
+        JsonDocument json = JsonDocument.Parse(await tokenResponse.Content.ReadAsStringAsync(cancellationToken));
+        string token = json.RootElement.GetProperty("id_token").GetString() ?? throw new ArgumentNullException();
         GoogleJsonWebSignature.ValidationSettings settings = new GoogleJsonWebSignature.ValidationSettings
         {
-            //#TODO settings
             Audience =
             [
-                "369535811432-5n2l41tcc78ueti0tfpmppghn6jj1ucj.apps.googleusercontent.com"
+                _googleAuthSettings.ClientId
             ]
         };
-        GoogleJsonWebSignature.Payload? payload = await GoogleJsonWebSignature.ValidateAsync(context.Token, settings);
-        AuthorizationInfo info = await _dbMongo.UpsertAuthorizationInfoAsync(
+        GoogleJsonWebSignature.Payload? payload = await GoogleJsonWebSignature.ValidateAsync(token, settings);
+        AuthorizationInfo info = await AuthorizationRepo.UpsertAuthorizationInfoAsync(
             new AuthorizationInfo(payload.Name, DateTimeOffset.Now)
             {
                 AccountEnabled = true,
-                AuthProvider = context.Provider,
+                AuthProvider = context.Provider.ToString(),
                 AuthProviderOfficial = payload.Issuer,
                 CreationToken = context.Token,
                 Email = payload.Email,
@@ -52,9 +83,10 @@ public class GoogleAuthHandler : IAuthorizationHandler
     }
 
     /// <inheritdoc />
-    public async ValueTask<ApiContract> HandleAsync(UserInfoContext context, CancellationToken cancellationToken)
+    public virtual async ValueTask<ApiContract> HandleAsync(UserInfoContext context,
+        CancellationToken cancellationToken)
     {
-        AuthorizationInfo? info = await _dbMongo.SelectAuthorizationInfoAsync(context.Id, cancellationToken);
+        AuthorizationInfo? info = await AuthorizationRepo.SelectAuthorizationInfoAsync(context.Id, cancellationToken);
         ArgumentNullException.ThrowIfNull(info);
         ArgumentNullException.ThrowIfNull(info.ObjId);
         AuthorizationContract contract =
