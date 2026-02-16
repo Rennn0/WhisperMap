@@ -2,9 +2,9 @@
 import BaseDropdown from './BaseDropdown.vue';
 import TablerUserIcon from '../freestyle/TablerUserIcon.vue';
 
-const props = defineProps<{
+const _ = defineProps<{
     picture?: string | null;
-}>();
+}>(); _;
 
 const emit = defineEmits<{
     (e: 'login'): void;

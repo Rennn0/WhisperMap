@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import BaseDropdown from './BaseDropdown.vue';
 import type { ThemeDropdown } from '../../types';
 
-const props = defineProps<{
+const _ = defineProps<{
     themes: ThemeDropdown[];
     modelValue: string;
 }>();
@@ -13,7 +13,7 @@ const emit = defineEmits<{
 }>();
 
 const currentTheme = computed(() =>
-    props.themes.find(t => t.name === props.modelValue)
+    _.themes.find(t => t.name === _.modelValue)
 );
 </script>
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 
-const props = defineProps<{
+const _ = defineProps<{
     align?: 'left' | 'right';
-}>();
+}>(); _;
 
 const open = ref(false);
 const rootRef = ref<HTMLElement | null>(null);
