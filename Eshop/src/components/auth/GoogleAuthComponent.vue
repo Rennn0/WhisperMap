@@ -21,7 +21,8 @@ const loginWithGoogle = () => {
         `&redirect_uri=${encodeURIComponent(redirect)}` +
         `&response_type=code` +
         `&scope=openid email profile` +
-        `&state=${state}`;
+        `&state=${state}` +
+        `&prompt=select_account`;
     window.location.href = url;
 };
 

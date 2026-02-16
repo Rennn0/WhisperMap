@@ -133,7 +133,6 @@ export const removeProduct = (id: number) => makeDelete<ApiMeta>(`p/${id}/cart`,
 
 export const sendAuthToken = (token: string, provider: authProvider) => makeGet<void>(`s/gt/${provider}?t=${token}`, { headers: noAudit() });
 
+export const logout = () => makeGet<void>("s/lo", { headers: noAudit() })
+
 export const sendAudit = (arg: AuditLog) => makePost<void>("audit", arg);
-
-
-// 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

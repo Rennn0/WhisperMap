@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, onActivated, onUnmounted, onUpdated, watch, inject, type Ref } from 'vue';
+import { ref, onMounted, onActivated, onUnmounted, onUpdated, watch, inject, type Ref } from 'vue';
 import type { Product, ThemeDropdown, UserInfo } from '../../types';
 import { userInfoInjectionKey } from '../../injectionKeys';
 import TablerMenuIcon from '../freestyle/TablerMenuIcon.vue';
@@ -9,8 +9,9 @@ import TablerSunIcon from '../freestyle/TablerSunIcon.vue';
 import TablerContrastIcon from '../freestyle/TablerContrastIcon.vue';
 import TablerCometIcon from '../freestyle/TablerCometIcon.vue';
 import SearchBar from './SearchBar.vue';
-import { getProducts } from '../../services/http';
-import TablerUserIcon from '../freestyle/TablerUserIcon.vue';
+import { getProducts, logout } from '../../services/http';
+import UserMenuDropdown from '../dropdown/UserMenuDropdown.vue';
+import ThemeDropdownMenu from '../dropdown/ThemeDropdownMenu.vue';
 
 /** Lightweight debounce implementation to avoid requiring lodash.debounce and its types */
 function debounce<T extends (...args: any[]) => any>(fn: T, wait = 0) {
@@ -41,7 +42,6 @@ const themes: ThemeDropdown[] = [
 ];
 
 const query = ref('');
-const dropdownOpen = ref(false);
 const searchPreviewOpen = ref(false);
 const currentTheme = ref('light');
 const userInfo = inject<Readonly<Ref<UserInfo>>>(userInfoInjectionKey);
@@ -59,22 +59,12 @@ watch(query, async (newQuery) => {
   fetchProducts(q);
 });
 
-const currentThemeIcon = computed(() => {
-  const t = themes.find((t) => t.name === currentTheme.value);
-  return t ? t.icon : TablerSunIcon;
+watch(currentTheme, (theme) => {
+  document.documentElement.classList.remove(...themes.map(t => t.name));
+  document.documentElement.classList.add(theme);
+  localStorage.setItem('theme', theme);
 });
 
-const toggleDropdown = (val: boolean | null = null) => {
-  dropdownOpen.value = val ?? !dropdownOpen.value;
-}
-
-const selectTheme = (theme: ThemeDropdown) => {
-  dropdownOpen.value = false;
-  document.documentElement.classList.remove(...themes.map((t) => t.name));
-  document.documentElement.classList.add(theme.name);
-  localStorage.setItem('theme', theme.name);
-  currentTheme.value = theme.name;
-}
 
 const onMenu = () => {
   emit('menu-toggle');
@@ -102,6 +92,11 @@ const onSearchFocus = () => {
 
 const onSearchBlur = () => {
   searchPreviewOpen.value = false;
+}
+
+const onProfile = () => { /*TODO*/ }
+const onLogout = () => {
+  logout().request.then(() => window.location.reload())
 }
 
 //#region lifecycle hooks
@@ -142,32 +137,10 @@ onUnmounted(() => { })
 
       <!-- Right side buttons -->
       <div class="relative flex items-center gap-1">
-        <button @click="toggleDropdown()"
-          class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
-          aria-label="Select theme">
-          <component :is="currentThemeIcon" class="w-6 h-6" />
-        </button>
-
-        <transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0 scale-95"
-          enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-50 ease-in"
-          leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-          <div v-if="dropdownOpen" @mouseleave="toggleDropdown(false)"
-            class="absolute right-0 top-full mt-1 w-48 bg-surface border border-gray-300/40 shadow-lg rounded-lg py-1 z-50 pointer-events-auto">
-            <div v-for="theme in themes" :key="theme.name" @click="selectTheme(theme)"
-              class="flex items-center gap-3 px-3 py-2 hover:bg-subtle cursor-pointer transition-colors duration-150">
-              <component :is="theme.icon" class="w-5 h-5" />
-              <span class="text-sm">{{ theme.label }}</span>
-            </div>
-          </div>
-        </transition>
-
+        <!-- Theme -->
+        <ThemeDropdownMenu :themes="themes" v-model="currentTheme" />
         <!-- Auth -->
-        <button
-          class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200"
-          aria-label="auth">
-          <TablerUserIcon @click="emit('auth')" v-if="!userInfo?.uid" class="w-6 h-6" />
-          <img v-else :src="userInfo.picture" referrerpolicy="no-referrer" class="p-1 rounded-full object-cover"></img>
-        </button>
+        <UserMenuDropdown :picture="userInfo?.picture" @login="emit('auth')" @profile="onProfile" @logout="onLogout" />
       </div>
     </div>
   </nav>

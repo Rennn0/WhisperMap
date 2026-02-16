@@ -96,6 +96,18 @@ public class SessionController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("lo")]
+    public IActionResult Logout()
+    {
+        ClearCookie(AuthGuard.UserIdCookie);
+        ClearCookie(AuthGuard.SessionCookie);
+        //#NOTE invalidate session maybe
+        return NoContent();
+    }
+
     private void SetSessionCookie(string data)
     {
         HttpContext.Response.Cookies.Append(AuthGuard.SessionCookie, data, _cookieOptions);
@@ -105,5 +117,10 @@ public class SessionController : ControllerBase
     private void SetUserIdCookie(string data)
     {
         HttpContext.Response.Cookies.Append(AuthGuard.UserIdCookie, data, _cookieOptions);
+    }
+
+    private void ClearCookie(string key)
+    {
+        HttpContext.Response.Cookies.Delete(key, _cookieOptions);
     }
 }
