@@ -33,7 +33,7 @@ const emit = defineEmits<{
                 </button>
 
                 <button @click="() => { emit('logout'); close(); }"
-                    class="w-full text-left px-3 py-2 hover:bg-subtle text-sm text-danger-text transition-colors">
+                    class="w-full text-left px-3 py-2 hover:bg-danger-bg hover:text-danger-text text-sm text-danger-text transition-colors">
                     Logout
                 </button>
             </div>

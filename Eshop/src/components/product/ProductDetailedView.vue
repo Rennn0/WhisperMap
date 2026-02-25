@@ -11,6 +11,8 @@ import TablerDeleteIcon from '../freestyle/TablerDeleteIcon.vue';
 import ConfirmationModal from '../modals/ConfirmationModal.vue';
 import InformationalModal from '../modals/InformationalModal.vue';
 import { userInfoInjectionKey } from '../../injectionKeys';
+import { ZoomImg } from 'vue3-zoomer';
+import ExpandableText from '../shared/ExpandableText.vue';
 
 const router = useRouter();
 const props = defineProps<{ id: number | string }>();
@@ -63,25 +65,10 @@ const mediaList = computed<MediaItem[]>(() => {
 const selectedIndex = ref(0);
 const selectedMedia = computed(() => mediaList.value[selectedIndex.value] ?? mediaList.value[0]);
 
-const showFullDescription = ref(false);
-const displayedDescription = computed(() => {
-    if (!product.value) return '';
-
-    if (!product.value.description) return '';
-    if (showFullDescription.value || product.value.description.length <= 256) {
-        return product.value.description;
-    }
-    return product.value.description.slice(0, 256) + '...';
-});
-
-
 const selectMedia = (i: number) => {
     selectedIndex.value = i;
 }
 
-const toggleDescription = () => {
-    showFullDescription.value = !showFullDescription.value;
-};
 
 const contactClicked = () => showContactModal.value = true;
 const addClicked = () => {
@@ -104,101 +91,110 @@ const handleDeleteCancelled = () => {
 const deleteClicked = () => {
     showDeleteConfirmation.value = true;
 };
+
+
 </script>
 
 <template>
-    <div v-if="product" class="max-w-5xl mx-auto bg-surface border border-subtle rounded-lg shadow-sm p-4">
-        <div class="flex justify-between items-center mb-4">
-            <!-- Back -->
-            <button type="button" @click="router.back()" aria-label="Back to product list"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition border border-subtle bg-surface text-text hover:bg-subtle hover:shadow-md">
+    <div v-if="product" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Top Bar -->
+        <div class="flex justify-between items-center mb-6">
+            <!-- Back (UNCHANGED VISUAL STYLE) -->
+            <button type="button" @click="router.back()" aria-label="Back to product list" class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition
+               border border-subtle bg-surface text-text
+               hover:bg-subtle hover:shadow-md">
                 <TablerLeftIcon class="w-4 h-4" />
                 <span>{{ $t('app.back') }}</span>
             </button>
 
-            <!-- Delete -->
-            <button v-if="userInfo?.can_delete" type="button" @click="deleteClicked" aria-label="Delete product"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition border border-subtle bg-surface text-text    hover:bg-subtle hover:shadow-md">
+            <!-- Delete (UNCHANGED VISUAL STYLE) -->
+            <button v-if="userInfo?.can_delete" type="button" @click="deleteClicked" aria-label="Delete product" class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition
+               border border-subtle bg-surface text-text
+               hover:bg-subtle hover:shadow-md">
                 <TablerDeleteIcon class="w-4 h-4" />
                 <span class="font-medium">{{ $t('product.delete') }}</span>
             </button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2">
-                <div v-if="selectedMedia" class="w-full rounded-md overflow-hidden bg-black/5">
+        <!-- Main Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-10">
+            <!-- Media Section -->
+            <div class="lg:col-span-3 space-y-4">
+                <!-- Main Media -->
+                <div v-if="selectedMedia" class="w-full rounded-xl overflow-hidden bg-subtle aspect-[4/3]
+                 flex items-center justify-center">
                     <template v-if="selectedMedia.type === 'image'">
-                        <img :src="selectedMedia.src" :alt="selectedMedia.alt ?? 'product image'"
-                            class="w-full h-[700px] object-contain" />
+                        <ZoomImg :src="selectedMedia.src" :alt="selectedMedia.alt ?? 'product image'"
+                            class="w-full h-full object-contain transition duration-300" zoom-type="drag"
+                            :zoom-scale="5" :step="1" :show-img-map="true" />
                     </template>
+
                     <template v-else>
-                        <video :src="selectedMedia.src" controls class="w-full h-[700px] object-contain bg-black" />
+                        <video :src="selectedMedia.src" controls class="w-full h-full object-contain bg-black" />
                     </template>
                 </div>
+
+                <!-- Thumbnails -->
+                <div class="flex gap-3 overflow-x-auto pb-1">
+                    <button v-for="(m, i) in mediaList" :key="m.src + i" @click="selectMedia(i)" class="relative rounded-lg overflow-hidden shrink-0 w-24 h-20
+                   border transition" :class="selectedIndex === i
+                    ? 'border-primary ring-2 ring-primary/30'
+                    : 'border-subtle hover:opacity-80'">
+                        <img v-if="m.type === 'image'" :src="m.src" class="w-full h-full object-cover" />
+
+                        <div v-else class="w-full h-full bg-black/20 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white/90" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </div>
+                    </button>
+                </div>
             </div>
 
-            <div class="space-y-4 max-h-[520px] overflow-y-auto pr-2">
-                <div class="grid grid-cols-4 gap-2">
-                    <button v-for="(m, i) in mediaList" :key="m.src + i" @click="selectMedia(i)"
-                        :aria-pressed="selectedIndex === i"
-                        class="relative rounded-md overflow-hidden border transition-transform duration-150"
-                        :class="selectedIndex === i ? 'ring ring-primary' : 'hover:scale-[1.01] border-transparent'">
-                        <template v-if="m.type === 'image'">
-                            <img :src="m.src" :alt="m.alt ?? 'thumb'" class="w-full h-20 object-cover" />
-                        </template>
-                        <template v-else>
-                            <div class="w-full h-20 bg-black/20 flex items-center justify-center">
-                                <video :src="m.src" muted playsinline loop class="w-full h-20 object-cover"></video>
-                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                    <svg class="w-6 h-6 text-white/90" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M8 5v14l11-7z" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </template>
-                    </button>
+            <!-- Info Section -->
+            <div class="lg:col-span-2 space-y-6 lg:sticky lg:top-24 h-fit">
+                <!-- Purchase Card -->
+                <div class="bg-surface rounded-xl p-6 border border-subtle shadow-sm space-y-4">
+                    <ExpandableText :text="product.title" :size="'large'" />
+
+                    <div>
+                        <div class="text-sm opacity-70">
+                            {{ $t('product.price') }}
+                        </div>
+                        <div class="text-3xl font-bold text-primary">
+                            ${{ (product.price ?? 0).toFixed(2) }}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 pt-2">
+                        <button v-if="showAddButton" @click="addClicked" class="w-full flex items-center justify-center gap-2
+                     px-5 py-3 rounded-lg font-medium transition
+                     bg-primary text-white hover:opacity-90">
+                            <TablerAddToCartIcon class="w-5 h-5" />
+                            <span>{{ $t('product.add') }}</span>
+                        </button>
+
+                        <button @click="contactClicked" class="w-full flex items-center justify-center gap-2
+                     px-5 py-3 rounded-lg font-medium transition
+                     border border-subtle bg-surface text-text
+                     hover:bg-subtle hover:shadow-md">
+                            <TablerPhoneCallIcon class="w-5 h-5" />
+                            <span>{{ $t('product.contact') }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Description Card -->
+                <div class="bg-surface rounded-xl p-6 border border-subtle shadow-sm">
+                    <h2 class="text-lg font-semibold mb-3">
+                        {{ $t('product.description') }}
+                    </h2>
+                    <ExpandableText :text="product.description" :size="'small'" />
                 </div>
             </div>
         </div>
 
-        <div class="mt-6 border-t border-subtle pt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="md:col-span-2">
-                <h1 class="text-2xl font-semibold mb-2">{{ product.title }}</h1>
-                <p class="text-sm mb-4">
-                    {{ displayedDescription }}
-                    <span v-if="product?.description?.length > 256" @click="toggleDescription"
-                        class="font-bold text-primary cursor-pointer ml-1">
-                        {{ showFullDescription ? 'showLess' : 'showMore' }}
-                    </span>
-                </p>
-
-            </div>
-
-            <div class="md:col-span-1 space-y-4">
-                <div class="text-lg">
-                    <div class="text-sm">{{ $t('product.price') }}</div>
-                    <div class="text-2xl font-bold">${{ (product.price ?? 0).toFixed(2) }}</div>
-                </div>
-
-                <div class="flex gap-2">
-                    <button
-                        class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition border border-subtle bg-surface text-text hover:bg-subtle hover:shadow-md"
-                        @click="contactClicked">
-                        <TablerPhoneCallIcon class="w-5 h-5" />
-                        <span>{{ $t('product.contact') }}</span>
-                    </button>
-
-                    <button v-if="showAddButton"
-                        class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transitionborder border-subtle bg-surface text-text hover:bg-subtle hover:shadow-md"
-                        @click="addClicked">
-                        <TablerAddToCartIcon class="w-5 h-5" />
-                        <span>{{ $t('product.add') }}</span>
-                    </button>
-                </div>
-
-            </div>
-        </div>
-
+        <!-- Modals -->
         <ConfirmationModal :isOpen="showDeleteConfirmation" :title="$t('product.modals.delete.title')"
             :description="$t('product.modals.delete.desc')" :cancel-text="$t('product.modals.delete.cancel')"
             :confirm-text="$t('product.modals.delete.confirm')" @confirmed="handleDeleteConfirmed"
@@ -208,16 +204,6 @@ const deleteClicked = () => {
             :text="`${$t('product.email')}: ${contactInfo.email}\n${$t('product.phone')}: ${contactInfo.phone}`"
             @closed="closeContactModal" />
     </div>
+
     <SkeletonProductDetail v-else />
 </template>
-
-<style scoped>
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 9999px;
-}
-</style>

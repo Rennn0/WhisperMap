@@ -10,25 +10,36 @@ const orders = reactive<TCartItem[]>([]);
 
 onMounted(() => {
     const { request } = getProducts({ fromCookie: true });
-    request.then(data =>
+    request.then(data => {
         data.products.forEach(p =>
-            orders.push({ id: p.id, price: p.price, title: p.title })
-        )
-    );
+            orders.push({
+                id: p.id,
+                price: p.price,
+                title: p.title
+            })
+        );
+    });
 });
 
 const removeItem = (id: number) => {
-    removeProduct(id).request.then((_) => {
-        orders.splice(orders.findIndex(o => o.id == id), 1);
+    removeProduct(id).request.then(() => {
+        const index = orders.findIndex(o => o.id === id);
+        if (index !== -1) {
+            orders.splice(index, 1);
+        }
     });
 };
 
-const visitItem = (id: number) => { router.push({ name: "product", params: { id } }) };
+const visitItem = (id: number) => {
+    router.push({ name: 'product', params: { id } });
+};
 </script>
 
 <template>
     <div>
-        <h2 class="text-xl font-semibold mb-4">{{ $t('cart.title') }}</h2>
+        <h2 class="text-xl font-semibold mb-4">
+            {{ $t('cart.title') }}
+        </h2>
 
         <ul class="grid gap-4 grid-cols-1 lg:grid-cols-2">
             <li v-for="o in orders" :key="o.id">

@@ -29,6 +29,7 @@
     "product": {
         "price": "Price",
         "add": "Add",
+        "description":"Description",
         "contact": "Contact",
         "email": "Email address",
         "phone": "Phone number",

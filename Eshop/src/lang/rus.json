@@ -29,6 +29,7 @@
     "product": {
         "price": "Цена",
         "add": "Добавлять",
+        "description": "Description",
         "contact": "Контакт",
         "email": "Адрес электронной почты",
         "phone": "Номер телефона",

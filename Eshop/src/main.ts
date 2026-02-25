@@ -10,7 +10,6 @@ import { ensureProductDetailAccess } from './guards/productDetail.guard'
 import Root from './components/Root.vue'
 import UploadView from './components/upload/UploadView.vue'
 import { createI18n } from 'vue-i18n'
-import vue3GoogleLogin from "vue3-google-login"
 
 import eng from "./lang/eng.json"
 import ka from "./lang/ka.json"
@@ -88,5 +87,4 @@ const i18n = createI18n({
 createApp(App)
     .use(router)
     .use(i18n)
-    .use(vue3GoogleLogin, { clientId: "369535811432-5n2l41tcc78ueti0tfpmppghn6jj1ucj.apps.googleusercontent.com" })
     .mount('#app');
