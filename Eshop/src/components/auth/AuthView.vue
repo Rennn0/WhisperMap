@@ -79,7 +79,7 @@ onMounted(() => {
             <!-- Loader State -->
             <div v-else
                 class="flex flex-col items-center justify-center bg-surface border border-subtle shadow-xl rounded-2xl p-10">
-                <TablerLoaderBlockWave class="w-16 h-16 text-primary" />
+                <TablerLoaderBlockWave class="w-16 h-16" />
                 <p class="mt-4 text-sm opacity-70">
                     Completing authentication...
                 </p>
