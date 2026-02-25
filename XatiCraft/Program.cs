@@ -113,7 +113,8 @@ public static class Program
         builder.Services.AddTransient<Security, AspDataProtector>();
         builder.Services.AddTransient<IProductRepo, ProductRepo>();
         builder.Services.AddTransient<IProductMetadaRepo, ProductMetadataRepo>();
-        string mongoConn = builder.Configuration.GetConnectionString("Mongo") ?? throw new Exception();
+        string mongoConn = builder.Configuration.GetConnectionString("Mongo") ??
+                           throw new Exception("WHERE MONGOOO????");
         builder.Services.AddTransient<IProductRepo, Data.Repos.MongoImpl.ProductRepo>(_ =>
             new Data.Repos.MongoImpl.ProductRepo(mongoConn));
         builder.Services.AddTransient<IProductMetadaRepo, Data.Repos.MongoImpl.ProductMetadataRepo>(_ =>
