@@ -19,6 +19,18 @@ services:
     networks:
       - xc-network
   
+  realtime:
+    image: rennn0/realtime:latest
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    networks:
+      - xc-network
+  
   postgres:
     image: postgres:16
     secrets:
