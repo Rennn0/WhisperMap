@@ -8,15 +8,11 @@ internal abstract partial class SseSignalRegistry<T>
         private readonly CancellationTokenRegistration _reg;
         private int _disposed;
 
-        internal SignalHandle(string key, CancellationToken ct)
+        internal SignalHandle(string key, CancellationToken ct, CancellationTokenRegistration reg)
         {
             Key = key;
+            _reg = reg;
             _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            _reg = _cts.Token.Register(static state =>
-            {
-                SignalHandle self = (SignalHandle)state!;
-                Signals.TryRemove(self.Key, out _);
-            }, this);
         }
 
         internal string Key { get; }

@@ -4,7 +4,7 @@ namespace Realtime.Sse.Core.Stream;
 
 internal abstract partial class SseStreamRegistry<T> : IDisposable, IAsyncDisposable
 {
-    private static readonly ConcurrentDictionary<string, StreamHandle> Streams =
+    private readonly ConcurrentDictionary<string, StreamHandle> _streams =
         new ConcurrentDictionary<string, StreamHandle>();
 
     public ValueTask DisposeAsync()
@@ -15,29 +15,28 @@ internal abstract partial class SseStreamRegistry<T> : IDisposable, IAsyncDispos
 
     public void Dispose()
     {
-        foreach ((_, StreamHandle handle) in Streams) handle.Dispose();
-        Streams.Clear();
+        foreach ((_, StreamHandle handle) in _streams) handle.Dispose();
+        _streams.Clear();
         GC.SuppressFinalize(this);
     }
 
-    internal static StreamHandle GetStream(string key, CancellationToken cancellationToken = default)
+    internal StreamHandle GetStream(string key, CancellationToken cancellationToken = default)
     {
-        if (Streams.TryGetValue(key, out StreamHandle? existingHandle)) return existingHandle;
+        if (_streams.TryGetValue(key, out StreamHandle? existingHandle)) return existingHandle;
 
-        StreamHandle newHandle = new StreamHandle(key, cancellationToken);
-        if (Streams.TryAdd(key, newHandle)) return newHandle;
+        CancellationTokenRegistration reg =
+            cancellationToken.Register(state => _streams.TryRemove(key, out _), this);
+        StreamHandle newHandle = new StreamHandle(key, cancellationToken, reg);
+        if (_streams.TryAdd(key, newHandle)) return newHandle;
 
         newHandle.Dispose();
         throw new InvalidOperationException("cannot add stream");
     }
 
-    internal static void UnregisterStream(string key)
+    internal void UnregisterStream(string key)
     {
-        if (Streams.TryRemove(key, out StreamHandle? handle)) handle.Dispose();
+        if (_streams.TryRemove(key, out StreamHandle? handle)) handle.Dispose();
     }
 
-    internal static void UnregisterStream(StreamHandle streamHandle)
-    {
-        UnregisterStream(streamHandle.Key);
-    }
+    internal void UnregisterStream(StreamHandle streamHandle) => UnregisterStream(streamHandle.Key);
 }

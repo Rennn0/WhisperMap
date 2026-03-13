@@ -1,6 +1,8 @@
 using Realtime.Sse.Core.Signal;
 using Realtime.Sse.Core.Stream;
 using Realtime.Sse.Core.Streamer;
+using Realtime.Sse.Features.SignalRegistries;
+using Realtime.Sse.Features.StreamRegistries;
 using Realtime.Sse.Formatters;
 
 namespace Realtime;
@@ -11,6 +13,10 @@ public static class Program
 
     public static async Task Main(string[] args)
     {
+        SseStringStreamRegistry stringStreamRegistry = new SseStringStreamRegistry();
+        SseFloatStreamRegistry floatStreamRegistry = new SseFloatStreamRegistry();
+        SseStringSignalRegistry stringSignalRegistry = new SseStringSignalRegistry();
+
         WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 
         WebApplication app = builder.Build();
@@ -20,7 +26,7 @@ public static class Program
             async (HttpContext ctx, CancellationToken cancellationToken) =>
             {
                 SseEnumerableStreamer streamer = new SseEnumerableStreamer(ctx, cancellationToken);
-                SseStream<string>.StreamSubscription subscription = SseStreamRegistry<string>
+                SseStream<string>.StreamSubscription subscription = stringStreamRegistry
                     .GetStream("luka", cancellationToken).Subscribe(cancellationToken);
                 try
                 {
@@ -41,7 +47,7 @@ public static class Program
             {
                 SseSignalStreamer streamer = new SseSignalStreamer(ctx, cancellationToken);
                 SseSignalRegistry<string>.SignalHandle signalHandle =
-                    SseSignalRegistry<string>.GetSignal("luka", cancellationToken);
+                    stringSignalRegistry.GetSignal("luka", cancellationToken);
 
                 try
                 {
@@ -66,7 +72,7 @@ public static class Program
         {
             try
             {
-                SseStreamRegistry<string>.StreamHandle stream = SseStreamRegistry<string>.GetStream("luka");
+                SseStreamRegistry<string>.StreamHandle stream = stringStreamRegistry.GetStream("luka");
                 await stream.PublishAsync(DateTimeOffset.Now.ToString("D"));
 
                 if (nwo.AddSeconds(30) >= DateTimeOffset.Now) return;
@@ -74,7 +80,7 @@ public static class Program
                 await stream.DisposeAsync();
 
                 SseSignalRegistry<string>.SignalHandle signalHandle =
-                    SseSignalRegistry<string>.GetSignal("luka");
+                    stringSignalRegistry.GetSignal("luka");
                 await signalHandle.PublishAsync(DateTimeOffset.Now.ToString("R"));
             }
             catch (Exception e)

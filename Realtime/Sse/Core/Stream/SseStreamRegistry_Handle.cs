@@ -8,15 +8,11 @@ internal abstract partial class SseStreamRegistry<T>
         private readonly CancellationTokenRegistration _reg;
         private int _disposed;
 
-        internal StreamHandle(string key, CancellationToken ct)
+        internal StreamHandle(string key, CancellationToken ct, CancellationTokenRegistration reg)
         {
             Key = key;
+            _reg = reg;
             _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            _reg = _cts.Token.Register(static state =>
-            {
-                StreamHandle self = (StreamHandle)state!;
-                Streams.TryRemove(self.Key, out _);
-            }, this);
         }
 
         internal string Key { get; }

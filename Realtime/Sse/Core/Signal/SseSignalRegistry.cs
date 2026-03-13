@@ -4,7 +4,7 @@ namespace Realtime.Sse.Core.Signal;
 
 internal abstract partial class SseSignalRegistry<T> : IDisposable, IAsyncDisposable
 {
-    private static readonly ConcurrentDictionary<string, SignalHandle> Signals =
+    private readonly ConcurrentDictionary<string, SignalHandle> _signals =
         new ConcurrentDictionary<string, SignalHandle>();
 
     public ValueTask DisposeAsync()
@@ -15,29 +15,29 @@ internal abstract partial class SseSignalRegistry<T> : IDisposable, IAsyncDispos
 
     public void Dispose()
     {
-        foreach ((_, SignalHandle handle) in Signals) handle.Dispose();
-        Signals.Clear();
+        foreach ((_, SignalHandle handle) in _signals) handle.Dispose();
+        _signals.Clear();
         GC.SuppressFinalize(this);
     }
 
-    internal static SignalHandle GetSignal(string key, CancellationToken cancellationToken = default)
+    internal SignalHandle GetSignal(string key, CancellationToken cancellationToken = default)
     {
-        if (Signals.TryGetValue(key, out SignalHandle? existingHandle)) return existingHandle;
+        if (_signals.TryGetValue(key, out SignalHandle? existingHandle)) return existingHandle;
 
-        SignalHandle newHandle = new SignalHandle(key, cancellationToken);
-        if (Signals.TryAdd(key, newHandle)) return newHandle;
+        CancellationTokenRegistration reg =
+            cancellationToken.Register(_ => UnregisterSignal(key), null);
+
+        SignalHandle newHandle = new SignalHandle(key, cancellationToken, reg);
+        if (_signals.TryAdd(key, newHandle)) return newHandle;
 
         newHandle.Dispose();
         throw new InvalidOperationException("cannot add signal");
     }
 
-    internal static void UnregisterSignal(string key)
+    internal void UnregisterSignal(string key)
     {
-        if (Signals.TryRemove(key, out SignalHandle? handle)) handle.Dispose();
+        if (_signals.TryRemove(key, out SignalHandle? handle)) handle.Dispose();
     }
 
-    internal static void UnregisterSignal(SignalHandle signalHandle)
-    {
-        UnregisterSignal(signalHandle.Key);
-    }
+    internal void UnregisterSignal(SignalHandle signalHandle) => UnregisterSignal(signalHandle.Key);
 }

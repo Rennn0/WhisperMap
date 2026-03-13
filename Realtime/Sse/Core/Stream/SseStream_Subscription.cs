@@ -6,15 +6,15 @@ internal abstract partial class SseStream<T>
 {
     internal sealed class StreamSubscription : IDisposable, IAsyncDisposable
     {
-        private readonly CancellationTokenRegistration _cancellationTokenRegistration;
         private readonly SseStream<T> _ownerStream;
+        private readonly CancellationTokenRegistration _reg;
         private int _disposed;
 
         internal StreamSubscription(SseStream<T> ownerStream, StreamSubscriber subscriber,
-            CancellationTokenRegistration cancellationTokenRegistration)
+            CancellationTokenRegistration reg)
         {
             _ownerStream = ownerStream;
-            _cancellationTokenRegistration = cancellationTokenRegistration;
+            _reg = reg;
             Id = subscriber.Id;
             Reader = subscriber.Reader;
         }
@@ -31,13 +31,11 @@ internal abstract partial class SseStream<T>
         public void Dispose()
         {
             if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
-            _cancellationTokenRegistration.Dispose();
+            _reg.Dispose();
             _ownerStream.Unsubscribe(Id);
         }
 
-        internal IAsyncEnumerable<T> ReadAllAsync(CancellationToken cancellationToken = default)
-        {
-            return Reader.ReadAllAsync(cancellationToken);
-        }
+        internal IAsyncEnumerable<T> ReadAllAsync(CancellationToken cancellationToken = default) =>
+            Reader.ReadAllAsync(cancellationToken);
     }
 }

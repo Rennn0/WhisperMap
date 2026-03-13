@@ -64,18 +64,12 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
             throw new InvalidOperationException("Cannot add stream subscriber");
         }
 
-        CancellationTokenRegistration tokenRegistration = default;
-        if (cancellationToken.CanBeCanceled)
-            tokenRegistration = cancellationToken.Register(static state =>
-            {
-                (SseStream<T> stream, Guid id) = ((SseStream<T> Stream, Guid Id))state!;
-                stream.RemoveSubscriber(id);
-            }, (this, id));
+        CancellationTokenRegistration reg = cancellationToken.Register(_ => RemoveSubscriber(id), null);
 
         Logger.LogDebug(new EventId((int)StreamLogs.Subscribe, nameof(StreamLogs.Subscribe)),
             "New subscriber {Id}, subs {Count}", id,
             _subscribers.Count);
-        return new StreamSubscription(this, subscriber, tokenRegistration);
+        return new StreamSubscription(this, subscriber, reg);
     }
 
     internal ValueTask PublishAsync(T value, CancellationToken cancellationToken = default)
