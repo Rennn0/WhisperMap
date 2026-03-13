@@ -24,6 +24,8 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         Logger = loggerFactory.CreateLogger<SseStream<T>>();
     }
 
+    internal bool IsDisposed => Volatile.Read(ref _disposed) == 1;
+
     protected ILogger<SseStream<T>> Logger { get; init; }
 
     internal int SubscribersCount => _subscribers.Count;
@@ -63,12 +65,11 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
             throw new InvalidOperationException("Cannot add stream subscriber");
         }
 
-        CancellationTokenRegistration reg = cancellationToken.Register(_ => RemoveSubscriber(id), null);
-
         Logger.LogDebug(new EventId((int)StreamLogs.Subscribe, nameof(StreamLogs.Subscribe)),
             "New subscriber {Id}, subs {Count}", id,
             _subscribers.Count);
-        return new StreamSubscription(this, subscriber, reg);
+
+        return new StreamSubscription(this, subscriber, cancellationToken);
     }
 
     internal ValueTask PublishAsync(T value, CancellationToken cancellationToken = default)
@@ -119,7 +120,7 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         if (_subscribers.TryRemove(id, out StreamSubscriber? subscriber)) subscriber.Writer.TryComplete();
     }
 
-    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(_disposed == 1, this);
+    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(IsDisposed, this);
 
     private enum StreamLogs
     {

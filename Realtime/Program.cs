@@ -74,9 +74,9 @@ public static class Program
                     stringStreamRegistry.GetStream("luka");
                 await stream.PublishAsync(DateTimeOffset.Now.ToString("D"));
 
-                if (now.AddSeconds(20) >= DateTimeOffset.Now) return;
-
-                await stream.DisposeAsync();
+                // if (now.AddSeconds(20) >= DateTimeOffset.Now) return;
+                //
+                // await stream.DisposeAsync();
 
                 SseSignalRegistry<string>.SignalHandle signalHandle =
                     stringSignalRegistry.GetSignal("luka");
