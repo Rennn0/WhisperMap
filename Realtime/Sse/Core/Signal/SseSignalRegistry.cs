@@ -24,10 +24,7 @@ internal abstract partial class SseSignalRegistry<T> : IDisposable, IAsyncDispos
     {
         if (_signals.TryGetValue(key, out SignalHandle? existingHandle)) return existingHandle;
 
-        CancellationTokenRegistration reg =
-            cancellationToken.Register(_ => UnregisterSignal(key), null);
-
-        SignalHandle newHandle = new SignalHandle(key, cancellationToken, reg);
+        SignalHandle newHandle = new SignalHandle(this, key, cancellationToken);
         if (_signals.TryAdd(key, newHandle)) return newHandle;
 
         newHandle.Dispose();

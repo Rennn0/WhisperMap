@@ -24,9 +24,7 @@ internal abstract partial class SseStreamRegistry<T> : IDisposable, IAsyncDispos
     {
         if (_streams.TryGetValue(key, out StreamHandle? existingHandle)) return existingHandle;
 
-        CancellationTokenRegistration reg =
-            cancellationToken.Register(state => _streams.TryRemove(key, out _), this);
-        StreamHandle newHandle = new StreamHandle(key, cancellationToken, reg);
+        StreamHandle newHandle = new StreamHandle(this, key, cancellationToken);
         if (_streams.TryAdd(key, newHandle)) return newHandle;
 
         newHandle.Dispose();

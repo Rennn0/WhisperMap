@@ -5,18 +5,25 @@ internal abstract partial class SseSignalRegistry<T>
     internal class SignalHandle : SseSignal<T>
     {
         private readonly CancellationTokenSource _cts;
+        private readonly SseSignalRegistry<T> _owner;
         private readonly CancellationTokenRegistration _reg;
         private int _disposed;
 
-        internal SignalHandle(string key, CancellationToken ct, CancellationTokenRegistration reg)
+        internal SignalHandle(SseSignalRegistry<T> owner, string key, CancellationToken ct)
         {
+            _owner = owner;
             Key = key;
-            _reg = reg;
             _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            _reg = ct.Register(state =>
+            {
+                SignalHandle self = (SignalHandle)state!;
+                self.Dispose();
+            }, this);
         }
 
         internal string Key { get; }
         internal CancellationToken Token => _cts.Token;
+        internal bool IsDisposed => Volatile.Read(ref _disposed) == 1;
 
         public override void Dispose()
         {
@@ -24,6 +31,7 @@ internal abstract partial class SseSignalRegistry<T>
 
             try
             {
+                _owner.UnregisterSignal(Key);
                 _cts.Cancel();
             }
             finally
@@ -31,7 +39,6 @@ internal abstract partial class SseSignalRegistry<T>
                 _reg.Dispose();
                 _cts.Dispose();
                 base.Dispose();
-                GC.SuppressFinalize(this);
             }
         }
 

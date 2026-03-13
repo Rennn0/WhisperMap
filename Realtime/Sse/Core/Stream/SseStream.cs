@@ -43,7 +43,6 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
             new EventId((int)StreamLogs.Disposed, nameof(StreamLogs.Disposed)),
             "Disposed stream, subscribers {SubscribersCount}",
             SubscribersCount);
-        GC.SuppressFinalize(this);
     }
 
     internal StreamSubscription Subscribe(CancellationToken cancellationToken = default)
@@ -120,10 +119,7 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         if (_subscribers.TryRemove(id, out StreamSubscriber? subscriber)) subscriber.Writer.TryComplete();
     }
 
-    private void ThrowIfDisposed()
-    {
-        ObjectDisposedException.ThrowIf(_disposed == 1, this);
-    }
+    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(_disposed == 1, this);
 
     private enum StreamLogs
     {

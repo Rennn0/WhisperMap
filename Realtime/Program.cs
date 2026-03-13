@@ -63,19 +63,18 @@ public static class Program
                 }
             });
 
-        AsyncLocal<SomeWrapper> counter = new AsyncLocal<SomeWrapper>
-            { Value = new SomeWrapper { Val = 1 } };
 
-        DateTimeOffset nwo = DateTimeOffset.Now;
+        DateTimeOffset now = DateTimeOffset.Now;
 
         _timer = new Timer(async void (_) =>
         {
             try
             {
-                SseStreamRegistry<string>.StreamHandle stream = stringStreamRegistry.GetStream("luka");
+                SseStreamRegistry<string>.StreamHandle stream =
+                    stringStreamRegistry.GetStream("luka");
                 await stream.PublishAsync(DateTimeOffset.Now.ToString("D"));
 
-                if (nwo.AddSeconds(30) >= DateTimeOffset.Now) return;
+                if (now.AddSeconds(20) >= DateTimeOffset.Now) return;
 
                 await stream.DisposeAsync();
 
@@ -87,13 +86,8 @@ public static class Program
             {
                 Console.WriteLine(e.Message);
             }
-        }, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(3));
+        }, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5));
 
         await app.RunAsync();
-    }
-
-    private class SomeWrapper
-    {
-        public float Val { get; set; }
     }
 }

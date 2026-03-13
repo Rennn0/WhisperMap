@@ -95,7 +95,6 @@ internal abstract class SseSignal<T> : IDisposable, IAsyncDisposable
         _waiters.Clear();
         _logger.LogDebug(new EventId((int)SignalLogs.Dispose, nameof(SignalLogs.Dispose)),
             "Disposed signal, waiters {Waiters}", Waiters);
-        GC.SuppressFinalize(this);
     }
 
     public virtual ValueTask DisposeAsync()
