@@ -1,7 +1,6 @@
-﻿using System.Globalization;
-using System.Text;
+﻿using System.Text;
 
-namespace Realtime;
+namespace Realtime.Sse.Formatters;
 
 internal abstract class SseEventFormatter<T>
 {
@@ -19,13 +18,5 @@ internal abstract class SseEventFormatter<T>
         builder.Append("data: ").Append(data).Append('\n');
         builder.Append('\n');
         return builder.ToString();
-    }
-}
-
-internal sealed class SseDefaultFormatter : SseEventFormatter<float>
-{
-    protected override string FormatData(float data)
-    {
-        return data.ToString(CultureInfo.InvariantCulture);
     }
 }

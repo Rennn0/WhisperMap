@@ -1,6 +1,6 @@
 ﻿using System.Threading.Channels;
 
-namespace Realtime;
+namespace Realtime.Sse.Core.Stream;
 
 internal abstract partial class SseStream<T>
 {
@@ -9,10 +9,12 @@ internal abstract partial class SseStream<T>
         public StreamSubscriber(Guid id, Channel<T> channel)
         {
             Id = id;
-            Channel = channel;
+            Reader = channel.Reader;
+            Writer = channel.Writer;
         }
 
         internal Guid Id { get; }
-        internal Channel<T> Channel { get; }
+        internal ChannelReader<T> Reader { get; }
+        internal ChannelWriter<T> Writer { get; }
     }
 }
