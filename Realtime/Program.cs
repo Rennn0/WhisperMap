@@ -1,6 +1,6 @@
+using Realtime.Sse.Core.Signal;
 using Realtime.Sse.Core.Stream;
 using Realtime.Sse.Core.Streamer;
-using Realtime.Sse.Features;
 using Realtime.Sse.Formatters;
 
 namespace Realtime;
@@ -12,44 +12,51 @@ public static class Program
     public static async Task Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
-        builder.Services.AddSingleton<SseStream<string>, ProductsSseStream>();
-        builder.Services.AddSingleton<SseStream<float>, ProductsPriceSseStream>();
 
         WebApplication app = builder.Build();
         RouteGroupBuilder rtGroup = app.MapGroup("/realtime");
         rtGroup.MapGet("/", () => "xx");
-        rtGroup.MapGet("/products",
-            async (HttpContext ctx, SseStream<float> stream,
-                CancellationToken cancellationToken) =>
+        rtGroup.MapGet("/stream",
+            async (HttpContext ctx, CancellationToken cancellationToken) =>
             {
-                // await using SseStream<float>.StreamSubscription subscription = stream.Subscribe();
-                // SseSignalStreamer streamer = new SseSignalStreamer(ctx, cancellationToken);
                 SseEnumerableStreamer streamer = new SseEnumerableStreamer(ctx, cancellationToken);
-                SseStream<float>.StreamSubscription subscription = stream.Subscribe(cancellationToken);
-                
+                SseStream<string>.StreamSubscription subscription = SseStreamRegistry<string>
+                    .GetStream("luka", cancellationToken).Subscribe(cancellationToken);
                 try
                 {
-                    // SseSignalRegistry<string>.SignalHandle signalHandle =
-                    //     SseSignalRegistry<string>.GetSignal("luka", cancellationToken);
-                    // signalHandle.Token.Register(() => Console.WriteLine("Token CAAANCELEd"));
-
                     await streamer.StreamAsync(
                         subscription.ReadAllAsync(cancellationToken),
                         "products-single",
-                        TimeSpan.FromSeconds(5),
-                        new SseDefaultFloatFormatter());
-
-                    // await streamer.StreamAsync(
-                    //     subscription.Reader,
-                    //     "products",
-                    //     TimeSpan.FromSeconds(3),
-                    //     new SseDefaultFloatFormatter());
+                        TimeSpan.FromSeconds(2),
+                        new SseDefaultStringFormatter());
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
                 }
             });
+
+        rtGroup.MapGet("/signal",
+            async (HttpContext ctx, CancellationToken cancellationToken) =>
+            {
+                SseSignalStreamer streamer = new SseSignalStreamer(ctx, cancellationToken);
+                SseSignalRegistry<string>.SignalHandle signalHandle =
+                    SseSignalRegistry<string>.GetSignal("luka", cancellationToken);
+
+                try
+                {
+                    await streamer.StreamAsync(
+                        signalHandle,
+                        "products-single",
+                        TimeSpan.FromSeconds(2),
+                        new SseDefaultStringFormatter());
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            });
+
         AsyncLocal<SomeWrapper> counter = new AsyncLocal<SomeWrapper>
             { Value = new SomeWrapper { Val = 1 } };
 
@@ -59,14 +66,16 @@ public static class Program
         {
             try
             {
-                // await using SseSignalRegistry<string>.SignalHandle signalHandle =
-                //     SseSignalRegistry<string>.GetSignal("luka");
-                // await signalHandle.PublishAsync(DateTimeOffset.Now.ToString());
+                SseStreamRegistry<string>.StreamHandle stream = SseStreamRegistry<string>.GetStream("luka");
+                await stream.PublishAsync(DateTimeOffset.Now.ToString("D"));
 
-                SseStream<float> fStream = app.Services.GetRequiredService<SseStream<float>>();
-                await fStream.PublishAsync(counter.Value.Val++);
+                if (nwo.AddSeconds(30) >= DateTimeOffset.Now) return;
 
-                if (nwo.AddSeconds(10) < DateTimeOffset.Now) await fStream.DisposeAsync();
+                await stream.DisposeAsync();
+
+                SseSignalRegistry<string>.SignalHandle signalHandle =
+                    SseSignalRegistry<string>.GetSignal("luka");
+                await signalHandle.PublishAsync(DateTimeOffset.Now.ToString("R"));
             }
             catch (Exception e)
             {

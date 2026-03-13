@@ -4,22 +4,10 @@ namespace Realtime.Sse.Core.Streamer;
 
 internal abstract class SseStreamer
 {
-    protected enum SseLogs
-    {
-        StartStream,
-        EndStream,
-        StartSignal,
-        EndSignal,
-        ExcStreamCancelled,
-        ExcStreamDestroyed,
-        ExcSignalCancelled,
-        ExcSignalDestroyed
-    }
+    protected readonly CancellationTokenSource CancellationSource;
 
     protected readonly HttpContext Context;
-    protected readonly CancellationTokenSource CancellationSource;
     protected readonly ILoggerFactory LogFactory;
-    protected ILogger<SseStreamer> Logger { get; init; }
 
     internal SseStreamer(HttpContext context, CancellationToken cancellationToken)
     {
@@ -38,6 +26,8 @@ internal abstract class SseStreamer
         Logger = LogFactory.CreateLogger<SseStreamer>();
         InitResponse();
     }
+
+    protected ILogger<SseStreamer> Logger { get; init; }
 
     internal CancellationToken CancellationToken => CancellationSource.Token;
 
@@ -61,8 +51,20 @@ internal abstract class SseStreamer
     {
         CancellationToken.ThrowIfCancellationRequested();
 
-        string payload = $":{comment}\n\n";
+        string payload = $": {comment}\n\n";
         await Context.Response.WriteAsync(payload, CancellationToken);
         await Context.Response.Body.FlushAsync(CancellationToken);
+    }
+
+    protected enum SseLogs
+    {
+        StartStream,
+        EndStream,
+        StartSignal,
+        EndSignal,
+        ExcStreamCancelled,
+        ExcStreamDestroyed,
+        ExcSignalCancelled,
+        ExcSignalDestroyed
     }
 }

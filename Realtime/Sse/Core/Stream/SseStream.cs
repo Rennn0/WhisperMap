@@ -5,21 +5,11 @@ namespace Realtime.Sse.Core.Stream;
 
 internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
 {
-    private enum StreamLogs
-    {
-        Subscribe = 100,
-        Unsubscribe,
-        Publish,
-        BrokenSub,
-        BrokenSubInfo,
-        Disposed
-    }
-
     private readonly ConcurrentDictionary<Guid, StreamSubscriber> _subscribers =
         new ConcurrentDictionary<Guid, StreamSubscriber>();
 
-    protected ILogger<SseStream<T>> Logger { get; init; }
     private int _disposed;
+
     internal SseStream()
     {
         ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
@@ -34,7 +24,27 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         Logger = loggerFactory.CreateLogger<SseStream<T>>();
     }
 
+    protected ILogger<SseStream<T>> Logger { get; init; }
+
     internal int SubscribersCount => _subscribers.Count;
+
+    public virtual ValueTask DisposeAsync()
+    {
+        Dispose();
+        return ValueTask.CompletedTask;
+    }
+
+    public virtual void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
+        foreach (StreamSubscriber subscriber in _subscribers.Values) subscriber.Writer.TryComplete();
+        _subscribers.Clear();
+        Logger.LogDebug(
+            new EventId((int)StreamLogs.Disposed, nameof(StreamLogs.Disposed)),
+            "Disposed stream, subscribers {SubscribersCount}",
+            SubscribersCount);
+        GC.SuppressFinalize(this);
+    }
 
     internal StreamSubscription Subscribe(CancellationToken cancellationToken = default)
     {
@@ -116,23 +126,18 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         if (_subscribers.TryRemove(id, out StreamSubscriber? subscriber)) subscriber.Writer.TryComplete();
     }
 
-    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(_disposed == 1, this);
-
-    public void Dispose()
+    private void ThrowIfDisposed()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
-        foreach (StreamSubscriber subscriber in _subscribers.Values) subscriber.Writer.TryComplete();
-        _subscribers.Clear();
-        Logger.LogDebug(
-            new EventId((int)StreamLogs.Disposed, nameof(StreamLogs.Disposed)),
-            "Disposed stream, subscribers {SubscribersCount}",
-            SubscribersCount);
-        GC.SuppressFinalize(this);
+        ObjectDisposedException.ThrowIf(_disposed == 1, this);
     }
 
-    public ValueTask DisposeAsync()
+    private enum StreamLogs
     {
-        Dispose();
-        return ValueTask.CompletedTask;
+        Subscribe = 100,
+        Unsubscribe,
+        Publish,
+        BrokenSub,
+        BrokenSubInfo,
+        Disposed
     }
 }
