@@ -30,6 +30,11 @@ public static class Program
     public static async Task Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+        const string swarmAppSettingsPath = "/run/secrets/appsettings.Production.json";
+        if (File.Exists(swarmAppSettingsPath))
+            builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
+
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
