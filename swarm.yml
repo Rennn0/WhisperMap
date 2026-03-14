@@ -4,7 +4,7 @@ services:
   api:
     image: rennn0/xaticraft:latest
     deploy:
-      replicas: 3
+      replicas: 1
       resources:
         limits:
           memory: 512M
