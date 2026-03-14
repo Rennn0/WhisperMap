@@ -28,11 +28,12 @@ public static class Program
         rtGroup.MapGet("/stream",
             async ctx =>
             {
+                CancellationToken cancellationToken = ctx.RequestAborted;
                 SseEnumerableStreamer streamer = new SseEnumerableStreamer(ctx);
                 SseStream<string>.StreamSubscription subscription = stringStreamRegistry
-                    .GetStream("luka", ctx.RequestAborted).Subscribe(ctx.RequestAborted);
+                    .GetStream("luka", cancellationToken).Subscribe(cancellationToken);
                 await streamer.StreamAsync(
-                    subscription.ReadAllAsync(),
+                    subscription.ReadAllAsync(cancellationToken),
                     "stream",
                     TimeSpan.FromSeconds(2),
                     new SseDefaultStringFormatter());

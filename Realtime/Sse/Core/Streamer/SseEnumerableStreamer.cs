@@ -16,10 +16,13 @@ internal class SseEnumerableStreamer : SseStreamer
         Logger.LogDebug(new EventId((int)SseLogs.StartStream, nameof(SseLogs.StartStream)),
             "Starting SSE streaming for {RequestPath}, event {EventName}", Context.Request.Path, eventName);
 
+        IAsyncEnumerator<T>? enumerator = null;
+        Task<bool>? moveNextTask = null;
+
         try
         {
-            await using IAsyncEnumerator<T> enumerator = source.GetAsyncEnumerator(CancellationToken);
-            Task<bool> moveNextTask = enumerator.MoveNextAsync().AsTask();
+            enumerator = source.GetAsyncEnumerator(CancellationToken);
+            moveNextTask = enumerator.MoveNextAsync().AsTask();
 
             while (!CancellationToken.IsCancellationRequested)
             {
@@ -50,6 +53,28 @@ internal class SseEnumerableStreamer : SseStreamer
             Logger.LogError(new EventId((int)SseLogs.ExcStreamDestroyed, nameof(SseLogs.ExcStreamDestroyed)), e,
                 "Streaming for {RequestPath}, event {EventName} destroyed, exception {Exception}",
                 Context.Request.Path, eventName, e.Message);
+        }
+        finally
+        {
+            if (moveNextTask is { IsCompleted: false })
+                try
+                {
+                    await moveNextTask;
+                }
+                catch
+                {
+                    // ignored
+                }
+
+            if (enumerator is not null)
+                try
+                {
+                    await enumerator.DisposeAsync();
+                }
+                catch
+                {
+                    // ignored
+                }
         }
     }
 }
