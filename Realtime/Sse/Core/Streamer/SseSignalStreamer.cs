@@ -29,7 +29,7 @@ internal class SseSignalStreamer : SseStreamer
                 if (completed == signalTask)
                 {
                     T data = await signalTask;
-                    await WriteEventAsync(eventName, data, formatter);
+                    await SafeWriteAsync(() => WriteEventAsync(eventName, data, formatter));
 
                     Logger.LogDebug(new EventId((int)SseLogs.EndSignal, nameof(SseLogs.EndSignal)),
                         "End signal for {RequestPath}, event {EventName}", Context.Request.Path,
@@ -37,7 +37,7 @@ internal class SseSignalStreamer : SseStreamer
                     break;
                 }
 
-                await WriteCommentAsync("ping");
+                await SafeWriteAsync(() => WriteCommentAsync("ping"));
             }
         }
         catch (OperationCanceledException)
@@ -47,7 +47,7 @@ internal class SseSignalStreamer : SseStreamer
         }
         catch (Exception e)
         {
-            Logger.LogError(new EventId((int)SseLogs.ExcSignalDestroyed, nameof(SseLogs.ExcSignalDestroyed)),
+            Logger.LogError(new EventId((int)SseLogs.ExcSignalDestroyed, nameof(SseLogs.ExcSignalDestroyed)), e,
                 "Signaling for {RequestPath}, event {EventName} destroyed, exception {Exception}",
                 Context.Request.Path, eventName, e.Message);
         }

@@ -35,11 +35,12 @@ internal class SseChannelStreamer : SseStreamer
                         break;
                     }
 
-                    while (source.TryRead(out T? update)) await WriteEventAsync(eventName, update, formatter);
+                    while (source.TryRead(out T? update))
+                        await SafeWriteAsync(() => WriteEventAsync(eventName, update, formatter));
                 }
                 else
                 {
-                    await WriteCommentAsync("ping");
+                    await SafeWriteAsync(() => WriteCommentAsync("ping"));
                 }
             }
         }
@@ -50,7 +51,7 @@ internal class SseChannelStreamer : SseStreamer
         }
         catch (Exception e)
         {
-            Logger.LogError(new EventId((int)SseLogs.ExcStreamDestroyed, nameof(SseLogs.ExcStreamDestroyed)),
+            Logger.LogError(new EventId((int)SseLogs.ExcStreamDestroyed, nameof(SseLogs.ExcStreamDestroyed)), e,
                 "Streaming for {RequestPath}, event {EventName} destroyed, exception {Exception}",
                 Context.Request.Path, eventName, e.Message);
         }

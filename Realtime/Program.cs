@@ -33,7 +33,7 @@ public static class Program
                     .GetStream("luka", ctx.RequestAborted).Subscribe(ctx.RequestAborted);
                 await streamer.StreamAsync(
                     subscription.ReadAllAsync(),
-                    "products",
+                    "stream",
                     TimeSpan.FromSeconds(2),
                     new SseDefaultStringFormatter());
             });
@@ -47,7 +47,7 @@ public static class Program
 
                 await streamer.StreamAsync(
                     signalHandle,
-                    "products-single",
+                    "signal",
                     TimeSpan.FromSeconds(2),
                     new SseDefaultStringFormatter());
             });

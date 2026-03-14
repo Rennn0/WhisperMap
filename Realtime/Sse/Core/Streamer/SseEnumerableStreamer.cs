@@ -47,7 +47,7 @@ internal class SseEnumerableStreamer : SseStreamer
         }
         catch (Exception e)
         {
-            Logger.LogError(new EventId((int)SseLogs.ExcStreamDestroyed, nameof(SseLogs.ExcStreamDestroyed)),
+            Logger.LogError(new EventId((int)SseLogs.ExcStreamDestroyed, nameof(SseLogs.ExcStreamDestroyed)), e,
                 "Streaming for {RequestPath}, event {EventName} destroyed, exception {Exception}",
                 Context.Request.Path, eventName, e.Message);
         }
