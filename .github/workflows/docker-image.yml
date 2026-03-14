@@ -1,26 +1,52 @@
-name: Push Image
+name: Build and Push Images
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: rennn0
-        password: ${{ secrets.DOKERHUB_TOKEN }}
+      - name: Set image version
+        id: vars
+        run: echo "VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-    - name: Build and push
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./XatiCraft/Dockerfile
-        push: true
-        tags: rennn0/xaticraft:latest
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: rennn0
+          password: ${{ secrets.DOKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push XatiCraft
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./XatiCraft/Dockerfile
+          push: true
+          cache-from: type=gha,scope=xaticraft
+          cache-to: type=gha,mode=max,scope=xaticraft
+          tags: |
+            rennn0/xaticraft:latest
+            rennn0/xaticraft:${{ steps.vars.outputs.VERSION }}
+
+      - name: Build and push Realtime
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Realtime/Dockerfile
+          push: true
+          cache-from: type=gha,scope=realtime
+          cache-to: type=gha,mode=max,scope=realtime
+          tags: |
+            rennn0/realtime:latest
+            rennn0/realtime:${{ steps.vars.outputs.VERSION }}

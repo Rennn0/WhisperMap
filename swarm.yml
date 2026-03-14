@@ -32,6 +32,9 @@ services:
           memory: 512M
         reservations:
           memory: 256M
+    secrets:
+      - source: rt_appsettings_prod
+        target: appsettings.Production.json
     networks:
       - xc-network
   
@@ -67,7 +70,7 @@ services:
       - MONGODB_INITDB_ROOT_PASSWORD_FILE=/run/secrets/mongo_password
     volumes:
       - mongo-data:/data/db
-      - mongo-config:/data/config
+      - mongo-config:/data/configdb
     networks:
       - xc-network
     ports:
@@ -105,8 +108,14 @@ networks:
 
 volumes:
   pgdata:
+    external: true
+    name: xc_pgdata
   mongo-data:
+    external: true
+    name: xc_mongo-data
   mongo-config:
+    external: true
+    name: xc_mongo-config
 
 secrets:
   mongo_password:
@@ -118,6 +127,8 @@ secrets:
   postgres_user:
     external: true
   xc_appsettings_prod:
+    external: true
+  rt_appsettings_prod:
     external: true
 
 configs:

@@ -18,7 +18,10 @@ public static class Program
         SseStringSignalRegistry stringSignalRegistry = new SseStringSignalRegistry();
 
         WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
-
+        const string swarmAppSettingsPath = "/run/secrets/appsettings.Production.json";
+        if (File.Exists(swarmAppSettingsPath))
+            builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
+        
         WebApplication app = builder.Build();
         RouteGroupBuilder rtGroup = app.MapGroup("/realtime");
         rtGroup.MapGet("/", () => "xx");
