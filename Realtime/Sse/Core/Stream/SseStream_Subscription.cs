@@ -43,7 +43,6 @@ internal abstract partial class SseStream<T>
             _reg.Dispose();
         }
 
-        internal IAsyncEnumerable<T> ReadAllAsync(CancellationToken cancellationToken = default) =>
-            Reader.ReadAllAsync(cancellationToken);
+        internal IAsyncEnumerable<T> ReadAllAsync() => Reader.ReadAllAsync(_cts.Token);
     }
 }

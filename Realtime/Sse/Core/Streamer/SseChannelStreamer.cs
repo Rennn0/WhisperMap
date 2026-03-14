@@ -5,9 +5,11 @@ namespace Realtime.Sse.Core.Streamer;
 
 internal class SseChannelStreamer : SseStreamer
 {
-    internal SseChannelStreamer(HttpContext context, CancellationToken cancellationToken) : base(context,
-        cancellationToken) =>
-        Logger = LogFactory.CreateLogger<SseChannelStreamer>();
+    internal SseChannelStreamer(HttpContext context) : base(context,
+        context.RequestAborted) => Logger = LogFactory.CreateLogger<SseChannelStreamer>();
+
+    internal SseChannelStreamer(HttpContext context, CancellationToken cancellationToken)
+        : base(context, cancellationToken) => Logger = LogFactory.CreateLogger<SseChannelStreamer>();
 
     internal async Task StreamAsync<T>(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter)

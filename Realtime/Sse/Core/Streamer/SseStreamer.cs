@@ -56,6 +56,28 @@ internal abstract class SseStreamer
         await Context.Response.Body.FlushAsync(CancellationToken);
     }
 
+    protected async Task SafeWriteAsync(Func<Task> write)
+    {
+        try
+        {
+            CancellationToken.ThrowIfCancellationRequested();
+            await write();
+        }
+        catch (Exception ex) when (IsClientDisconnect(ex))
+        {
+            throw new OperationCanceledException(CancellationToken);
+        }
+    }
+
+    protected bool IsClientDisconnect(Exception ex)
+    {
+        if (CancellationToken.IsCancellationRequested)
+            return true;
+
+        return ex is OperationCanceledException or IOException or ObjectDisposedException or TaskCanceledException
+            or NotSupportedException;
+    }
+
     protected enum SseLogs
     {
         StartStream,

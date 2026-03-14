@@ -21,49 +21,35 @@ public static class Program
         const string swarmAppSettingsPath = "/run/secrets/appsettings.Production.json";
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
-        
+
         WebApplication app = builder.Build();
         RouteGroupBuilder rtGroup = app.MapGroup("/realtime");
         rtGroup.MapGet("/", () => "xx");
         rtGroup.MapGet("/stream",
-            async (HttpContext ctx, CancellationToken cancellationToken) =>
+            async ctx =>
             {
-                SseEnumerableStreamer streamer = new SseEnumerableStreamer(ctx, cancellationToken);
+                SseEnumerableStreamer streamer = new SseEnumerableStreamer(ctx);
                 SseStream<string>.StreamSubscription subscription = stringStreamRegistry
-                    .GetStream("luka", cancellationToken).Subscribe(cancellationToken);
-                try
-                {
-                    await streamer.StreamAsync(
-                        subscription.ReadAllAsync(cancellationToken),
-                        "products-single",
-                        TimeSpan.FromSeconds(2),
-                        new SseDefaultStringFormatter());
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
+                    .GetStream("luka", ctx.RequestAborted).Subscribe(ctx.RequestAborted);
+                await streamer.StreamAsync(
+                    subscription.ReadAllAsync(),
+                    "products",
+                    TimeSpan.FromSeconds(2),
+                    new SseDefaultStringFormatter());
             });
 
         rtGroup.MapGet("/signal",
-            async (HttpContext ctx, CancellationToken cancellationToken) =>
+            async ctx =>
             {
-                SseSignalStreamer streamer = new SseSignalStreamer(ctx, cancellationToken);
+                SseSignalStreamer streamer = new SseSignalStreamer(ctx);
                 SseSignalRegistry<string>.SignalHandle signalHandle =
-                    stringSignalRegistry.GetSignal("luka", cancellationToken);
+                    stringSignalRegistry.GetSignal("luka", ctx.RequestAborted);
 
-                try
-                {
-                    await streamer.StreamAsync(
-                        signalHandle,
-                        "products-single",
-                        TimeSpan.FromSeconds(2),
-                        new SseDefaultStringFormatter());
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
+                await streamer.StreamAsync(
+                    signalHandle,
+                    "products-single",
+                    TimeSpan.FromSeconds(2),
+                    new SseDefaultStringFormatter());
             });
 
 

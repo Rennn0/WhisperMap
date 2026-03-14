@@ -4,6 +4,9 @@ namespace Realtime.Sse.Core.Streamer;
 
 internal class SseEnumerableStreamer : SseStreamer
 {
+    public SseEnumerableStreamer(HttpContext context) :
+        base(context, context.RequestAborted) => Logger = LogFactory.CreateLogger<SseEnumerableStreamer>();
+
     public SseEnumerableStreamer(HttpContext context, CancellationToken cancellationToken) :
         base(context, cancellationToken) => Logger = LogFactory.CreateLogger<SseEnumerableStreamer>();
 
@@ -22,17 +25,18 @@ internal class SseEnumerableStreamer : SseStreamer
             {
                 Task pingTask = Task.Delay(heartbeatInterval, CancellationToken);
                 Task completed = await Task.WhenAny(moveNextTask, pingTask);
+                CancellationToken.ThrowIfCancellationRequested();
 
                 if (completed == moveNextTask)
                 {
                     if (!await moveNextTask) break;
 
-                    await WriteEventAsync(eventName, enumerator.Current, formatter);
+                    await SafeWriteAsync(() => WriteEventAsync(eventName, enumerator.Current, formatter));
                     moveNextTask = enumerator.MoveNextAsync().AsTask();
                 }
                 else
                 {
-                    await WriteCommentAsync("ping");
+                    await SafeWriteAsync(() => WriteCommentAsync("ping"));
                 }
             }
         }
