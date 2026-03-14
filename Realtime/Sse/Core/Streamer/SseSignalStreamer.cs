@@ -6,7 +6,7 @@ namespace Realtime.Sse.Core.Streamer;
 internal class SseSignalStreamer : SseStreamer
 {
     internal SseSignalStreamer(HttpContext context)
-        : base(context, context.RequestAborted) => Logger = LogFactory.CreateLogger<SseSignalStreamer>();
+        : base(context, CancellationToken.None) => Logger = LogFactory.CreateLogger<SseSignalStreamer>();
 
     internal SseSignalStreamer(HttpContext context, CancellationToken cancellationToken)
         : base(context, cancellationToken) => Logger = LogFactory.CreateLogger<SseSignalStreamer>();

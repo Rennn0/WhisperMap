@@ -5,7 +5,7 @@ namespace Realtime.Sse.Core.Streamer;
 internal class SseEnumerableStreamer : SseStreamer
 {
     public SseEnumerableStreamer(HttpContext context) :
-        base(context, context.RequestAborted) => Logger = LogFactory.CreateLogger<SseEnumerableStreamer>();
+        base(context, CancellationToken.None) => Logger = LogFactory.CreateLogger<SseEnumerableStreamer>();
 
     public SseEnumerableStreamer(HttpContext context, CancellationToken cancellationToken) :
         base(context, cancellationToken) => Logger = LogFactory.CreateLogger<SseEnumerableStreamer>();

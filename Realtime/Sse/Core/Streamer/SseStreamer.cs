@@ -1,11 +1,11 @@
-﻿using Realtime.Sse.Formatters;
+﻿using Microsoft.Extensions.Primitives;
+using Realtime.Sse.Formatters;
 
 namespace Realtime.Sse.Core.Streamer;
 
 internal abstract class SseStreamer
 {
     protected readonly CancellationTokenSource CancellationSource;
-
     protected readonly HttpContext Context;
     protected readonly ILoggerFactory LogFactory;
 
@@ -33,9 +33,10 @@ internal abstract class SseStreamer
 
     internal void InitResponse()
     {
-        Context.Response.Headers.ContentType = "text/event-stream";
-        Context.Response.Headers.CacheControl = "no-cache";
-        Context.Response.Headers["X-Accel-Buffering"] = "no";
+        Context.Response.Headers.ContentType = new StringValues("text/event-stream");
+        Context.Response.Headers.CacheControl = new StringValues("no-cache");
+        Context.Response.Headers.Connection = new StringValues("keep-alive");
+        Context.Response.Headers["X-Accel-Buffering"] = new StringValues("no");
     }
 
     protected async Task WriteEventAsync<T>(string eventName, T data, SseEventFormatter<T> formatter)
