@@ -11,11 +11,15 @@ services:
         reservations:
           memory: 256M
     environment:
+      - ASPNETCORE_ENVIRONMENT=Production
       - CERT_PATH=/app/certs/xc-dp.pfx
       - CERT_PASS=SAGhJr6c4sVRcIMhrah9Eddp670jXcl2
     configs:
       - source: xc_pfx
         target: /app/certs/xc-dp.pfx
+    secrets:
+      - source: xc_appsettings_prod
+        target: appsettings.Production.json
     networks:
       - xc-network
   
@@ -89,9 +93,6 @@ services:
       - xc-network
     deploy:
       replicas: 1
-      #      placement:
-      #        constraints:
-      #          - node.role == manager
       resources:
         limits:
           memory: 1G
@@ -115,6 +116,8 @@ secrets:
   postgres_password:
     external: true
   postgres_user:
+    external: true
+  xc_appsettings_prod:
     external: true
 
 configs:
