@@ -1,6 +1,7 @@
 using Realtime.Background;
 using Realtime.Sse.Core.Stream;
 using Realtime.Sse.Core.Streamer;
+using Realtime.Sse.Features.StreamData;
 using Realtime.Sse.Features.StreamRegistries;
 using Realtime.Sse.Formatters;
 
@@ -11,14 +12,16 @@ public static class Program
     public static async Task Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
+        
         const string swarmAppSettingsPath = "/run/secrets/appsettings.Production.json";
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
         builder.Services.AddSingleton<SseUserStatsStreamRegistry>();
 
-        builder.Services.AddHostedService<UserStatsBackgroundService>();
+        builder.Services.AddTransient<IStreamDataProvider<SseUserStatsFormatter.UserStats>, UserStatsProvider>();
 
+        builder.Services.AddHostedService<UserStatsBackgroundService>();
 
         builder.Services.AddCors(opt =>
         {
@@ -29,22 +32,30 @@ public static class Program
                 pol.AllowAnyOrigin();
             });
         });
+        
         WebApplication app = builder.Build();
-
         app.UseCors();
 
         RouteGroupBuilder realtimeGroup = app.MapGroup("/realtime");
         RouteGroupBuilder streamGroup = realtimeGroup.MapGroup("/stream");
-        streamGroup.MapGet("/u", async (HttpContext context, SseUserStatsStreamRegistry registry) =>
+        streamGroup.MapGet("/u",
+            async (HttpContext context, SseUserStatsStreamRegistry registry,
+                IStreamDataProvider<SseUserStatsFormatter.UserStats> streamDataProvider) =>
             {
                 CancellationToken cancellationToken = context.RequestAborted;
-                SseEnumerableStreamer streamer = new SseEnumerableStreamer(context);
+                SseStreamRegistry<SseUserStatsFormatter.UserStats>.StreamHandle handle =
+                    registry.GetStream("users", cancellationToken);
                 SseStream<SseUserStatsFormatter.UserStats>.StreamSubscription subscription =
-                    registry.GetStream("users", cancellationToken).Subscribe(cancellationToken);
+                    handle.Subscribe(cancellationToken);
+                SseUserStatsFormatter.UserStats
+                    initialVal = await streamDataProvider.Instant(handle, cancellationToken);
+                
+                SseEnumerableStreamer streamer = new SseEnumerableStreamer(context);
                 await streamer.StreamAsync(
                     subscription.ReadAllAsync(cancellationToken),
                     TimeSpan.FromSeconds(10),
-                    new SseUserStatsFormatter());
+                    new SseUserStatsFormatter(),
+                    initialVal);
             });
 
         // rtGroup.MapGet("/signal",

@@ -11,10 +11,11 @@ internal class SseEnumerableStreamer : SseStreamer
         base(context, cancellationToken) => Logger = LogFactory.CreateLogger<SseEnumerableStreamer>();
 
     internal Task StreamAsync<T>(IAsyncEnumerable<T> source, TimeSpan heartbeatInterval,
-        SseEventFormatter<T> formatter) => StreamAsync(source, string.Empty, heartbeatInterval, formatter);
+        SseEventFormatter<T> formatter, T? initialValue = default) =>
+        StreamAsync(source, string.Empty, heartbeatInterval, formatter, initialValue);
     
     internal async Task StreamAsync<T>(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
-        SseEventFormatter<T> formatter)
+        SseEventFormatter<T> formatter, T? initialValue = default)
     {
         Logger.LogDebug(new EventId((int)SseLogs.StartStream, nameof(SseLogs.StartStream)),
             "Starting SSE streaming for {RequestPath}, event {EventName}", Context.Request.Path, eventName);
@@ -24,6 +25,9 @@ internal class SseEnumerableStreamer : SseStreamer
 
         try
         {
+            if (initialValue is not null)
+                await SafeWriteAsync(() => WriteEventAsync(eventName, initialValue, formatter));
+            
             enumerator = source.GetAsyncEnumerator(CancellationToken);
             moveNextTask = enumerator.MoveNextAsync().AsTask();
 
