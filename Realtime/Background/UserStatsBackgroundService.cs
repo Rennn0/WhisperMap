@@ -1,5 +1,5 @@
 ﻿using Realtime.Sse.Core.Stream;
-using Realtime.Sse.Features.StreamData;
+using Realtime.Sse.Features.SseData;
 using Realtime.Sse.Features.StreamRegistries;
 using Realtime.Sse.Formatters;
 
@@ -8,13 +8,13 @@ namespace Realtime.Background;
 internal class UserStatsBackgroundService : BackgroundService
 {
     private readonly SseUserStatsStreamRegistry _registry;
-    private readonly IStreamDataProvider<SseUserStatsFormatter.UserStats> _streamDataProvider;
+    private readonly ISseDataProvider<SseUserStatsFormatter.UserStats> _sseDataProvider;
 
     public UserStatsBackgroundService(SseUserStatsStreamRegistry registry,
-        IStreamDataProvider<SseUserStatsFormatter.UserStats> streamDataProvider)
+        ISseDataProvider<SseUserStatsFormatter.UserStats> sseDataProvider)
     {
         _registry = registry;
-        _streamDataProvider = streamDataProvider;
+        _sseDataProvider = sseDataProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -26,7 +26,7 @@ internal class UserStatsBackgroundService : BackgroundService
 
             if (streamHandle.SubscribersCount > 0)
             {
-                SseUserStatsFormatter.UserStats stats = await _streamDataProvider.Instant(streamHandle, stoppingToken);
+                SseUserStatsFormatter.UserStats stats = await _sseDataProvider.Instant(streamHandle, stoppingToken);
                 await streamHandle.PublishAsync(stats, stoppingToken);
             }
 

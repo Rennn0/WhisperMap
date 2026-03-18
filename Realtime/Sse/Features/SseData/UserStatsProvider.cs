@@ -1,9 +1,9 @@
 ﻿using Realtime.Sse.Core.Stream;
 using Realtime.Sse.Formatters;
 
-namespace Realtime.Sse.Features.StreamData;
+namespace Realtime.Sse.Features.SseData;
 
-internal class UserStatsProvider : IStreamDataProvider<SseUserStatsFormatter.UserStats>
+internal class UserStatsProvider : ISseDataProvider<SseUserStatsFormatter.UserStats>
 {
     public ValueTask<SseUserStatsFormatter.UserStats> Instant(CancellationToken cancellationToken = default) =>
         throw new NotImplementedException();

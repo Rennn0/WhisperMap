@@ -1,8 +1,8 @@
 ﻿using Realtime.Sse.Core.Stream;
 
-namespace Realtime.Sse.Features.StreamData;
+namespace Realtime.Sse.Features.SseData;
 
-internal interface IStreamDataProvider<T>
+internal interface ISseDataProvider<T>
 {
     ValueTask<T> Instant(CancellationToken cancellationToken = default);
 

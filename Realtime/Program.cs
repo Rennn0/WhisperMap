@@ -1,7 +1,7 @@
 using Realtime.Background;
 using Realtime.Sse.Core.Stream;
 using Realtime.Sse.Core.Streamer;
-using Realtime.Sse.Features.StreamData;
+using Realtime.Sse.Features.SseData;
 using Realtime.Sse.Features.StreamRegistries;
 using Realtime.Sse.Formatters;
 
@@ -19,7 +19,7 @@ public static class Program
 
         builder.Services.AddSingleton<SseUserStatsStreamRegistry>();
 
-        builder.Services.AddTransient<IStreamDataProvider<SseUserStatsFormatter.UserStats>, UserStatsProvider>();
+        builder.Services.AddTransient<ISseDataProvider<SseUserStatsFormatter.UserStats>, UserStatsProvider>();
 
         builder.Services.AddHostedService<UserStatsBackgroundService>();
 
@@ -40,7 +40,7 @@ public static class Program
         RouteGroupBuilder streamGroup = realtimeGroup.MapGroup("/stream");
         streamGroup.MapGet("/u",
             async (HttpContext context, SseUserStatsStreamRegistry registry,
-                IStreamDataProvider<SseUserStatsFormatter.UserStats> streamDataProvider) =>
+                ISseDataProvider<SseUserStatsFormatter.UserStats> sseDataProvider) =>
             {
                 CancellationToken cancellationToken = context.RequestAborted;
                 SseStreamRegistry<SseUserStatsFormatter.UserStats>.StreamHandle handle =
@@ -48,7 +48,7 @@ public static class Program
                 SseStream<SseUserStatsFormatter.UserStats>.StreamSubscription subscription =
                     handle.Subscribe(cancellationToken);
                 SseUserStatsFormatter.UserStats
-                    initialVal = await streamDataProvider.Instant(handle, cancellationToken);
+                    initialVal = await sseDataProvider.Instant(handle, cancellationToken);
                 
                 SseEnumerableStreamer streamer = new SseEnumerableStreamer(context);
                 await streamer.StreamAsync(
