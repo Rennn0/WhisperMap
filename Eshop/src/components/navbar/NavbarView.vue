@@ -45,6 +45,10 @@ const query = ref('');
 const searchPreviewOpen = ref(false);
 const currentTheme = ref('light');
 const userInfo = inject<Readonly<Ref<UserInfo>>>(userInfoInjectionKey);
+const onlineUsers = ref(0);
+const offlineUsers = ref(0);
+const host = import.meta.env.VITE_REALTIME_HOST;
+
 
 const products = ref<Product[]>([]);
 
@@ -53,6 +57,8 @@ const fetchProducts = debounce(async (q: string) => {
     products.value = v?.products?.slice(0, 10) || [];
   })
 }, 400);
+
+let usersSource: EventSource | null = null;
 
 watch(query, async (newQuery) => {
   const q = newQuery.trim().toLowerCase();
@@ -105,6 +111,18 @@ onUpdated(() => { });
 onMounted(() => {
   const saved = localStorage.getItem('theme') || 'light';
   currentTheme.value = saved;
+
+  usersSource=new EventSource(`${host}/realtime/stream/u`);
+  usersSource.onmessage = (e) => {
+    const ev = e as MessageEvent<string>;
+    const parts = ev.data.split(';');
+    onlineUsers.value = Number(parts[0]);
+    offlineUsers.value = Number(parts[1]);
+  };
+
+  usersSource.onerror = (err) => {
+    console.log('SSE error', err);
+  };
 });
 onUnmounted(() => { })
 //#endregion
@@ -136,7 +154,17 @@ onUnmounted(() => { })
         @product-chosen="onProductChosen" @focus="onSearchFocus" @blur="onSearchBlur" />
 
       <!-- Right side buttons -->
-      <div class="relative flex items-center gap-1">
+      <div class="relative flex items-center gap-2">
+        <div
+            class="flex items-center gap-1.5 px-2 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-[11px] md:text-xs whitespace-nowrap"
+            title="Online users"
+        >
+          <span class="relative flex h-2 w-2 shrink-0">
+            <span class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping"></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span>
+          </span>
+          <span class="font-semibold tabular-nums">{{ onlineUsers }}</span>
+        </div>
         <!-- Theme -->
         <ThemeDropdownMenu :themes="themes" v-model="currentTheme" />
         <!-- Auth -->

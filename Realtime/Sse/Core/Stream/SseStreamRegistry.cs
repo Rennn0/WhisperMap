@@ -20,12 +20,12 @@ internal abstract partial class SseStreamRegistry<T> : IDisposable, IAsyncDispos
         GC.SuppressFinalize(this);
     }
 
-    internal StreamHandle GetStream(string key, CancellationToken cancellationToken = default)
+    internal StreamHandle GetStream(string eventKey, CancellationToken cancellationToken)
     {
-        if (_streams.TryGetValue(key, out StreamHandle? existingHandle)) return existingHandle;
+        if (_streams.TryGetValue(eventKey, out StreamHandle? existingHandle)) return existingHandle;
 
-        StreamHandle newHandle = new StreamHandle(this, key, cancellationToken);
-        if (_streams.TryAdd(key, newHandle)) return newHandle;
+        StreamHandle newHandle = new StreamHandle(this, eventKey, cancellationToken);
+        if (_streams.TryAdd(eventKey, newHandle)) return newHandle;
 
         newHandle.Dispose();
         throw new InvalidOperationException("cannot add stream");

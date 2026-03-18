@@ -10,6 +10,9 @@ internal class SseEnumerableStreamer : SseStreamer
     public SseEnumerableStreamer(HttpContext context, CancellationToken cancellationToken) :
         base(context, cancellationToken) => Logger = LogFactory.CreateLogger<SseEnumerableStreamer>();
 
+    internal Task StreamAsync<T>(IAsyncEnumerable<T> source, TimeSpan heartbeatInterval,
+        SseEventFormatter<T> formatter) => StreamAsync(source, string.Empty, heartbeatInterval, formatter);
+    
     internal async Task StreamAsync<T>(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter)
     {

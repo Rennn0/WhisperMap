@@ -72,7 +72,7 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         return new StreamSubscription(this, subscriber, cancellationToken);
     }
 
-    internal ValueTask PublishAsync(T value, CancellationToken cancellationToken = default)
+    internal ValueTask PublishAsync(T value, CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
         cancellationToken.ThrowIfCancellationRequested();

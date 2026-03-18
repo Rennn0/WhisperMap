@@ -10,5 +10,5 @@ public abstract record ApplicationObject
 
     /// <summary>
     /// </summary>
-    public string? ObjId { get; set; }
+    public string? ObjId { get; init; }
 }

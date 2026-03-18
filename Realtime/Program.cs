@@ -1,7 +1,6 @@
-using Realtime.Sse.Core.Signal;
+using Realtime.Background;
 using Realtime.Sse.Core.Stream;
 using Realtime.Sse.Core.Streamer;
-using Realtime.Sse.Features.SignalRegistries;
 using Realtime.Sse.Features.StreamRegistries;
 using Realtime.Sse.Formatters;
 
@@ -9,74 +8,58 @@ namespace Realtime;
 
 public static class Program
 {
-    private static Timer? _timer;
-
     public static async Task Main(string[] args)
     {
-        SseStringStreamRegistry stringStreamRegistry = new SseStringStreamRegistry();
-        SseFloatStreamRegistry floatStreamRegistry = new SseFloatStreamRegistry();
-        SseStringSignalRegistry stringSignalRegistry = new SseStringSignalRegistry();
-
         WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
         const string swarmAppSettingsPath = "/run/secrets/appsettings.Production.json";
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
-        WebApplication app = builder.Build();
-        RouteGroupBuilder rtGroup = app.MapGroup("/realtime");
-        rtGroup.MapGet("/", () => "xx");
-        rtGroup.MapGet("/stream",
-            async ctx =>
+        builder.Services.AddSingleton<SseUserStatsStreamRegistry>();
+
+        builder.Services.AddHostedService<UserStatsBackgroundService>();
+
+
+        builder.Services.AddCors(opt =>
+        {
+            opt.AddDefaultPolicy(pol =>
             {
-                CancellationToken cancellationToken = ctx.RequestAborted;
-                SseEnumerableStreamer streamer = new SseEnumerableStreamer(ctx);
-                SseStream<string>.StreamSubscription subscription = stringStreamRegistry
-                    .GetStream("luka", cancellationToken).Subscribe(cancellationToken);
+                pol.AllowAnyHeader();
+                pol.AllowAnyMethod();
+                pol.AllowAnyOrigin();
+            });
+        });
+        WebApplication app = builder.Build();
+
+        app.UseCors();
+
+        RouteGroupBuilder realtimeGroup = app.MapGroup("/realtime");
+        RouteGroupBuilder streamGroup = realtimeGroup.MapGroup("/stream");
+        streamGroup.MapGet("/u", async (HttpContext context, SseUserStatsStreamRegistry registry) =>
+            {
+                CancellationToken cancellationToken = context.RequestAborted;
+                SseEnumerableStreamer streamer = new SseEnumerableStreamer(context);
+                SseStream<SseUserStatsFormatter.UserStats>.StreamSubscription subscription =
+                    registry.GetStream("users", cancellationToken).Subscribe(cancellationToken);
                 await streamer.StreamAsync(
                     subscription.ReadAllAsync(cancellationToken),
-                    "stream",
-                    TimeSpan.FromSeconds(2),
-                    new SseDefaultStringFormatter());
+                    TimeSpan.FromSeconds(10),
+                    new SseUserStatsFormatter());
             });
 
-        rtGroup.MapGet("/signal",
-            async ctx =>
-            {
-                SseSignalStreamer streamer = new SseSignalStreamer(ctx);
-                SseSignalRegistry<string>.SignalHandle signalHandle =
-                    stringSignalRegistry.GetSignal("luka", ctx.RequestAborted);
-
-                await streamer.StreamAsync(
-                    signalHandle,
-                    "signal",
-                    TimeSpan.FromSeconds(2),
-                    new SseDefaultStringFormatter());
-            });
-
-
-        DateTimeOffset now = DateTimeOffset.Now;
-
-        _timer = new Timer(async void (_) =>
-        {
-            try
-            {
-                SseStreamRegistry<string>.StreamHandle stream =
-                    stringStreamRegistry.GetStream("luka");
-                await stream.PublishAsync(DateTimeOffset.Now.ToString("D"));
-
-                // if (now.AddSeconds(20) >= DateTimeOffset.Now) return;
-                //
-                // await stream.DisposeAsync();
-
-                SseSignalRegistry<string>.SignalHandle signalHandle =
-                    stringSignalRegistry.GetSignal("luka");
-                await signalHandle.PublishAsync(DateTimeOffset.Now.ToString("R"));
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5));
+        // rtGroup.MapGet("/signal",
+        //     async ctx =>
+        //     {
+        //         SseSignalStreamer streamer = new SseSignalStreamer(ctx);
+        //         SseSignalRegistry<string>.SignalHandle signalHandle =
+        //             stringSignalRegistry.GetSignal("luka", ctx.RequestAborted);
+        //
+        //         await streamer.StreamAsync(
+        //             signalHandle,
+        //             "signal",
+        //             TimeSpan.FromSeconds(2),
+        //             new SseDefaultStringFormatter());
+        //     });
 
         await app.RunAsync();
     }
