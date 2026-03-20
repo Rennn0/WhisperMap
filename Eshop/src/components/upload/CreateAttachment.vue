@@ -107,7 +107,7 @@ const previews = computed(() =>
     }))
 );
 
-watch(previews, (next, prev) => {
+watch(previews, (_, prev) => {
     prev?.forEach(p => URL.revokeObjectURL(p.url));
 }, { flush: 'post' });
 
