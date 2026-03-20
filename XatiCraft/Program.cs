@@ -138,6 +138,8 @@ public static class Program
         builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, GetProductsHandler>();
         builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, ProductCartHandler>();
         builder.Services.AddTransient<IHandler<ApiContract, AddProductInCartContext>, ProductCartHandler>();
+        builder.Services.AddTransient<IHandler<ApiContract, RemoveProductFromCartContext>, ProductCartHandler>();
+        builder.Services.AddTransient<IHandler<ApiContract, RemoveProductFromCartContext>, ProductCartHandlerMongo>();
         builder.Services.AddTransient<IHandler<ApiContract, AddProductInCartContext>, ProductCartHandlerMongo>();
         builder.Services.AddTransient<IDeleteProductHandler, DeleteProductHandler>();
         builder.Services.AddTransient<IAuthorizationHandler, GoogleAuthHandler>();

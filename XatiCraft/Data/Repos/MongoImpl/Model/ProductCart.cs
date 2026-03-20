@@ -3,5 +3,5 @@
 internal record ProductCart : MongoDoc
 {
     public string? UserId { get; init; }
-    public HashSet<string>? ProductIds { get; init; }
+    public HashSet<string> ProductIds { get; init; } = [];
 }

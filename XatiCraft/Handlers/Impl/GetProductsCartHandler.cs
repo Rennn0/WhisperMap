@@ -2,7 +2,6 @@
 using XatiCraft.Data.Objects;
 using XatiCraft.Data.Repos;
 using XatiCraft.Data.Repos.MongoImpl;
-using XatiCraft.Guards;
 using XatiCraft.Handlers.Api;
 using ProductRepo = XatiCraft.Data.Repos.EfCoreImpl.ProductRepo;
 
@@ -24,11 +23,16 @@ internal class GetProductsCartHandler : IGetProductsHandler
 
     public async ValueTask<ApiContract> HandleAsync(GetProductsContext context, CancellationToken cancellationToken)
     {
-        if (!_httpContext.Request.Cookies.TryGetValue(AuthGuard.UserIdCookie, out string? userId))
+        if (string.IsNullOrEmpty(context.UserId))
             return new ApiContract(context);
-        ProductCart? cart = await _cartMongo.SelectAsync(userId, cancellationToken);
+
+        ProductCart? cart = await _cartMongo.SelectAsync(context.UserId, cancellationToken);
+
+        if (cart is null)
+            return new ApiContract(context);
+        
         List<Product> products =
-            await _productRepo.SelectAsync(cart?.ProductIds?.Select(long.Parse), cancellationToken);
+            await _productRepo.SelectAsync(cart.ProductIds.Select(long.Parse), cancellationToken);
         GetProductsContract contract = new GetProductsContract(products.Select(p =>
             new Product(p.Title, p.Description, p.Price)
             {

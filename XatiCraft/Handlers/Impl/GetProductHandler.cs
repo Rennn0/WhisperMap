@@ -1,8 +1,9 @@
 using XatiCraft.ApiContracts;
 using XatiCraft.Data.Objects;
 using XatiCraft.Data.Repos;
-using XatiCraft.Data.Repos.EfCoreImpl;
+using XatiCraft.Data.Repos.MongoImpl;
 using XatiCraft.Handlers.Api;
+using ProductRepo = XatiCraft.Data.Repos.EfCoreImpl.ProductRepo;
 
 namespace XatiCraft.Handlers.Impl;
 
@@ -13,17 +14,21 @@ internal class GetProductHandler : IGetProductHandler
     private readonly IProductCartHandler _productCartHandler;
     private readonly IProductRepo _productRepos;
     private readonly IProductRepo _productObjRepos;
+    private readonly IProductCartRepo _productCartMongo;
 
     /// <summary>
     /// </summary>
     /// <param name="productRepos"></param>
     /// <param name="productCartHandler"></param>
-    public GetProductHandler(IEnumerable<IProductRepo> productRepos, IProductCartHandler productCartHandler)
+    /// <param name="productCartRepos"></param>
+    public GetProductHandler(IEnumerable<IProductRepo> productRepos, IProductCartHandler productCartHandler,
+        IEnumerable<IProductCartRepo> productCartRepos)
     {
         IEnumerable<IProductRepo> repos = productRepos.ToList();
         _productRepos = repos.First(p => p is ProductRepo);
         _productObjRepos = repos.First(p => p is Data.Repos.MongoImpl.ProductRepo);
         _productCartHandler = productCartHandler;
+        _productCartMongo = productCartRepos.First(x => x is ProductCartRepo);
     }
 
     /// <summary>
@@ -43,7 +48,13 @@ internal class GetProductHandler : IGetProductHandler
         
         if (product is null) return new Error(ErrorCode.ArgumentMissmatchInDatabase);
 
-        bool inCart = ((ProductCartHandler)_productCartHandler).ExistsInCart(product);
+        bool inCart;
+        if (string.IsNullOrEmpty(context.UserId))
+            inCart = ((ProductCartHandler)_productCartHandler).ExistsInCart(product);
+        else
+            inCart =
+                (await _productCartMongo.SelectAsync(context.UserId, cancellationToken))?.ProductIds.Contains(
+                    context.Id) ?? false;
 
         return new GetProductContract(context.Id, product.Title, product.Description,
             product.Price, inCart, product.ProductMetadata?.Select(pmd => pmd.Location), context);
