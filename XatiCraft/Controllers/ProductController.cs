@@ -40,19 +40,23 @@ public class ProductController : ControllerBase
     /// <param name="handlers"></param>
     /// <param name="query"></param>
     /// <param name="fromCookies"></param>
+    /// <param name="fromCart"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet]
     public async Task<ApiContract> GetProducts(
         [FromServices] IEnumerable<IHandler<ApiContract, GetProductsContext>> handlers,
         [FromQuery(Name = "q")] string? query,
-        [FromQuery(Name = "fc")] bool? fromCookies,
+        [FromQuery(Name = "fcs")] bool? fromCookies,
+        [FromQuery(Name = "fct")] bool? fromCart,
         CancellationToken cancellationToken)
     {
-        IHandler<ApiContract, GetProductsContext> handler = (fromCookies ?? false) switch
+        IHandler<ApiContract, GetProductsContext> handler = (fromCookies ?? false, fromCart ?? false) switch
         {
-            true => handlers.First(h => h is ProductCartHandler),
-            false => handlers.First(h => h is GetProductsHandler)
+            // #NOTE amas yvela moaq da mere filtravs, gadasaketebelia 
+            (true, false) => handlers.First(h => h is ProductCartHandler),
+            (false, false) => handlers.First(h => h is GetProductsHandler),
+            (_, true) => handlers.First(h => h is GetProductsCartHandler)
         };
         return await handler.HandleAsync(
             new GetProductsContext(query), cancellationToken);
@@ -73,22 +77,27 @@ public class ProductController : ControllerBase
 
     /// <summary>
     /// </summary>
-    /// <param name="handler"></param>
+    /// <param name="handlers"></param>
     /// <param name="productId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPut("{productId:long}/cart")]
-    public async Task<ApiContract> AddProductInCart([FromServices] IProductCartHandler handler,
+    public async Task<ApiContract> AddProductInCart(
+        [FromServices] IEnumerable<IHandler<ApiContract, AddProductInCartContext>> handlers,
         [FromRoute] long productId, CancellationToken cancellationToken)
     {
         AddProductInCartContext context = new AddProductInCartContext(productId);
-        ApiContract contract = await handler.HandleAsync(
-            context, cancellationToken);
-        if (contract is AddProductInCartContract { AsCookie: true } cartContract)
-            HttpContext.Response.Cookies.Append(cartContract.CookieKey, cartContract.ProtectedCookie, new CookieOptions
-            {
-                HttpOnly = true, Secure = true, SameSite = SameSiteMode.Lax
-            });
+        foreach (IHandler<ApiContract, AddProductInCartContext> handler in handlers)
+        {
+            ApiContract contract = await handler.HandleAsync(
+                context, cancellationToken);
+            if (contract is AddProductInCartContract { AsCookie: true } cartContract)
+                HttpContext.Response.Cookies.Append(cartContract.CookieKey, cartContract.ProtectedCookie,
+                    new CookieOptions
+                    {
+                        HttpOnly = true, Secure = true, SameSite = SameSiteMode.Lax
+                    });
+        }
 
         return new ApiContract(context);
     }

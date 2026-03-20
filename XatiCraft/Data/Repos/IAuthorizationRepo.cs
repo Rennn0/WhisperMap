@@ -11,20 +11,20 @@ public interface IAuthorizationRepo
     /// <param name="id"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    ValueTask<AuthorizationInfo?> SelectAuthorizationInfoAsync(long id, CancellationToken cancellationToken);
+    ValueTask<AuthorizationInfo?> SelectAsync(long id, CancellationToken cancellationToken);
 
     /// <summary>
     /// </summary>
     /// <param name="id"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    ValueTask<AuthorizationInfo?> SelectAuthorizationInfoAsync(string id, CancellationToken cancellationToken);
+    ValueTask<AuthorizationInfo?> SelectAsync(string id, CancellationToken cancellationToken);
 
     /// <summary>
     /// </summary>
     /// <param name="authorizationInfo"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<AuthorizationInfo> UpsertAuthorizationInfoAsync(AuthorizationInfo authorizationInfo,
+    Task<AuthorizationInfo> UpsertAsync(AuthorizationInfo authorizationInfo,
         CancellationToken cancellationToken);
 }

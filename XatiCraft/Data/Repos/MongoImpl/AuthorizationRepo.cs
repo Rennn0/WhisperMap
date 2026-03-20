@@ -9,13 +9,13 @@ internal class AuthorizationRepo : MongoBase<AuthorizationInfo>, IAuthorizationR
     {
     }
 
-    public ValueTask<Objects.AuthorizationInfo?> SelectAuthorizationInfoAsync(long id,
+    public ValueTask<Objects.AuthorizationInfo?> SelectAsync(long id,
         CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
-    public async ValueTask<Objects.AuthorizationInfo?> SelectAuthorizationInfoAsync(string id,
+    public async ValueTask<Objects.AuthorizationInfo?> SelectAsync(string id,
         CancellationToken cancellationToken)
     {
         FilterDefinition<AuthorizationInfo>? filter = Builders<AuthorizationInfo>.Filter.Eq(x => x.Id, id);
@@ -35,7 +35,7 @@ internal class AuthorizationRepo : MongoBase<AuthorizationInfo>, IAuthorizationR
             };
     }
 
-    public async Task<Objects.AuthorizationInfo> UpsertAuthorizationInfoAsync(
+    public async Task<Objects.AuthorizationInfo> UpsertAsync(
         Objects.AuthorizationInfo authorizationInfo,
         CancellationToken cancellationToken)
     {
@@ -61,10 +61,11 @@ internal class AuthorizationRepo : MongoBase<AuthorizationInfo>, IAuthorizationR
             ReturnDocument = ReturnDocument.After
         };
 
-        AuthorizationInfo? res = await Collection.FindOneAndUpdateAsync(filter, update, options, cancellationToken);
+        AuthorizationInfo? model = await Collection.FindOneAndUpdateAsync(filter, update, options, cancellationToken);
+        
         return authorizationInfo with
         {
-            ObjId = res.Id
+            ObjId = model.Id
         };
     }
 }

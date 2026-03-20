@@ -9,60 +9,78 @@ import IconParkCloseIcon from '../freestyle/IconParkCloseIcon.vue';
 import LanguageComponent from './LanguageComponent.vue';
 
 const props = defineProps<{ open: boolean }>();
-const emit = defineEmits<{ (e: 'close'): void; (e: 'select', option: CurrentViewSelection): void }>();
+
+const emit = defineEmits<{
+    (e: 'close'): void;
+    (e: 'select', option: CurrentViewSelection): void;
+}>();
+
 const { locale } = useI18n();
 
 const options: SidebarOptions[] = [
-    { title: "sidebar.product", key: CurrentViewSelection.Product, icon: GiftIcon },
-    { title: "sidebar.cart", key: CurrentViewSelection.Cart, icon: ShoppingBagIcon },
-    { title: "sidebar.settings", key: CurrentViewSelection.Setting, icon: TablerSettingsIcon }
+    { title: 'sidebar.product', key: CurrentViewSelection.Product, icon: GiftIcon },
+    { title: 'sidebar.cart', key: CurrentViewSelection.Cart, icon: ShoppingBagIcon },
+    { title: 'sidebar.settings', key: CurrentViewSelection.Setting, icon: TablerSettingsIcon },
 ];
 
 const selectOption = (key: CurrentViewSelection) => emit('select', key);
+
 //#region lifecycle hooks
 onActivated(() => { });
 onUpdated(() => { });
+
 onMounted(() => {
     const savedLang = localStorage.getItem('lang');
     if (savedLang) locale.value = savedLang;
 });
-onUnmounted(() => { })
+
+onUnmounted(() => { });
 //#endregion
 </script>
 
 <template>
     <div>
-        <!-- Overlay -->
         <transition name="fade">
-            <div v-if="props.open" class="fixed inset-0 bg-black/40 z-40" @click="$emit('close')"></div>
+            <div v-if="props.open" class="fixed inset-0 z-40 bg-black/40 backdrop-blur-[1px]" @click="$emit('close')" />
         </transition>
 
-        <!-- Sidebar -->
         <transition enter-active-class="transform transition duration-300 ease-out" enter-from-class="-translate-x-full"
             enter-to-class="translate-x-0" leave-active-class="transform transition duration-200 ease-in"
             leave-from-class="translate-x-0" leave-to-class="-translate-x-full">
-            <aside v-if="props.open" class="fixed inset-y-0 left-0 bg-surface border-r border-subtle z-50 p-4
-               w-72 sm:w-80 md:w-96">
-                <!-- Header -->
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="font-semibold text-sm sm:text-xl">{{ $t('app.title') }}</h2>
-                    <button @click="$emit('close')"
-                        class="w-8 h-8 rounded-md flex items-center justify-center text-text hover:text-primary transition-colors">
-                        <IconParkCloseIcon class="w-6 h-6" />
+            <aside v-if="props.open"
+                class="fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-subtle bg-surface shadow-lg sm:w-80">
+                <div class="flex items-center justify-between px-4 py-4 sm:px-5">
+                    <h2 class="text-base font-semibold text-text sm:text-lg">
+                        {{ $t('app.title') }}
+                    </h2>
+
+                    <button type="button"
+                        class="flex h-10 w-10 items-center justify-center rounded-xl text-text transition-colors hover:bg-hover"
+                        @click="$emit('close')">
+                        <IconParkCloseIcon class="h-5 w-5" />
                     </button>
                 </div>
 
-                <!-- Navigation -->
-                <nav class="space-y-3">
-                    <button v-for="opt in options" :key="opt.key" @click="selectOption(opt.key)"
-                        class="w-full text-left flex items-center sm:justify-start gap-3 px-3 py-3 rounded-md hover:bg-subtle cursor-pointer transition-colors">
-                        <component :is="opt.icon" class="w-6 h-6" />
-                        <span class="text-base sm:text-sm font-medium">{{ $t(opt.title) }}</span>
-                    </button>
-                </nav>
+                <div class="flex-1 overflow-y-auto px-3 pb-4 sm:px-4">
+                    <nav class="space-y-2">
+                        <button v-for="opt in options" :key="opt.key" type="button"
+                            class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-text transition-colors hover:bg-subtle"
+                            @click="selectOption(opt.key)">
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-subtle text-text">
+                                <component :is="opt.icon" class="h-5 w-5" />
+                            </div>
 
-                <!-- Language chooser -->
-                <LanguageComponent />
+                            <span class="text-sm font-medium">
+                                {{ $t(opt.title) }}
+                            </span>
+                        </button>
+                    </nav>
+                </div>
+
+                <div class="px-4 pb-4 sm:px-5">
+                    <LanguageComponent />
+                </div>
             </aside>
         </transition>
     </div>

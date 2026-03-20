@@ -30,7 +30,7 @@ const httpClint = ky.create({
                 if (!res.ok) {
                     const data = await res.text();
                     console.error(`api err ${data}`);
-                }``
+                } ``
             },
             async (req, _, res,) => {
                 const reqClone = req.clone();
@@ -109,10 +109,11 @@ export const getSession = () => makeGet<void>("s");
 
 export const getMe = () => makeGet<UserInfo>("s/me");
 
-export const getProducts = (args: { query?: string | null, fromCookie?: boolean | null } = { fromCookie: null, query: null }) => {
+export const getProducts = (args: { query?: string | null, fromCookie?: boolean | null, fromCart?: boolean | null } = { fromCookie: null, query: null }) => {
     const params = new URLSearchParams();
     if (args.query) params.set('q', args.query);
-    if (args.fromCookie) params.set("fc", args.fromCookie.toString());
+    if (args.fromCookie) params.set("fcs", args.fromCookie.toString());
+    if (args.fromCart) params.set("fct", args.fromCart.toString());
     return makeGet<{ products: Product[] } & ApiMeta>(`p?${params.toString()}`, { headers: noAudit() });
 }
 

@@ -5,8 +5,8 @@ namespace Realtime.Sse.Core.Stream;
 
 internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
 {
-    private readonly ConcurrentDictionary<Guid, StreamSubscriber> _subscribers =
-        new ConcurrentDictionary<Guid, StreamSubscriber>();
+    private readonly ConcurrentDictionary<string, StreamSubscriber> _subscribers =
+        new ConcurrentDictionary<string, StreamSubscriber>();
 
     private int _disposed;
 
@@ -47,29 +47,29 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
             SubscribersCount);
     }
 
-    internal StreamSubscription Subscribe(CancellationToken cancellationToken = default)
+    internal StreamSubscription Subscribe(string? streamId, CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
-        Guid id = Guid.NewGuid();
-        Channel<T> channel = Channel.CreateBounded<T>(new BoundedChannelOptions(100)
+        string id = streamId ?? Guid.NewGuid().ToString("N");
+
+        StreamSubscriber sub = _subscribers.GetOrAdd(id, key =>
         {
-            SingleReader = true,
-            SingleWriter = false,
-            FullMode = BoundedChannelFullMode.DropOldest,
-            AllowSynchronousContinuations = false
+            Channel<T> channel = Channel.CreateBounded<T>(new BoundedChannelOptions(100)
+            {
+                SingleReader = true,
+                SingleWriter = false,
+                FullMode = BoundedChannelFullMode.DropOldest,
+                AllowSynchronousContinuations = false
+            });
+
+            Logger.LogDebug(new EventId((int)StreamLogs.Subscribe, nameof(StreamLogs.Subscribe)),
+                "New subscriber {Id}, subs {Count}", id,
+                _subscribers.Count);
+
+            return new StreamSubscriber(id, channel);
         });
-        StreamSubscriber subscriber = new StreamSubscriber(id, channel);
-        if (!_subscribers.TryAdd(id, subscriber))
-        {
-            channel.Writer.TryComplete();
-            throw new InvalidOperationException("Cannot add stream subscriber");
-        }
 
-        Logger.LogDebug(new EventId((int)StreamLogs.Subscribe, nameof(StreamLogs.Subscribe)),
-            "New subscriber {Id}, subs {Count}", id,
-            _subscribers.Count);
-
-        return new StreamSubscription(this, subscriber, cancellationToken);
+        return new StreamSubscription(this, sub, cancellationToken);
     }
 
     internal ValueTask PublishAsync(T value, CancellationToken cancellationToken)
@@ -81,8 +81,8 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
             "Pub, subs {Count}", _subscribers.Count);
 
         int delivered = 0;
-        HashSet<Guid> brokenChannels = new HashSet<Guid>();
-        foreach ((Guid id, StreamSubscriber subscriber) in _subscribers)
+        HashSet<string> brokenChannels = new HashSet<string>();
+        foreach ((string id, StreamSubscriber subscriber) in _subscribers)
         {
             ThrowIfDisposed();
             if (subscriber.Writer.TryWrite(value))
@@ -98,7 +98,7 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         {
             Logger.LogWarning(new EventId((int)StreamLogs.BrokenSubInfo, nameof(StreamLogs.BrokenSubInfo)),
                 "Broken subs {Count}, dropping", brokenChannels.Count);
-            foreach (Guid id in brokenChannels)
+            foreach (string id in brokenChannels)
                 RemoveSubscriber(id);
         }
 
@@ -108,14 +108,14 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         return ValueTask.CompletedTask;
     }
 
-    internal void Unsubscribe(Guid id)
+    internal void Unsubscribe(string id)
     {
         RemoveSubscriber(id);
         Logger.LogDebug(new EventId((int)StreamLogs.Unsubscribe, nameof(StreamLogs.Unsubscribe)),
             "Removed sub {Id}", id);
     }
 
-    private void RemoveSubscriber(Guid id)
+    private void RemoveSubscriber(string id)
     {
         if (_subscribers.TryRemove(id, out StreamSubscriber? subscriber)) subscriber.Writer.TryComplete();
     }

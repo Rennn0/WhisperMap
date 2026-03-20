@@ -8,7 +8,7 @@ namespace XatiCraft.Handlers.Impl;
 /// <inheritdoc />
 internal class ProductCartHandler : IProductCartHandler
 {
-    private const string CookieKey = "_pcc";
+    private const string CookieKey = "__xc_pcc";
     private const char Delimiter = ';';
     private readonly IGetProductsHandler _getProductsHandler;
     private readonly HttpContext _httpContext;

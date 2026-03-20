@@ -118,14 +118,15 @@ public static class Program
         builder.Services.AddTransient<Security, AspDataProtector>();
         builder.Services.AddTransient<IProductRepo, ProductRepo>();
         builder.Services.AddTransient<IProductMetadaRepo, ProductMetadataRepo>();
-        string mongoConn = builder.Configuration.GetConnectionString("Mongo") ??
-                           throw new Exception("WHERE MONGOOO????");
+        string mongoConn = builder.Configuration.GetConnectionString("Mongo") ?? throw new Exception("MongoConnection");
         builder.Services.AddTransient<IProductRepo, Data.Repos.MongoImpl.ProductRepo>(_ =>
             new Data.Repos.MongoImpl.ProductRepo(mongoConn));
         builder.Services.AddTransient<IProductMetadaRepo, Data.Repos.MongoImpl.ProductMetadataRepo>(_ =>
             new Data.Repos.MongoImpl.ProductMetadataRepo(mongoConn));
         builder.Services.AddTransient<IAuthorizationRepo, AuthorizationRepo>(_ =>
             new AuthorizationRepo(mongoConn));
+        builder.Services.AddTransient<IProductCartRepo, ProductCartRepo>(_ =>
+            new ProductCartRepo(mongoConn));
         builder.Services.AddTransient<IUploader, ClaudflareR2StorageService>();
         builder.Services.AddTransient<IReader, ClaudflareR2StorageService>();
         builder.Services.AddTransient<ICreateProductHandler, CreateProductHandler>();
@@ -133,8 +134,11 @@ public static class Program
         builder.Services.AddTransient<IGetProductHandler, GetProductHandler>();
         builder.Services.AddTransient<IGetProductsHandler, GetProductsHandler>();
         builder.Services.AddTransient<IProductCartHandler, ProductCartHandler>();
+        builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, GetProductsCartHandler>();
         builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, GetProductsHandler>();
         builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, ProductCartHandler>();
+        builder.Services.AddTransient<IHandler<ApiContract, AddProductInCartContext>, ProductCartHandler>();
+        builder.Services.AddTransient<IHandler<ApiContract, AddProductInCartContext>, ProductCartHandlerMongo>();
         builder.Services.AddTransient<IDeleteProductHandler, DeleteProductHandler>();
         builder.Services.AddTransient<IAuthorizationHandler, GoogleAuthHandler>();
         builder.Services.AddTransient<IAuthorizationHandler, GithubAuthHandler>();

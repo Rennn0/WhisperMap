@@ -30,7 +30,7 @@ internal class GetProductsHandler : IGetProductsHandler
     /// <returns></returns>
     public async ValueTask<ApiContract> HandleAsync(GetProductsContext context, CancellationToken cancellationToken)
     {
-        List<Product> products = await _productRepos.SelectProductsAsync(cancellationToken);
+        List<Product> products = await _productRepos.SelectAsync(cancellationToken: cancellationToken);
         if (!string.IsNullOrWhiteSpace(context.Query))
             products = products
                 .Where(p =>

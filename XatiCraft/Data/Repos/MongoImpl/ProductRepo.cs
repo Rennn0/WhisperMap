@@ -11,18 +11,19 @@ internal class ProductRepo : MongoBase<Product>, IProductRepo
     }
 
     /// <inheritdoc />
-    public Task<List<Objects.Product>> SelectProductsAsync(CancellationToken cancellationToken)
+    public Task<List<Objects.Product>> SelectAsync(IEnumerable<long>? ids = null,
+        CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
 
     /// <inheritdoc />
-    public Task<Objects.Product?> SelectProductAsync(long id, CancellationToken cancellationToken)
+    public Task<Objects.Product?> SelectAsync(long id, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<Objects.Product?> SelectProductAsync(string objId, CancellationToken cancellationToken)
+    public async Task<Objects.Product?> SelectAsync(string objId, CancellationToken cancellationToken)
     {
         Product? pDoc = await Collection.Find(p => p.Id == objId, new FindOptions { BatchSize = 1 })
             .FirstOrDefaultAsync(cancellationToken);

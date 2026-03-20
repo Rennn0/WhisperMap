@@ -45,36 +45,42 @@ const onFocus = () => {
 </script>
 
 <template>
-    <div class="flex-1 flex justify-center">
-        <div class="w-full max-w-2xl relative px-2 md:px-0">
-            <span class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                <TablerSearchIcon class="w-5 h-5" />
+    <div class="relative w-full">
+        <div class="relative">
+            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                <TablerSearchIcon class="h-5 w-5 text-text/60" />
             </span>
 
-            <input ref="searchInput" :value="query" @input="onInput" @keyup.enter="onEnter" @focus="onFocus"
-                @blur="closeSearchPreviewLater" type="search" :placeholder="$t('nav.search')"
-                class="w-full pl-10 pr-4 py-1 md:py-2 rounded-full border bg-surface text-text outline-none md:text-sm" />
+            <input ref="searchInput" :value="query" type="search" :placeholder="$t('nav.search')"
+                class="w-full rounded-2xl border border-subtle bg-subtle pl-11 pr-4 py-2.5 text-text outline-none transition-colors placeholder:text-text/50 focus:border-primary"
+                @input="onInput" @keyup.enter="onEnter" @focus="onFocus" @blur="closeSearchPreviewLater" />
+        </div>
 
-            <!-- preview box -->
-            <div v-if="isOpen && products.length"
-                class="absolute left-0 right-0 mt-2 bg-surface border border-subtle shadow-lg rounded-xl z-50 overflow-y-auto max-h-[70vh] md:max-w-2xl mx-auto">
-                <ul>
-                    <li v-for="p in products" :key="p.id" @mousedown.prevent="onProductClick(p)"
-                        class="flex items-center justify-between gap-4 px-4 py-3 hover:bg-subtle cursor-pointer">
-                        <div class="flex items-center gap-4 min-w-0">
-                            <img :src="p.preview_img" class="w-14 h-14 rounded-lg object-cover flex-shrink-0"
-                                alt="Product image" />
-                            <div class="flex flex-col overflow-hidden">
-                                <span class="font-semibold text-text">{{ p.title }}</span>
-                                <span class="text-sm text-text/70 truncate">{{ p.description }}</span>
+        <div v-if="isOpen && products.length"
+            class="absolute left-0 right-0 mt-2 max-h-[70vh] overflow-y-auto rounded-2xl border border-subtle bg-surface shadow-lg">
+            <ul class="p-1">
+                <li v-for="p in products" :key="p.id"
+                    class="cursor-pointer rounded-xl transition-colors hover:bg-subtle"
+                    @mousedown.prevent="onProductClick(p)">
+                    <div class="flex items-center gap-3 px-3 py-3">
+                        <img :src="p.preview_img" alt="Product image"
+                            class="h-14 w-14 shrink-0 rounded-xl object-cover bg-subtle" />
+
+                        <div class="min-w-0 flex-1">
+                            <div class="truncate font-medium text-text">
+                                {{ p.title }}
+                            </div>
+                            <div class="truncate text-sm text-text/70">
+                                {{ p.description }}
                             </div>
                         </div>
-                        <span class="text-sm font-semibold text-text whitespace-nowrap ml-2">
+
+                        <div class="shrink-0 text-sm font-semibold text-primary">
                             {{ p.price ? '$' + p.price.toFixed(2) : '' }}
-                        </span>
-                    </li>
-                </ul>
-            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
         </div>
     </div>
 </template>

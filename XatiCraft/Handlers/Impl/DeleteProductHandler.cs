@@ -26,7 +26,7 @@ internal class DeleteProductHandler : IDeleteProductHandler
     /// <inheritdoc />
     public async ValueTask<ApiContract> HandleAsync(DeleteProductContext context, CancellationToken cancellationToken)
     {
-        Product product = await _productRepo.SelectProductAsync(context.Product, cancellationToken) ??
+        Product product = await _productRepo.SelectAsync(context.Product, cancellationToken) ??
                           throw new Exception();
 
         List<Task> tasks = product.ProductMetadata

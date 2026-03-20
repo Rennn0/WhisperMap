@@ -11,8 +11,9 @@ internal interface IProductRepo
     ///     returns data from VProducts (not paginated)
     /// </summary>
     /// <param name="cancellationToken">token from caller</param>
+    /// <param name="ids"></param>
     /// <returns></returns>
-    Task<List<Product>> SelectProductsAsync(CancellationToken cancellationToken);
+    Task<List<Product>> SelectAsync(IEnumerable<long>? ids = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     returns one row by id matching from VProducts
@@ -20,9 +21,9 @@ internal interface IProductRepo
     /// <param name="id">id looking for</param>
     /// <param name="cancellationToken">token from caller</param>
     /// <returns></returns>
-    Task<Product?> SelectProductAsync(long id, CancellationToken cancellationToken);
+    Task<Product?> SelectAsync(long id, CancellationToken cancellationToken);
 
-    Task<Product?> SelectProductAsync(string objId, CancellationToken cancellationToken);
+    Task<Product?> SelectAsync(string objId, CancellationToken cancellationToken);
 
     /// <summary>
     ///     adds new row in Products table.
@@ -48,7 +49,7 @@ internal interface IProductRepo
     /// <param name="id"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<bool> DeleteAsync(long id, CancellationToken cancellationToken);
+    Task<bool> DeleteAsync(long id, CancellationToken cancellationToken);
 
-    public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken);
+    Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken);
 }

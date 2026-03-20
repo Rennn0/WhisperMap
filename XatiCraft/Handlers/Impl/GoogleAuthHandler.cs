@@ -63,7 +63,7 @@ public class GoogleAuthHandler : IAuthorizationHandler
             ]
         };
         GoogleJsonWebSignature.Payload? payload = await GoogleJsonWebSignature.ValidateAsync(token, settings);
-        AuthorizationInfo info = await AuthorizationRepo.UpsertAuthorizationInfoAsync(
+        AuthorizationInfo info = await AuthorizationRepo.UpsertAsync(
             new AuthorizationInfo(payload.Name, DateTimeOffset.Now)
             {
                 AccountEnabled = true,
@@ -86,7 +86,7 @@ public class GoogleAuthHandler : IAuthorizationHandler
     public virtual async ValueTask<ApiContract> HandleAsync(UserInfoContext context,
         CancellationToken cancellationToken)
     {
-        AuthorizationInfo? info = await AuthorizationRepo.SelectAuthorizationInfoAsync(context.Id, cancellationToken);
+        AuthorizationInfo? info = await AuthorizationRepo.SelectAsync(context.Id, cancellationToken);
         ArgumentNullException.ThrowIfNull(info);
         ArgumentNullException.ThrowIfNull(info.ObjId);
         AuthorizationContract contract =

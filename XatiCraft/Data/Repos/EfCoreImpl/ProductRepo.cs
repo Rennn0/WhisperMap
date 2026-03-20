@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using XatiCraft.Data.Objects;
+using XatiCraft.Data.Repos.EfCoreImpl.Model;
+using Product = XatiCraft.Data.Objects.Product;
+using ProductMetadata = XatiCraft.Data.Objects.ProductMetadata;
 
 namespace XatiCraft.Data.Repos.EfCoreImpl;
 
@@ -25,9 +27,17 @@ internal class ProductRepo : IProductRepo
     }
 
     /// <inheritdoc />
-    public async Task<List<Product>> SelectProductsAsync(CancellationToken cancellationToken)
+    public async Task<List<Product>> SelectAsync(IEnumerable<long>? ids = null,
+        CancellationToken cancellationToken = default)
     {
-        List<Product> result = await _context.VProducts.AsNoTracking()
+        IQueryable<VProduct> query = _context.VProducts.AsNoTracking();
+        if (ids is not null)
+        {
+            List<long> pIds = ids.Distinct().ToList();
+            query = query.Where(x => pIds.Contains(x.Id ?? -1));
+        }
+
+        List<Product> result = await query
             .Select(v => new Product(v.Title ?? "", v.Description ?? "", v.Price ?? 0m)
             {
                 Id = v.Id,
@@ -42,7 +52,7 @@ internal class ProductRepo : IProductRepo
     }
 
     /// <inheritdoc />
-    public async Task<Product?> SelectProductAsync(long id, CancellationToken cancellationToken)
+    public async Task<Product?> SelectAsync(long id, CancellationToken cancellationToken)
     {
         Product? result = await _context.VProducts.AsNoTracking()
             .Where(vp => vp.Id == id)
@@ -59,7 +69,7 @@ internal class ProductRepo : IProductRepo
         return result;
     }
 
-    public Task<Product?> SelectProductAsync(string objId, CancellationToken cancellationToken)
+    public Task<Product?> SelectAsync(string objId, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

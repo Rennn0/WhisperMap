@@ -19,7 +19,7 @@ internal abstract partial class SseStream<T>
             _reg = cancellationToken.Register(state => ((StreamSubscription)state!).Dispose(), this);
         }
 
-        internal Guid Id { get; }
+        internal string Id { get; }
         internal ChannelReader<T> Reader { get; }
 
         public ValueTask DisposeAsync()

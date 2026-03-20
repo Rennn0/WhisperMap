@@ -27,6 +27,7 @@ public class GithubAuthHandler : GoogleAuthHandler
             .Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
+    /// <exception cref="ArgumentNullException"></exception>
     /// <inheritdoc />
     public override async ValueTask<ApiContract> HandleAsync(AuthorizationContext context,
         CancellationToken cancellationToken)
@@ -60,7 +61,7 @@ public class GithubAuthHandler : GoogleAuthHandler
             ? e2.GetString()
             : null;
 
-        AuthorizationInfo info = await AuthorizationRepo.UpsertAuthorizationInfoAsync(
+        AuthorizationInfo info = await AuthorizationRepo.UpsertAsync(
             new AuthorizationInfo(name, DateTimeOffset.Now)
             {
                 AccountEnabled = true,

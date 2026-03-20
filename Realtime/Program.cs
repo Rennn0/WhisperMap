@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Realtime.Background;
 using Realtime.Sse.Core.Stream;
 using Realtime.Sse.Core.Streamer;
@@ -39,14 +40,16 @@ public static class Program
         RouteGroupBuilder realtimeGroup = app.MapGroup("/realtime");
         RouteGroupBuilder streamGroup = realtimeGroup.MapGroup("/stream");
         streamGroup.MapGet("/u",
-            async (HttpContext context, SseUserStatsStreamRegistry registry,
+            async (HttpContext context,
+                [FromQuery(Name = "sid")] string? streamId,
+                SseUserStatsStreamRegistry registry,
                 ISseDataProvider<SseUserStatsFormatter.UserStats> sseDataProvider) =>
             {
                 CancellationToken cancellationToken = context.RequestAborted;
                 SseStreamRegistry<SseUserStatsFormatter.UserStats>.StreamHandle handle =
                     registry.GetStream("users", cancellationToken);
                 SseStream<SseUserStatsFormatter.UserStats>.StreamSubscription subscription =
-                    handle.Subscribe(cancellationToken);
+                    handle.Subscribe(streamId, cancellationToken);
                 SseUserStatsFormatter.UserStats
                     initialVal = await sseDataProvider.Instant(handle, cancellationToken);
                 

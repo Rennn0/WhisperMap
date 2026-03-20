@@ -2,9 +2,9 @@
 import BaseDropdown from './BaseDropdown.vue';
 import TablerUserIcon from '../freestyle/TablerUserIcon.vue';
 
-const _ = defineProps<{
+defineProps<{
     picture?: string | null;
-}>(); _;
+}>();
 
 const emit = defineEmits<{
     (e: 'login'): void;
@@ -14,26 +14,28 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <BaseDropdown :align="'right'">
-        <!-- Trigger -->
-        <template #trigger="{ toggle }">
-            <button @click="toggle()"
-                class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-subtle transition-colors duration-200">
-                <TablerUserIcon v-if="!picture" class="w-6 h-6" @click.stop="emit('login')" />
-                <img v-else :src="picture" referrerpolicy="no-referrer"
-                    class="p-1 w-10 h-10 rounded-full object-cover" />
+    <BaseDropdown align="right" widthClass="w-52">
+        <template #trigger="{ toggle, open, triggerRef }">
+            <button :ref="triggerRef as any" type="button" :aria-expanded="open" aria-haspopup="menu"
+                class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-hover transition-colors duration-200 focus:outline-none"
+                @click="picture ? toggle() : emit('login')">
+                <TablerUserIcon v-if="!picture" class="w-6 h-6" />
+                <img v-else :src="picture" referrerpolicy="no-referrer" class="p-1 w-10 h-10 rounded-full object-cover"
+                    alt="User avatar" />
             </button>
         </template>
-        <!-- Content -->
+
         <template #content="{ close }">
-            <div v-if="picture">
-                <button @click="() => { emit('profile'); close(); }"
-                    class="w-full text-left px-3 py-2 hover:bg-subtle text-sm transition-colors">
+            <div v-if="picture" class="flex flex-col gap-1">
+                <button type="button"
+                    class="w-full text-left px-3 py-2 rounded-md hover:bg-hover text-sm transition-colors"
+                    @click="emit('profile'); close()">
                     Profile
                 </button>
 
-                <button @click="() => { emit('logout'); close(); }"
-                    class="w-full text-left px-3 py-2 hover:bg-danger-bg hover:text-danger-text text-sm text-danger-text transition-colors">
+                <button type="button"
+                    class="w-full text-left px-3 py-2 rounded-md hover:bg-danger-bg text-sm text-danger-text transition-colors"
+                    @click="emit('logout'); close()">
                     Logout
                 </button>
             </div>
