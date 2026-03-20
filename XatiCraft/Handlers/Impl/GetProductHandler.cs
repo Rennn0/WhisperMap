@@ -50,7 +50,7 @@ internal class GetProductHandler : IGetProductHandler
 
         bool inCart;
         if (string.IsNullOrEmpty(context.UserId))
-            inCart = ((ProductCartHandler)_productCartHandler).ExistsInCart(product);
+            inCart = ((GetProductCartCookieHandler)_productCartHandler).ExistsInCart(product);
         else
             inCart =
                 (await _productCartMongo.SelectAsync(context.UserId, cancellationToken))?.ProductIds.Contains(

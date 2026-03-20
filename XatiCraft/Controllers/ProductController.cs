@@ -46,16 +46,18 @@ public class ProductController : ControllerBase
     public async Task<ApiContract> GetProducts(
         [FromServices] IEnumerable<IHandler<ApiContract, GetProductsContext>> handlers,
         [FromQuery(Name = "q")] string? query,
-        [FromQuery(Name = "fcs")] bool? fromCookies,
-        [FromQuery(Name = "fct")] bool? fromCart,
-        CancellationToken cancellationToken)
+        [FromQuery(Name = "fcs")] bool? fromCookies = false,
+        [FromQuery(Name = "fct")] bool? fromCart = false,
+        CancellationToken cancellationToken = default)
     {
-        IHandler<ApiContract, GetProductsContext> handler = (fromCookies ?? false, fromCart ?? false) switch
+        bool isGuest = !HttpContext.Request.Cookies.ContainsKey(AuthGuard.UserIdCookie);
+        IHandler<ApiContract, GetProductsContext> handler = (fromCookies, fromCart, isGuest) switch
         {
-            // #NOTE amas yvela moaq da mere filtravs, gadasaketebelia 
-            (true, false) => handlers.First(h => h is ProductCartHandler),
-            (false, false) => handlers.First(h => h is GetProductsHandler),
-            (_, true) => handlers.First(h => h is GetProductsCartHandler)
+            (false, false, _) => handlers.First(h => h is GetProductsGeneralHandler),
+            (true, false, false) => handlers.First(h => h is GetProductCartCookieHandler),
+            (_, true, false) => handlers.First(h => h is GetProductsCartHandler),
+            (_, true, true) => handlers.First(h => h is GetProductCartCookieHandler),
+            _ => throw new ArgumentOutOfRangeException(nameof(handlers))
         };
         return await handler.HandleAsync(
             new GetProductsContext(query) { UserId = HttpContext.Request.Cookies[AuthGuard.UserIdCookie] },

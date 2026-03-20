@@ -1,7 +1,0 @@
-﻿<component name="ProjectRunConfigurationManager">
-  <configuration default="true" type="CompoundRunConfigurationType">
-    <toRun name="Realtime: http" type="LaunchSettings" />
-    <toRun name="WhisperMap: http" type="LaunchSettings" />
-    <method v="2" />
-  </configuration>
-</component>

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Design;
 namespace XatiCraft.Data.Repos.EfCoreImpl;
 
 /// <inheritdoc />
-public class ApplicationContextFactory 
+public class ApplicationContextFactory
     : IDesignTimeDbContextFactory<ApplicationContext>
 {
     /// <inheritdoc />
@@ -12,7 +12,7 @@ public class ApplicationContextFactory
     {
         IConfigurationRoot config = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true)
+            .AddJsonFile("appsettings.Development.json", true)
             .AddEnvironmentVariables()
             .Build();
 

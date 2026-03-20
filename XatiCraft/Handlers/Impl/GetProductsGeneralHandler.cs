@@ -9,7 +9,7 @@ namespace XatiCraft.Handlers.Impl;
 
 /// <summary>
 /// </summary>
-internal class GetProductsHandler : IGetProductsHandler
+internal class GetProductsGeneralHandler : IGetProductsHandler
 {
     private const int MaxLenDesc = 44;
     private const int MaxLenTitle = 32;
@@ -18,7 +18,7 @@ internal class GetProductsHandler : IGetProductsHandler
     /// <summary>
     /// </summary>
     /// <param name="productRepos"></param>
-    public GetProductsHandler(IEnumerable<IProductRepo> productRepos)
+    public GetProductsGeneralHandler(IEnumerable<IProductRepo> productRepos)
     {
         _productRepos = productRepos.First(p => p is ProductRepo);
     }
@@ -30,7 +30,7 @@ internal class GetProductsHandler : IGetProductsHandler
     /// <returns></returns>
     public async ValueTask<ApiContract> HandleAsync(GetProductsContext context, CancellationToken cancellationToken)
     {
-        List<Product> products = await _productRepos.SelectAsync(cancellationToken: cancellationToken);
+        List<Product> products = await _productRepos.SelectAsync(context.Ids, cancellationToken);
         if (!string.IsNullOrWhiteSpace(context.Query))
             products = products
                 .Where(p =>

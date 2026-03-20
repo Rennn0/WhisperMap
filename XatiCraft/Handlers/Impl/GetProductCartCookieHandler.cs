@@ -6,7 +6,7 @@ using XatiCraft.Handlers.Api;
 namespace XatiCraft.Handlers.Impl;
 
 /// <inheritdoc />
-internal class ProductCartHandler : IProductCartHandler
+internal class GetProductCartCookieHandler : IProductCartHandler
 {
     private const string CookieKey = "__xc_pcc";
     private const char Delimiter = ';';
@@ -16,7 +16,7 @@ internal class ProductCartHandler : IProductCartHandler
 
     /// <summary>
     /// </summary>
-    public ProductCartHandler(IEnumerable<Security> securities, IGetProductsHandler getProductsHandler,
+    public GetProductCartCookieHandler(IEnumerable<Security> securities, IGetProductsHandler getProductsHandler,
         IHttpContextAccessor httpContextAccessor)
     {
         _getProductsHandler = getProductsHandler;
@@ -40,11 +40,10 @@ internal class ProductCartHandler : IProductCartHandler
     /// <inheritdoc />
     public async ValueTask<ApiContract> HandleAsync(GetProductsContext context, CancellationToken cancellationToken)
     {
-        ApiContract contract = await _getProductsHandler.HandleAsync(new GetProductsContext(), cancellationToken);
-        return new GetProductsContract(
-            ((GetProductsContract)contract).Products.Where(d =>
-                d.Id.HasValue && GetProductIdsFromCookies().Any(id => id == d.Id.Value)),
-            context);
+        ApiContract contract =
+            await _getProductsHandler.HandleAsync(new GetProductsContext(Ids: GetProductIdsFromCookies()),
+                cancellationToken);
+        return new GetProductsContract(((GetProductsContract)contract).Products, context);
     }
 
     /// <inheritdoc />
@@ -67,26 +66,16 @@ internal class ProductCartHandler : IProductCartHandler
     /// </summary>
     /// <param name="product"></param>
     /// <returns></returns>
-    public bool ExistsInCart(Product product)
-    {
-        return GetProductIdsFromCookies().Any(id => product.Id == id);
-    }
+    public bool ExistsInCart(Product product) => GetProductIdsFromCookies().Any(id => product.Id == id);
 
-    private HashSet<long> GetProductIdsFromCookies()
-    {
-        return
-        [
-            ..GetPlainCookie()
-                .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse)
-        ];
-    }
+    private HashSet<long> GetProductIdsFromCookies() =>
+    [
+        ..GetPlainCookie()
+            .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse)
+    ];
 
-    private string GetPlainCookie()
-    {
-        Dictionary<string, string> cookies = _httpContext.Request.Cookies.ToDictionary();
-
-        return !cookies.TryGetValue(CookieKey, out string? protectedCookie)
+    private string GetPlainCookie() =>
+        !_httpContext.Request.Cookies.ToDictionary().TryGetValue(CookieKey, out string? protectedCookie)
             ? string.Empty
             : _security.UnPack(protectedCookie);
-    }
 }
