@@ -47,7 +47,13 @@
             "newestFirst": "ახალი პირველი",
             "oldestFirst": "ძველი პირველი",
             "priceIncreasing": "ფასი ზრდადი",
-            "priceDecreasing": "ფასი კლებადი"
+            "priceDecreasing": "ფასი კლებადი",
+            "sortDisplay": "დალაგება",
+            "batchDisplay": "რაოდენობა",
+            "result": "ნაპოვნია",
+            "more": "კიდევ",
+            "loading": "იტვირთება დაელოდეთ...",
+            "noMore": "შედეგები აღარაა"
         }
     },
     "cart": {

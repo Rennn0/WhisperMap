@@ -47,7 +47,13 @@
             "newestFirst": "Newest first",
             "oldestFirst": "Oldest first",
             "priceIncreasing": "Price: low to high",
-            "priceDecreasing": "Price: high to low"
+            "priceDecreasing": "Price: high to low",
+            "sortDisplay": "Sort",
+            "batchDisplay": "Quantity",
+            "result": "Found",
+            "more": "More",
+            "loading": "Loading, please wait...",
+            "noMore": "No more results"
         }
     },
     "cart": {

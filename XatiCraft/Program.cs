@@ -106,7 +106,7 @@ public static class Program
 
         builder.Services.AddDbContext<ApplicationContext>(options =>
         {
-            options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(ApplicationContext)));
+            options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(ApplicationContext)), pgOptions => pgOptions.EnableRetryOnFailure(int.MaxValue));
         });
 
         builder.Services.AddExceptionHandler<GeneralExceptionHandler>();

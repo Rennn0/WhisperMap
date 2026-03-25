@@ -47,7 +47,13 @@
             "newestFirst": "Сначала новые",
             "oldestFirst": "Сначала старые",
             "priceIncreasing": "Цена по возрастанию",
-            "priceDecreasing": "Цена по убыванию"
+            "priceDecreasing": "Цена по убыванию",
+            "sortDisplay": "Сортировка",
+            "batchDisplay": "Количество",
+            "result": "Найдено",
+            "more": "Ещё",
+            "loading": "Загрузка, пожалуйста, подождите...",
+            "noMore": "Больше результатов нет"
         }
     },
     "cart": {

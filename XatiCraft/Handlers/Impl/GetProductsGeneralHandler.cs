@@ -22,7 +22,7 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
         [JsonPropertyName("0")] public long? Id { get; init; }
         [JsonPropertyName("1")] public DateTime? Timestamp { get; init; }
         [JsonPropertyName("2")] public decimal? Price { get; init; }
-        [JsonPropertyName("3")] public uint BatchSize { get; init; }
+        [JsonPropertyName("3")] public uint BatchSize { get; set; }
 
         internal static string Encode(SearchCursor cursor)
         {
@@ -62,7 +62,9 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
     public async ValueTask<ApiContract> HandleAsync(GetProductsContext context, CancellationToken cancellationToken)
     {
         SearchCursor cursor = SearchCursor.Decode(context.ContinuationToken) ??
-                              new SearchCursor { BatchSize = context.Batch ?? 5 };
+                               new SearchCursor();
+        cursor.BatchSize = context.Batch ?? 5;
+        
         List<Product> products =
             await _productRepos.SelectAsync(context.Ids, context.OrderBy, context.Query, cursor,
                 cancellationToken);
