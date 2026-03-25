@@ -30,7 +30,7 @@
         "price": "ფასი",
         "add": "დამატება",
         "contact": "კონტაქტი",
-        "description":"აღწერა",
+        "description": "აღწერა",
         "email": "მეილი",
         "phone": "მობილური",
         "info": "საკონტაქტო ინფორმაცია",
@@ -42,9 +42,15 @@
                 "cancel": "არა",
                 "confirm": "კი"
             }
+        },
+        "sort": {
+            "newestFirst": "ახალი პირველი",
+            "oldestFirst": "ძველი პირველი",
+            "priceIncreasing": "ფასი ზრდადი",
+            "priceDecreasing": "ფასი კლებადი"
         }
     },
-    "cart":{
-        "title":"კალათა"
+    "cart": {
+        "title": "კალათა"
     }
 }

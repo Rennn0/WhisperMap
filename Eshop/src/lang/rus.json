@@ -42,6 +42,12 @@
                 "cancel": "No",
                 "confirm": "Yes"
             }
+        },
+        "sort": {
+            "newestFirst": "Сначала новые",
+            "oldestFirst": "Сначала старые",
+            "priceIncreasing": "Цена по возрастанию",
+            "priceDecreasing": "Цена по убыванию"
         }
     },
     "cart": {

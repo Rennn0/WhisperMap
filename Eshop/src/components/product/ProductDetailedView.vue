@@ -11,8 +11,8 @@ import TablerDeleteIcon from '../freestyle/TablerDeleteIcon.vue';
 import ConfirmationModal from '../modals/ConfirmationModal.vue';
 import InformationalModal from '../modals/InformationalModal.vue';
 import { userInfoInjectionKey } from '../../injectionKeys';
-import { ZoomImg } from 'vue3-zoomer';
 import ExpandableText from '../shared/ExpandableText.vue';
+import { component as Viewer } from 'v-viewer';
 
 const router = useRouter();
 const props = defineProps<{ id: number | string }>();
@@ -37,12 +37,11 @@ watch(showContactModal, (value) => {
 watchEffect(() => {
     productRef.value = null;
 
-    getProduct(props.id).request
-        .then(p => {
-            productRef.value = p?.id ? p : null;
-            showAddButton.value = !p?.in_cart;
-            selectedIndex.value = 0;
-        });
+    getProduct(props.id).request.then(p => {
+        productRef.value = p?.id ? p : null;
+        showAddButton.value = !p?.in_cart;
+        selectedIndex.value = 0;
+    });
 });
 
 const product = computed(() => productRef.value);
@@ -66,9 +65,29 @@ const mediaList = computed<MediaItem[]>(() => {
     return list;
 });
 
+const imageList = computed(() =>
+    mediaList.value.filter(m => m.type === 'image')
+);
+
 const selectedMedia = computed(() =>
     mediaList.value[selectedIndex.value] ?? mediaList.value[0]
 );
+
+const viewerOptions = {
+    inline: false,
+    button: true,
+    navbar: false,
+    title: false,
+    toolbar: true,
+    tooltip: true,
+    movable: true,
+    zoomable: true,
+    rotatable: true,
+    scalable: true,
+    transition: true,
+    fullscreen: true,
+    keyboard: true,
+};
 
 const selectMedia = (i: number) => {
     selectedIndex.value = i;
@@ -126,34 +145,36 @@ const deleteClicked = () => {
 
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div class="lg:col-span-7">
-                <div class="overflow-hidden rounded-2xl border border-subtle bg-surface">
-                    <div v-if="selectedMedia" class="flex aspect-[4/3] items-center justify-center bg-subtle">
-                        <template v-if="selectedMedia.type === 'image'">
-                            <ZoomImg :src="selectedMedia.src" :alt="selectedMedia.alt ?? product.title"
-                                class="h-full w-full object-contain" zoom-type="drag" :zoom-scale="5" :step="1"
-                                :show-img-map="true" />
-                        </template>
+                <Viewer :images="imageList.map(x => x.src)" :options="viewerOptions">
+                    <div class="overflow-hidden rounded-2xl border border-subtle bg-surface">
+                        <div v-if="selectedMedia" class="flex aspect-[4/3] items-center justify-center bg-subtle">
+                            <template v-if="selectedMedia.type === 'image'">
+                                <img :src="selectedMedia.src" :alt="selectedMedia.alt ?? product.title"
+                                    class="h-full w-full cursor-zoom-in object-contain" />
+                            </template>
 
-                        <template v-else>
-                            <video :src="selectedMedia.src" controls class="h-full w-full object-contain" />
-                        </template>
-                    </div>
-                </div>
-
-                <div v-if="mediaList.length > 1" class="mt-4 flex gap-3 overflow-x-auto pb-1">
-                    <button v-for="(m, i) in mediaList" :key="m.src + i" type="button"
-                        class="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl border bg-subtle transition-all"
-                        :class="selectedIndex === i ? 'border-primary ring-2 ring-primary/30' : 'border-subtle hover:opacity-85'"
-                        @click="selectMedia(i)">
-                        <img v-if="m.type === 'image'" :src="m.src" :alt="m.alt" class="h-full w-full object-cover" />
-
-                        <div v-else class="flex h-full w-full items-center justify-center bg-subtle">
-                            <svg class="h-6 w-6 text-text" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z" />
-                            </svg>
+                            <template v-else>
+                                <video :src="selectedMedia.src" controls class="h-full w-full object-contain" />
+                            </template>
                         </div>
-                    </button>
-                </div>
+                    </div>
+
+                    <div v-if="mediaList.length > 1" class="mt-4 flex gap-3 overflow-x-auto pb-1">
+                        <button v-for="(m, i) in mediaList" :key="m.src + i" type="button"
+                            class="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl border bg-subtle transition-all"
+                            :class="selectedIndex === i ? 'border-primary ring-2 ring-primary/30' : 'border-subtle hover:opacity-85'"
+                            @click="selectMedia(i)">
+                            <img v-if="m.type === 'image'" :src="m.src" :alt="m.alt"
+                                class="h-full w-full object-cover" />
+
+                            <div v-else class="flex h-full w-full items-center justify-center bg-subtle">
+                                <svg class="h-6 w-6 text-text" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                            </div>
+                        </button>
+                    </div>
+                </Viewer>
             </div>
 
             <div class="lg:col-span-5">

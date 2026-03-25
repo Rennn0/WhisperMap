@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using XatiCraft.ApiContracts;
 using XatiCraft.Data.Objects;
 using XatiCraft.Data.Repos;
@@ -15,6 +17,35 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
     private const int MaxLenTitle = 32;
     private readonly IProductRepo _productRepos;
 
+    internal sealed record SearchCursor
+    {
+        [JsonPropertyName("0")] public long? Id { get; init; }
+        [JsonPropertyName("1")] public DateTime? Timestamp { get; init; }
+        [JsonPropertyName("2")] public decimal? Price { get; init; }
+        [JsonPropertyName("3")] public uint BatchSize { get; init; }
+
+        internal static string Encode(SearchCursor cursor)
+        {
+            string json = JsonSerializer.Serialize(cursor);
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+        }
+
+        internal static SearchCursor? Decode(string? token)
+        {
+            if (string.IsNullOrEmpty(token)) return null;
+            try
+            {
+                byte[] bytes = Convert.FromBase64String(token);
+                string json = Encoding.UTF8.GetString(bytes);
+                return JsonSerializer.Deserialize<SearchCursor>(json);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    }
+
     /// <summary>
     /// </summary>
     /// <param name="productRepos"></param>
@@ -30,24 +61,46 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
     /// <returns></returns>
     public async ValueTask<ApiContract> HandleAsync(GetProductsContext context, CancellationToken cancellationToken)
     {
-        List<Product> products = await _productRepos.SelectAsync(context.Ids, cancellationToken);
-        if (!string.IsNullOrWhiteSpace(context.Query))
-            products = products
-                .Where(p =>
-                        p.Title.Contains(context.Query, StringComparison.InvariantCultureIgnoreCase) ||
-                        p.Description.Contains(context.Query, StringComparison.InvariantCultureIgnoreCase) ||
-                        (decimal.TryParse(context.Query, out decimal price) &&
-                         Math.Abs(p.Price - price) <= 5) //#NOTE can be customized
-                )
-                .ToList();
+        SearchCursor cursor = SearchCursor.Decode(context.ContinuationToken) ??
+                              new SearchCursor { BatchSize = context.Batch ?? 5 };
+        List<Product> products =
+            await _productRepos.SelectAsync(context.Ids, context.OrderBy, context.Query, cursor,
+                cancellationToken);
+
+        string? continuationToken = null;
+        if (products.Count > 0)
+        {
+            Product last = products[^1];
+            OrderBy order = context.OrderBy ?? OrderBy.NewestFirst;
+
+            SearchCursor nextCursor = order switch
+            {
+                OrderBy.NewestFirst or OrderBy.OldestFirst => cursor with
+                {
+                    Id = last.Id, Timestamp = last.Timestamp
+                },
+                OrderBy.PriceDecreasing or OrderBy.PriceIncreasing => cursor with
+                {
+                    Id = last.Id, Price = last.Price
+                },
+                _ => throw new ArgumentOutOfRangeException(nameof(context), context, null)
+            };
+
+            continuationToken = SearchCursor.Encode(nextCursor);
+        }
+        
         GetProductsContract contract = new GetProductsContract(products.Select(p =>
             new Product(EraseIfLarger(p.Title, MaxLenTitle), EraseIfLarger(p.Description, MaxLenDesc), p.Price)
             {
                 Id = p.Id,
                 PreviewImg = p.ProductMetadata?.Where(pm => !string.IsNullOrEmpty(pm.Location)).MinBy(pm => pm.Id)
-                    ?.Location //#NOTE maybe add order priority?
+                    ?.Location 
             }
-        ), context);
+        ), context)
+        {
+            ContinuationToken = continuationToken
+        };
+        
         return contract;
     }
 

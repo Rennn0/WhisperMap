@@ -4,4 +4,7 @@ namespace XatiCraft.ApiContracts;
 /// </summary>
 public record GetProductsContext(
     string? Query = null,
-    IEnumerable<long>? Ids = null) : ApiContext;
+    string? ContinuationToken = null,
+    uint? Batch = null,
+    IEnumerable<long>? Ids = null,
+    OrderBy? OrderBy = OrderBy.NewestFirst) : ApiContext;

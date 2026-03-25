@@ -14,7 +14,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <BaseDropdown align="right" widthClass="w-52">
+    <BaseDropdown align="left" widthClass="w-52">
         <template #trigger="{ toggle, open, triggerRef }">
             <button :ref="triggerRef as any" type="button" :aria-expanded="open" aria-haspopup="menu"
                 class="flex items-center justify-center w-10 h-10 rounded-md hover:bg-hover transition-colors duration-200 focus:outline-none"

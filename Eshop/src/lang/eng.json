@@ -29,7 +29,7 @@
     "product": {
         "price": "Price",
         "add": "Add",
-        "description":"Description",
+        "description": "Description",
         "contact": "Contact",
         "email": "Email address",
         "phone": "Phone number",
@@ -42,9 +42,15 @@
                 "cancel": "No",
                 "confirm": "Yes"
             }
+        },
+        "sort": {
+            "newestFirst": "Newest first",
+            "oldestFirst": "Oldest first",
+            "priceIncreasing": "Price: low to high",
+            "priceDecreasing": "Price: high to low"
         }
     },
-    "cart":{
-        "title":"Basket"
+    "cart": {
+        "title": "Basket"
     }
 }

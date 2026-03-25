@@ -57,7 +57,8 @@ onUnmounted(() => { window.removeEventListener("scroll", handleScroll, false) })
     <div class="min-h-screen bg-surface text-text transition-colors duration-300">
         <title>{{ $t('app.title') }}</title>
 
-        <NavBar :class="navbarOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'"
+        <!-- #NOTE remove this if u want to hide navbar on downscroll -->
+        <NavBar :class="navbarOpen || true ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'"
             @menu-toggle="onMenuToggle" @profile-click="onProfileClick" @product-chosen="onProductChosen"
             @upload="onUpload" @auth="onAuth" />
         <Sidebar :open="sidebarOpen" @close="sidebarOpen = false" @select="onOptionSelect" />

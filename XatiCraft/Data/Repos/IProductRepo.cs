@@ -1,4 +1,6 @@
+using XatiCraft.ApiContracts;
 using XatiCraft.Data.Objects;
+using XatiCraft.Handlers.Impl;
 
 namespace XatiCraft.Data.Repos;
 
@@ -10,10 +12,19 @@ internal interface IProductRepo
     /// <summary>
     ///     returns data from VProducts (not paginated)
     /// </summary>
-    /// <param name="cancellationToken">token from caller</param>
     /// <param name="ids"></param>
+    /// <param name="orderBy"></param>
+    /// <param name="cursor"></param>
+    /// <param name="cancellationToken">token from caller</param>
+    /// <param name="query"></param>
     /// <returns></returns>
-    Task<List<Product>> SelectAsync(IEnumerable<long>? ids = null, CancellationToken cancellationToken = default);
+    Task<List<Product>> SelectAsync(
+        IEnumerable<long>? ids = null,
+        OrderBy? orderBy = null,
+        string? query = null,
+        GetProductsGeneralHandler.SearchCursor? cursor = null,
+        CancellationToken cancellationToken = default);
+    //#TODO amas where filteric unda, yvelafers igebs viewdan
 
     /// <summary>
     ///     returns one row by id matching from VProducts

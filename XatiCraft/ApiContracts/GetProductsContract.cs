@@ -16,4 +16,6 @@ internal record GetProductsContract(
     /// </summary>
     [JsonIgnore]
     public ApiContext Context { get; init; } = Context;
+
+    public string? ContinuationToken { get; init; }
 }

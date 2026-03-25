@@ -32,7 +32,7 @@ internal class GetProductsCartHandler : IGetProductsHandler
             return new ApiContract(context);
         
         List<Product> products =
-            await _productRepo.SelectAsync(cart.ProductIds.Select(long.Parse), cancellationToken);
+            await _productRepo.SelectAsync(cart.ProductIds.Select(long.Parse), cancellationToken: cancellationToken);
         GetProductsContract contract = new GetProductsContract(products.Select(p =>
             new Product(p.Title, p.Description, p.Price)
             {

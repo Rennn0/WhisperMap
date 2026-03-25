@@ -109,11 +109,21 @@ export const getSession = () => makeGet<void>("s");
 
 export const getMe = () => makeGet<UserInfo>("s/me");
 
-export const getProducts = (args: { query?: string | null, fromCookie?: boolean | null, fromCart?: boolean | null } = { fromCookie: null, query: null }) => {
+export const getProducts = (args: {
+    query?: string | null,
+    fromCookie?: boolean | null,
+    fromCart?: boolean | null,
+    orderBy?: number | null,
+    continuationToken?: string | null,
+    batch?:number | null
+} = { fromCookie: null, query: null }) => {
     const params = new URLSearchParams();
     if (args.query) params.set('q', args.query);
+    if (args.orderBy != undefined) params.set("o", args.orderBy.toString());
+    if (args.batch) params.set("b", args.batch.toString());
     if (args.fromCookie) params.set("fcs", args.fromCookie.toString());
     if (args.fromCart) params.set("fct", args.fromCart.toString());
+    if (args.continuationToken) params.set("ct", args.continuationToken.toString());
     return makeGet<{ products: Product[] } & ApiMeta>(`p?${params.toString()}`, { headers: noAudit() });
 }
 

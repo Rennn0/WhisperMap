@@ -23,7 +23,7 @@ const selectTheme = (themeName: string, close: () => void) => {
 </script>
 
 <template>
-    <BaseDropdown align="right" widthClass="w-56">
+    <BaseDropdown align="left" widthClass="w-56">
         <template #trigger="{ toggle, open, triggerRef }">
             <button :ref="triggerRef as any" type="button" :aria-expanded="open" aria-haspopup="menu"
                 aria-label="Select theme"

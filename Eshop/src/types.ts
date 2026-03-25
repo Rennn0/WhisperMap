@@ -53,4 +53,4 @@ export type MediaItem = { type: 'image' | 'video'; src: string; alt?: string };
 
 export type SidebarOptions = { title: string; key: CurrentViewSelection; icon: any };
 
-export type ApiMeta = { timestamp: string, request_id: string };
+export type ApiMeta = { timestamp: string, request_id: string, continuation_token?: string };

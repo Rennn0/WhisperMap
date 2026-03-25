@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using XatiCraft.ApiContracts;
 using XatiCraft.Data.Repos.EfCoreImpl.Model;
+using XatiCraft.Handlers.Impl;
 using Product = XatiCraft.Data.Objects.Product;
 using ProductMetadata = XatiCraft.Data.Objects.ProductMetadata;
 
@@ -27,25 +29,46 @@ internal class ProductRepo : IProductRepo
     }
 
     /// <inheritdoc />
-    public async Task<List<Product>> SelectAsync(IEnumerable<long>? ids = null,
+    public async Task<List<Product>> SelectAsync(
+        IEnumerable<long>? ids = null,
+        OrderBy? orderBy = null,
+        string? query = null,
+        GetProductsGeneralHandler.SearchCursor? cursor = null,
         CancellationToken cancellationToken = default)
     {
-        IQueryable<VProduct> query = _context.VProducts.AsNoTracking();
+        OrderBy order = orderBy ?? OrderBy.NewestFirst;
+        IQueryable<VProduct> dbQuery = _context.VProducts.AsNoTracking();
+
         if (ids is not null)
         {
             List<long> pIds = ids.Distinct().ToList();
-            query = query.Where(x => pIds.Contains(x.Id ?? -1));
+            dbQuery = dbQuery.Where(x => pIds.Contains(x.Id ?? -1));
         }
 
-        List<Product> result = await query
-            .Select(v => new Product(v.Title ?? "", v.Description ?? "", v.Price ?? 0m)
-            {
-                Id = v.Id,
-                Timestamp = v.Timestamp,
-                ProductMetadata = v.Metadata == null
-                    ? null
-                    : v.Metadata.Deserialize<ICollection<ProductMetadata>>(_serializerOptions)
-            })
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            string q = query.Trim();
+            bool queryPrice = decimal.TryParse(q, out _);
+            dbQuery = dbQuery.Where(x =>
+                (x.Title != null && EF.Functions.ILike(x.Title, $"%{q}%")) ||
+                (x.Description != null && EF.Functions.ILike(x.Description, $"%{q}%")) ||
+                (x.Price.HasValue && queryPrice && Math.Abs(x.Price.Value - decimal.Parse(q)) <= 5));
+        }
+
+        dbQuery = ApplyCursor(dbQuery, order, cursor);
+        dbQuery = ApplyOrdering(dbQuery, order);
+
+        List<Product> result = await dbQuery
+            .Take((int)(cursor?.BatchSize ?? 1))
+            .Select(v =>
+                new Product(v.Title ?? "", v.Description ?? "", v.Price ?? 0m)
+                {
+                    Id = v.Id,
+                    Timestamp = v.Timestamp,
+                    ProductMetadata = v.Metadata == null
+                        ? null
+                        : v.Metadata.Deserialize<ICollection<ProductMetadata>>(_serializerOptions)
+                })
             .ToListAsync(cancellationToken);
 
         return result;
@@ -114,5 +137,40 @@ internal class ProductRepo : IProductRepo
     public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
+    }
+
+    private static IQueryable<VProduct> ApplyOrdering(IQueryable<VProduct> queryable, OrderBy? orderBy) =>
+        orderBy switch
+        {
+            OrderBy.NewestFirst => queryable.OrderByDescending(x => x.Timestamp).ThenByDescending(x => x.Id),
+            OrderBy.OldestFirst => queryable.OrderBy(x => x.Timestamp).ThenBy(x => x.Id),
+            OrderBy.PriceIncreasing => queryable.OrderBy(x => x.Price).ThenBy(x => x.Id),
+            OrderBy.PriceDecreasing => queryable.OrderByDescending(x => x.Price).ThenByDescending(x => x.Id),
+            null => queryable.OrderByDescending(x => x.Timestamp)
+                .ThenByDescending(x => x.Id),
+            _ => throw new ArgumentOutOfRangeException(nameof(orderBy), orderBy, null)
+        };
+
+    private static IQueryable<VProduct> ApplyCursor(IQueryable<VProduct> queryable, OrderBy orderBy,
+        GetProductsGeneralHandler.SearchCursor? cursor)
+    {
+        if (cursor is not { Id: not null } c) return queryable;
+
+        return orderBy switch
+        {
+            OrderBy.NewestFirst => queryable.Where(x =>
+                x.Timestamp < c.Timestamp || (x.Timestamp == c.Timestamp &&
+                                              (x.Id ?? long.MinValue) < (c.Id ?? long.MinValue))),
+            OrderBy.OldestFirst => queryable.Where(x =>
+                x.Timestamp > c.Timestamp || (x.Timestamp == c.Timestamp &&
+                                              (x.Id ?? long.MaxValue) > (c.Id ?? long.MaxValue))),
+            OrderBy.PriceIncreasing => queryable.Where(x =>
+                (x.Price ?? decimal.MinValue) > c.Price || ((x.Price ?? decimal.MinValue) == c.Price &&
+                                                            (x.Id ?? long.MaxValue) > (c.Id ?? long.MinValue))),
+            OrderBy.PriceDecreasing => queryable.Where(x =>
+                (x.Price ?? decimal.MaxValue) < c.Price || ((x.Price ?? decimal.MaxValue) == c.Price &&
+                                                            (x.Id ?? long.MinValue) < (c.Id ?? long.MaxValue))),
+            _ => throw new ArgumentOutOfRangeException(nameof(orderBy), orderBy, null)
+        };
     }
 }

@@ -38,6 +38,9 @@ public class ProductController : ControllerBase
     /// </summary>
     /// <param name="handlers"></param>
     /// <param name="query"></param>
+    /// <param name="orderBy"></param>
+    /// <param name="batch"></param>
+    /// <param name="continuationToken"></param>
     /// <param name="fromCookies"></param>
     /// <param name="fromCart"></param>
     /// <param name="cancellationToken"></param>
@@ -46,6 +49,9 @@ public class ProductController : ControllerBase
     public async Task<ApiContract> GetProducts(
         [FromServices] IEnumerable<IHandler<ApiContract, GetProductsContext>> handlers,
         [FromQuery(Name = "q")] string? query,
+        [FromQuery(Name = "o")] OrderBy? orderBy = OrderBy.NewestFirst,
+        [FromQuery(Name = "b")] uint? batch = null,
+        [FromQuery(Name = "ct")] string? continuationToken = null,
         [FromQuery(Name = "fcs")] bool? fromCookies = false,
         [FromQuery(Name = "fct")] bool? fromCart = false,
         CancellationToken cancellationToken = default)
@@ -60,7 +66,8 @@ public class ProductController : ControllerBase
             _ => throw new ArgumentOutOfRangeException(nameof(handlers))
         };
         return await handler.HandleAsync(
-            new GetProductsContext(query) { UserId = HttpContext.Request.Cookies[AuthGuard.UserIdCookie] },
+            new GetProductsContext(query, continuationToken, batch, OrderBy: orderBy)
+                { UserId = HttpContext.Request.Cookies[AuthGuard.UserIdCookie] },
             cancellationToken);
     }
 

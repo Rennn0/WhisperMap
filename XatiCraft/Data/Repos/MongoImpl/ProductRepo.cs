@@ -1,4 +1,6 @@
 ﻿using MongoDB.Driver;
+using XatiCraft.ApiContracts;
+using XatiCraft.Handlers.Impl;
 using Product = XatiCraft.Data.Repos.MongoImpl.Model.Product;
 
 namespace XatiCraft.Data.Repos.MongoImpl;
@@ -11,7 +13,9 @@ internal class ProductRepo : MongoBase<Product>, IProductRepo
     }
 
     /// <inheritdoc />
-    public Task<List<Objects.Product>> SelectAsync(IEnumerable<long>? ids = null,
+    public Task<List<Objects.Product>> SelectAsync(IEnumerable<long>? ids = null, OrderBy? orderBy = null,
+        string? query = null,
+        GetProductsGeneralHandler.SearchCursor? cursor = null,
         CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
