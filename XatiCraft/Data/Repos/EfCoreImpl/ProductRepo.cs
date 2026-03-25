@@ -59,7 +59,7 @@ internal class ProductRepo : IProductRepo
         dbQuery = ApplyOrdering(dbQuery, order);
 
         List<Product> result = await dbQuery
-            .Take((int)(cursor?.BatchSize ?? 1))
+            .Take((int)(cursor?.BatchSize ?? 0))
             .Select(v =>
                 new Product(v.Title ?? "", v.Description ?? "", v.Price ?? 0m)
                 {
@@ -154,22 +154,18 @@ internal class ProductRepo : IProductRepo
     private static IQueryable<VProduct> ApplyCursor(IQueryable<VProduct> queryable, OrderBy orderBy,
         GetProductsGeneralHandler.SearchCursor? cursor)
     {
-        if (cursor is not { Id: not null } c) return queryable;
+        if (cursor is not { Id: not null } searchCursor) return queryable;
 
         return orderBy switch
         {
             OrderBy.NewestFirst => queryable.Where(x =>
-                x.Timestamp < c.Timestamp || (x.Timestamp == c.Timestamp &&
-                                              (x.Id ?? long.MinValue) < (c.Id ?? long.MinValue))),
+                x.Timestamp < searchCursor.Timestamp || (x.Timestamp == searchCursor.Timestamp && x.Id  < searchCursor.Id )),
             OrderBy.OldestFirst => queryable.Where(x =>
-                x.Timestamp > c.Timestamp || (x.Timestamp == c.Timestamp &&
-                                              (x.Id ?? long.MaxValue) > (c.Id ?? long.MaxValue))),
+                x.Timestamp > searchCursor.Timestamp || (x.Timestamp == searchCursor.Timestamp && x.Id  > searchCursor.Id )),
             OrderBy.PriceIncreasing => queryable.Where(x =>
-                (x.Price ?? decimal.MinValue) > c.Price || ((x.Price ?? decimal.MinValue) == c.Price &&
-                                                            (x.Id ?? long.MaxValue) > (c.Id ?? long.MinValue))),
+                x.Price  > searchCursor.Price || (x.Price  == searchCursor.Price && x.Id  > searchCursor.Id )),
             OrderBy.PriceDecreasing => queryable.Where(x =>
-                (x.Price ?? decimal.MaxValue) < c.Price || ((x.Price ?? decimal.MaxValue) == c.Price &&
-                                                            (x.Id ?? long.MinValue) < (c.Id ?? long.MaxValue))),
+                x.Price  < searchCursor.Price || (x.Price  == searchCursor.Price && x.Id  < searchCursor.Id )),
             _ => throw new ArgumentOutOfRangeException(nameof(orderBy), orderBy, null)
         };
     }

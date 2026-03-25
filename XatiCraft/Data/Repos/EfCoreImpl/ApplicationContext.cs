@@ -4,7 +4,8 @@ using XatiCraft.Data.Repos.EfCoreImpl.Model;
 
 namespace XatiCraft.Data.Repos.EfCoreImpl;
 
-/// <inheritdoc />
+/// <summary>
+/// </summary>
 public partial class ApplicationContext : DbContext, IDataProtectionKeyContext
 {
     /// <inheritdoc />

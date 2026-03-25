@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading.Channels;
+using Microsoft.Extensions.Logging.Console;
 
 namespace Realtime.Sse.Core.Stream;
 
@@ -17,7 +18,8 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
             builder.SetMinimumLevel(LogLevel.Debug).AddSimpleConsole(opt =>
             {
                 opt.IncludeScopes = true;
-                opt.SingleLine = true;
+                opt.SingleLine = false;
+                opt.ColorBehavior = LoggerColorBehavior.Enabled;
                 opt.TimestampFormat = "[HH:mm:ss] ";
             });
         });

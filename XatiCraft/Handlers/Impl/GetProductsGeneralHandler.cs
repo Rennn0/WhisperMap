@@ -20,9 +20,9 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
     internal sealed record SearchCursor
     {
         [JsonPropertyName("0")] public long? Id { get; init; }
-        [JsonPropertyName("1")] public DateTime? Timestamp { get; init; }
-        [JsonPropertyName("2")] public decimal? Price { get; init; }
-        [JsonPropertyName("3")] public uint BatchSize { get; set; }
+        [JsonPropertyName("1")] public uint BatchSize { get; set; }
+        [JsonPropertyName("2")] public DateTime? Timestamp { get; init; }
+        [JsonPropertyName("3")] public decimal? Price { get; init; }
 
         internal static string Encode(SearchCursor cursor)
         {

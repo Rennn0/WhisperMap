@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Primitives;
+﻿using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Primitives;
 using Realtime.Sse.Formatters;
 
 namespace Realtime.Sse.Core.Streamer;
@@ -19,7 +20,8 @@ internal abstract class SseStreamer
             builder.SetMinimumLevel(LogLevel.Debug).AddSimpleConsole(opt =>
             {
                 opt.IncludeScopes = true;
-                opt.SingleLine = true;
+                opt.SingleLine = false;
+                opt.ColorBehavior = LoggerColorBehavior.Enabled;
                 opt.TimestampFormat = "[HH:mm:ss] ";
             });
         });
