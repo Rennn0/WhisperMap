@@ -1,16 +1,38 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import TablerAddIcon from '../freestyle/TablerAddIcon.vue';
 import TablerLoaderBlockWave from '../freestyle/TablerLoaderBlockWave.vue';
+
+type ProductForm = {
+    title: string;
+    price: number;
+    description: string;
+};
+
+const props = defineProps<{
+    initialProduct: ProductForm;
+    isEditMode: boolean;
+}>();
+
+const emit = defineEmits<{
+    (e: 'submit-product', data: { title: string; price: number; description: string }): void;
+}>();
 
 const title = ref('');
 const price = ref<number | null>(null);
 const description = ref('');
 const submited = ref(false);
 
-const emit = defineEmits<{
-    (e: 'submit-product', data: { title: string; price: number; description: string }): void;
-}>();
+watch(
+    () => props.initialProduct,
+    (value) => {
+        title.value = value.title ?? '';
+        price.value = typeof value.price === 'number' ? value.price : null;
+        description.value = value.description ?? '';
+        submited.value = false;
+    },
+    { immediate: true, deep: true }
+);
 
 const canSubmit = computed(() =>
     !!title.value.trim() &&
@@ -23,6 +45,7 @@ const onSubmit = () => {
     if (!canSubmit.value || submited.value) return;
 
     submited.value = true;
+
     emit('submit-product', {
         title: title.value.trim(),
         price: price.value!,
@@ -64,7 +87,9 @@ const onSubmit = () => {
                     @click="onSubmit">
                     <template v-if="!submited">
                         <TablerAddIcon class="h-5 w-5" />
-                        <span>{{ $t('upload.inputs.create') }}</span>
+                        <span>
+                            {{ props.isEditMode ? $t('upload.inputs.update') : $t('upload.inputs.create') }}
+                        </span>
                     </template>
 
                     <template v-else>

@@ -38,13 +38,16 @@ public class ProductController : ControllerBase
     /// <param name="manager"></param>
     /// <param name="product"></param>
     /// <param name="cancellationToken"></param>
+    /// <param name="id"></param>
     /// <returns></returns>
-    [HttpPatch]
+    [HttpPut("{id:long}")]
     [IpAddressGuard]
     public async Task<ApiContract> UpdateProduct(
-        [FromServices] IProductManager manager, [FromBody] Product product,
+        [FromRoute] long id,
+        [FromServices] IProductManager manager, 
+        [FromBody] Product product,
         CancellationToken cancellationToken) =>
-            await manager.HandleAsync(new UpdateProductContext(product.Id,product.Title, product.Description, product.Price)
+            await manager.HandleAsync(new UpdateProductContext(id,product.Title, product.Description, product.Price)
                 { UserId = HttpContext.Request.Cookies[AuthGuard.UserIdCookie] },cancellationToken);
     
     

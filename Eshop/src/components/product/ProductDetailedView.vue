@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect, inject, type Ref, watch } from 'vue';
+import { ref, computed, watchEffect, inject, type Ref, watch, onBeforeUnmount } from 'vue';
 import type { MediaItem, Product, UserInfo } from '../../types';
 import { useRouter } from 'vue-router';
 import SkeletonProductDetail from '../skeletons/SkeletonProductDetail.vue';
@@ -8,11 +8,13 @@ import TablerAddToCartIcon from '../freestyle/TablerAddToCartIcon.vue';
 import TablerPhoneCallIcon from '../freestyle/TablerPhoneCallIcon.vue';
 import { deleteProduct, getProduct, includeProduct } from '../../services/http';
 import TablerDeleteIcon from '../freestyle/TablerDeleteIcon.vue';
+import TablerEditIcon from '../freestyle/TablerEditIcon.vue';
 import ConfirmationModal from '../modals/ConfirmationModal.vue';
 import InformationalModal from '../modals/InformationalModal.vue';
 import { userInfoInjectionKey } from '../../injectionKeys';
 import ExpandableText from '../shared/ExpandableText.vue';
-import { component as Viewer } from 'v-viewer';
+import { api as viewerApi } from 'v-viewer';
+import 'viewerjs/dist/viewer.css';
 
 const router = useRouter();
 const props = defineProps<{ id: number | string }>();
@@ -30,6 +32,9 @@ const contactInfo = {
 
 const userInfo = inject<Readonly<Ref<UserInfo>>>(userInfoInjectionKey);
 
+let viewerInstance: { hide?: () => void; destroy?: () => void } | null = null;
+let lastFocusedElement: HTMLElement | null = null;
+
 watch(showContactModal, (value) => {
     document.body.style.overflow = value ? 'hidden' : '';
 });
@@ -42,6 +47,13 @@ watchEffect(() => {
         showAddButton.value = !p?.in_cart;
         selectedIndex.value = 0;
     });
+});
+
+onBeforeUnmount(() => {
+    document.body.style.overflow = '';
+    viewerInstance?.hide?.();
+    viewerInstance?.destroy?.();
+    viewerInstance = null;
 });
 
 const product = computed(() => productRef.value);
@@ -74,7 +86,6 @@ const selectedMedia = computed(() =>
 );
 
 const viewerOptions = {
-    inline: false,
     button: true,
     navbar: false,
     title: false,
@@ -91,6 +102,36 @@ const viewerOptions = {
 
 const selectMedia = (i: number) => {
     selectedIndex.value = i;
+};
+
+const openSelectedImageViewer = () => {
+    if (!selectedMedia.value || selectedMedia.value.type !== 'image') return;
+
+    const images = imageList.value.map(image => image.src);
+    const initialViewIndex = imageList.value.findIndex(image => image.src === selectedMedia.value?.src);
+
+    if (initialViewIndex < 0 || images.length === 0) return;
+
+    lastFocusedElement = document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+
+    // Helps avoid the browser accessibility warning when the modal viewer toggles aria-hidden.
+    lastFocusedElement?.blur();
+
+    viewerInstance?.hide?.();
+    viewerInstance?.destroy?.();
+
+    viewerInstance = viewerApi({
+        images,
+        options: {
+            ...viewerOptions,
+            initialViewIndex,
+            hidden: () => {
+                lastFocusedElement?.focus?.();
+            },
+        },
+    });
 };
 
 const contactClicked = () => {
@@ -123,6 +164,10 @@ const handleDeleteCancelled = () => {
 const deleteClicked = () => {
     showDeleteConfirmation.value = true;
 };
+
+const editClicked = () => {
+    router.push({ name: 'upload', query: { id: props.id } });
+};
 </script>
 
 <template>
@@ -135,46 +180,57 @@ const deleteClicked = () => {
                 <span>{{ $t('app.back') }}</span>
             </button>
 
-            <button v-if="userInfo?.can_delete" type="button" aria-label="Delete product"
-                class="inline-flex items-center gap-2 rounded-xl border border-subtle bg-surface px-4 py-2 text-sm font-medium text-text transition-colors hover:bg-subtle"
-                @click="deleteClicked">
-                <TablerDeleteIcon class="h-4 w-4" />
-                <span>{{ $t('product.delete') }}</span>
-            </button>
+            <div v-if="userInfo?.can_delete" class="flex items-center gap-2">
+                <button type="button" aria-label="Edit product"
+                    class="inline-flex items-center gap-2 rounded-xl border border-subtle bg-surface px-4 py-2 text-sm font-medium text-text transition-colors hover:bg-subtle"
+                    @click="editClicked">
+                    <TablerEditIcon class="h-4 w-4" />
+                    <span>{{ $t('product.edit') }}</span>
+                </button>
+
+                <button type="button" aria-label="Delete product"
+                    class="inline-flex items-center gap-2 rounded-xl border border-subtle bg-surface px-4 py-2 text-sm font-medium text-text transition-colors hover:bg-subtle"
+                    @click="deleteClicked">
+                    <TablerDeleteIcon class="h-4 w-4" />
+                    <span>{{ $t('product.delete') }}</span>
+                </button>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div class="lg:col-span-7">
-                <Viewer :images="imageList.map(x => x.src)" :options="viewerOptions">
-                    <div class="overflow-hidden rounded-2xl border border-subtle bg-surface">
-                        <div v-if="selectedMedia" class="flex aspect-[4/3] items-center justify-center bg-subtle">
-                            <template v-if="selectedMedia.type === 'image'">
+                <div class="overflow-hidden rounded-2xl border border-subtle bg-surface">
+                    <div v-if="selectedMedia"
+                        class="h-[320px] w-full overflow-hidden bg-subtle sm:h-[380px] lg:h-[460px]">
+                        <template v-if="selectedMedia.type === 'image'">
+                            <button type="button" class="block h-full w-full cursor-zoom-in"
+                                :aria-label="`Open image preview for ${product.title}`"
+                                @click="openSelectedImageViewer">
                                 <img :src="selectedMedia.src" :alt="selectedMedia.alt ?? product.title"
-                                    class="h-full w-full cursor-zoom-in object-contain" />
-                            </template>
+                                    class="h-full w-full object-cover" />
+                            </button>
+                        </template>
 
-                            <template v-else>
-                                <video :src="selectedMedia.src" controls class="h-full w-full object-contain" />
-                            </template>
+                        <template v-else>
+                            <video :src="selectedMedia.src" controls class="h-full w-full object-cover" />
+                        </template>
+                    </div>
+                </div>
+
+                <div v-if="mediaList.length > 1" class="mt-4 flex gap-3 overflow-x-auto pb-1">
+                    <button v-for="(m, i) in mediaList" :key="m.src + i" type="button"
+                        class="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border bg-subtle transition-all sm:h-28 sm:w-28"
+                        :class="selectedIndex === i ? 'border-primary ring-2 ring-primary/30' : 'border-subtle hover:opacity-85'"
+                        @click="selectMedia(i)">
+                        <img v-if="m.type === 'image'" :src="m.src" :alt="m.alt" class="h-full w-full object-cover" />
+
+                        <div v-else class="flex h-full w-full items-center justify-center bg-subtle">
+                            <svg class="h-6 w-6 text-text" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
                         </div>
-                    </div>
-
-                    <div v-if="mediaList.length > 1" class="mt-4 flex gap-3 overflow-x-auto pb-1">
-                        <button v-for="(m, i) in mediaList" :key="m.src + i" type="button"
-                            class="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl border bg-subtle transition-all"
-                            :class="selectedIndex === i ? 'border-primary ring-2 ring-primary/30' : 'border-subtle hover:opacity-85'"
-                            @click="selectMedia(i)">
-                            <img v-if="m.type === 'image'" :src="m.src" :alt="m.alt"
-                                class="h-full w-full object-cover" />
-
-                            <div v-else class="flex h-full w-full items-center justify-center bg-subtle">
-                                <svg class="h-6 w-6 text-text" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M8 5v14l11-7z" />
-                                </svg>
-                            </div>
-                        </button>
-                    </div>
-                </Viewer>
+                    </button>
+                </div>
             </div>
 
             <div class="lg:col-span-5">

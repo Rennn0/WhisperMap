@@ -17,9 +17,11 @@
             "price": "Цена",
             "create": "Создавать",
             "upload": "Загрузить",
+            "update": "Update",
             "chooseFile": "Выберите фото/видео материал",
             "chosen": "Выбранные файлы:"
-        }
+        },
+        "edit": "Edit"
     },
     "app": {
         "title": "საჩუქრების ზარდახშა",
@@ -35,6 +37,7 @@
         "phone": "Номер телефона",
         "info": "Контактная информация",
         "delete": "Удалить",
+        "edit": "Edit",
         "modals": {
             "delete": {
                 "title": "Delete Product",

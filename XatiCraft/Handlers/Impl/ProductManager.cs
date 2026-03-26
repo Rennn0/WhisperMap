@@ -41,11 +41,9 @@ internal class ProductManager : IProductManager
 
     public async ValueTask<ApiContract> HandleAsync(UpdateProductContext context, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(context.Id);
-        
         await _productRepo.UpdateAsync(new Product(context.Title, context.Description, Normalize(context.Price, 10, 3) ){ Id = context.Id},
             cancellationToken);
-        return new CreateProductContract(context.Id.Value, context);
+        return new CreateProductContract(context.Id, context);
     }
     
     

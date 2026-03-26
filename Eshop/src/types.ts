@@ -1,3 +1,9 @@
+export const errorCode = {
+    fileTooLarge: 1100,
+    argumentMissmatchInDatabase: 1101,
+    unhandledException: -1000
+} as const;
+
 export enum CurrentViewSelection {
     Product, Cart, Setting
 }
@@ -53,4 +59,4 @@ export type MediaItem = { type: 'image' | 'video'; src: string; alt?: string };
 
 export type SidebarOptions = { title: string; key: CurrentViewSelection; icon: any };
 
-export type ApiMeta = { timestamp: string, request_id: string, continuation_token?: string };
+export type ApiMeta = { timestamp: string, request_id: string, continuation_token?: string, code?: number };
