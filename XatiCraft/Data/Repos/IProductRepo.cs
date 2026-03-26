@@ -44,6 +44,7 @@ internal interface IProductRepo
     /// <param name="cancellationToken">token from caller</param>
     /// <returns></returns>
     Task<Product> InsertAsync(Product product, CancellationToken cancellationToken);
+    Task<Product> UpdateAsync(Product product, CancellationToken cancellationToken);
 
     /// <summary>
     ///     returns true if exists one Product matching by id

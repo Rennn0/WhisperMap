@@ -16,7 +16,7 @@ internal class MongoBootstrap : IBootstrap
     }
 
     /// <inheritdoc />
-    public async Task RunAsync()
+    public async ValueTask RunAsync()
     {
         MongoClient client = new MongoClient(_connection);
         IMongoDatabase? database = client.GetDatabase(_databaseName);
@@ -35,8 +35,5 @@ internal class MongoBootstrap : IBootstrap
     }
 
     /// <inheritdoc />
-    public void Run()
-    {
-        RunAsync().GetAwaiter().GetResult();
-    }
+    public void Run() => RunAsync().GetAwaiter().GetResult();
 }

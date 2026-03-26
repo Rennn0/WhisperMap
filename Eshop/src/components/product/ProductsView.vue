@@ -253,13 +253,12 @@ onMounted(async () => {
             </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <template v-if="!loading">
-                <ProductItem v-for="item in products" :key="item.id" :product="item" @select="onSelect" />
-            </template>
-
-            <template v-else>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <template v-if="loading">
                 <SkeletonProductItem v-for="(_, i) in Array(selectedBatch)" :key="i" />
+            </template>
+            <template v-else>
+                <ProductItem v-for="item in products" :key="item.id" :product="item" @select="onSelect" />
             </template>
         </div>
 

@@ -8,7 +8,7 @@ namespace XatiCraft.Handlers.Impl;
 
 /// <summary>
 /// </summary>
-internal class CreateProductHandler : ICreateProductHandler
+internal class ProductManager : IProductManager
 {
     private readonly IProductRepo _productRepo;
     private readonly IProductRepo _productRepoMongo;
@@ -16,7 +16,7 @@ internal class CreateProductHandler : ICreateProductHandler
     /// <summary>
     /// </summary>
     /// <param name="productRepos"></param>
-    public CreateProductHandler(IEnumerable<IProductRepo> productRepos)
+    public ProductManager(IEnumerable<IProductRepo> productRepos)
     {
         IEnumerable<IProductRepo> repos = productRepos.ToList();
         _productRepo = repos.First(p => p is ProductRepo);
@@ -39,6 +39,16 @@ internal class CreateProductHandler : ICreateProductHandler
         return new CreateProductContract(product.Id.Value, context) { ObjId = product.ObjId };
     }
 
+    public async ValueTask<ApiContract> HandleAsync(UpdateProductContext context, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(context.Id);
+        
+        await _productRepo.UpdateAsync(new Product(context.Title, context.Description, Normalize(context.Price, 10, 3) ){ Id = context.Id},
+            cancellationToken);
+        return new CreateProductContract(context.Id.Value, context);
+    }
+    
+    
     /// <summary>
     /// </summary>
     /// <param name="value"></param>
@@ -57,4 +67,5 @@ internal class CreateProductHandler : ICreateProductHandler
 
         return Math.Round(value, scale, MidpointRounding.AwayFromZero);
     }
+
 }

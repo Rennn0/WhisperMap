@@ -7,7 +7,7 @@ public interface IBootstrap
     /// <summary>
     /// </summary>
     /// <returns></returns>
-    Task RunAsync();
+    ValueTask RunAsync();
 
     /// <summary>
     /// </summary>

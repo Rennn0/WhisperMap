@@ -15,12 +15,22 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
 {
     private const int MaxLenDesc = 44;
     private const int MaxLenTitle = 32;
+    private const uint MaxBatchSize = 50;
+    private const uint DefaultBatchSize = 5;
     private readonly IProductRepo _productRepos;
 
     internal sealed record SearchCursor
     {
+        private  uint _batchSize;
         [JsonPropertyName("0")] public long? Id { get; init; }
-        [JsonPropertyName("1")] public uint BatchSize { get; set; }
+
+        [JsonPropertyName("1")]
+        public uint BatchSize
+        {
+            get => _batchSize;
+            set => _batchSize = Math.Min(value, MaxBatchSize);
+        }
+
         [JsonPropertyName("2")] public DateTime? Timestamp { get; init; }
         [JsonPropertyName("3")] public decimal? Price { get; init; }
 
@@ -63,7 +73,7 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
     {
         SearchCursor cursor = SearchCursor.Decode(context.ContinuationToken) ??
                                new SearchCursor();
-        cursor.BatchSize = context.Batch ?? 5;
+        cursor.BatchSize = context.Batch ?? DefaultBatchSize;
         
         List<Product> products =
             await _productRepos.SelectAsync(context.Ids, context.OrderBy, context.Query, cursor,

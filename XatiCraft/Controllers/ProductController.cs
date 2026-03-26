@@ -22,18 +22,32 @@ public class ProductController : ControllerBase
     ///     creates new product entry
     /// </summary>
     /// <param name="product"></param>
-    /// <param name="handler"></param>
+    /// <param name="manager"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost]
     [IpAddressGuard]
-    public async Task<ApiContract> CreateProduct([FromServices] ICreateProductHandler handler,
+    public async Task<ApiContract> CreateProduct([FromServices] IProductManager manager,
         [FromBody] Product product,
         CancellationToken cancellationToken) =>
-        await handler.HandleAsync(new CreateProductContext(product.Title, product.Description, product.Price)
-                { UserId = HttpContext.Request.Cookies[AuthGuard.UserIdCookie] },
-            cancellationToken);
+        await manager.HandleAsync(new CreateProductContext(product.Title, product.Description, product.Price)
+                { UserId = HttpContext.Request.Cookies[AuthGuard.UserIdCookie] }, cancellationToken);
 
+    /// <summary>
+    /// </summary>
+    /// <param name="manager"></param>
+    /// <param name="product"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpPatch]
+    [IpAddressGuard]
+    public async Task<ApiContract> UpdateProduct(
+        [FromServices] IProductManager manager, [FromBody] Product product,
+        CancellationToken cancellationToken) =>
+            await manager.HandleAsync(new UpdateProductContext(product.Id,product.Title, product.Description, product.Price)
+                { UserId = HttpContext.Request.Cookies[AuthGuard.UserIdCookie] },cancellationToken);
+    
+    
     /// <summary>
     /// </summary>
     /// <param name="handlers"></param>
@@ -80,9 +94,7 @@ public class ProductController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ApiContract> GetProduct([FromServices] IGetProductHandler handler, [FromRoute] string id,
         CancellationToken cancellationToken) =>
-        await handler.HandleAsync(
-            new GetProductContext(id) { UserId = HttpContext.Request.Cookies[AuthGuard.UserIdCookie] },
-            cancellationToken);
+        await handler.HandleAsync(new GetProductContext(id) { UserId = HttpContext.Request.Cookies[AuthGuard.UserIdCookie] }, cancellationToken);
 
     /// <summary>
     /// </summary>

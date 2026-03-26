@@ -16,16 +16,11 @@ internal class ProductRepo : MongoBase<Product>, IProductRepo
     public Task<List<Objects.Product>> SelectAsync(IEnumerable<long>? ids = null, OrderBy? orderBy = null,
         string? query = null,
         GetProductsGeneralHandler.SearchCursor? cursor = null,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default) =>
         throw new NotImplementedException();
-    }
 
     /// <inheritdoc />
-    public Task<Objects.Product?> SelectAsync(long id, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<Objects.Product?> SelectAsync(long id, CancellationToken cancellationToken) => throw new NotImplementedException();
 
     public async Task<Objects.Product?> SelectAsync(string objId, CancellationToken cancellationToken)
     {
@@ -43,25 +38,15 @@ internal class ProductRepo : MongoBase<Product>, IProductRepo
         return product with { ObjId = pDoc.Id };
     }
 
-    /// <inheritdoc />
-    public Task<bool> ExistsAsync(long id, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> ExistsAsync(string objId, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<Objects.Product> UpdateAsync(Objects.Product product, CancellationToken cancellationToken) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<bool> ExistsAsync(long id, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-    public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<bool> ExistsAsync(string objId, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public Task<bool> DeleteAsync(long id, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+    public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken) => throw new NotImplementedException();
 }

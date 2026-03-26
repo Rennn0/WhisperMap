@@ -35,14 +35,6 @@ public static class Program
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
-        builder.Services.Configure<ForwardedHeadersOptions>(options =>
-        {
-            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-
-            options.KnownNetworks.Clear();
-            options.KnownProxies.Clear();
-        });
-
         builder.Services.Configure<ClaudflareR2Settings>(
             builder.Configuration.GetSection(nameof(ClaudflareR2Settings)));
         builder.Services.Configure<IpRestrictionSettings>(
@@ -129,7 +121,7 @@ public static class Program
             new ProductCartRepo(mongoConn));
         builder.Services.AddTransient<IUploader, ClaudflareR2StorageService>();
         builder.Services.AddTransient<IReader, ClaudflareR2StorageService>();
-        builder.Services.AddTransient<ICreateProductHandler, CreateProductHandler>();
+        builder.Services.AddTransient<IProductManager, ProductManager>();
         builder.Services.AddTransient<IUploadProductFileHandler, UploadProductFileHandler>();
         builder.Services.AddTransient<IGetProductHandler, GetProductHandler>();
         builder.Services.AddTransient<IGetProductsHandler, GetProductsGeneralHandler>();
@@ -167,8 +159,7 @@ public static class Program
             app.UseSwaggerUI();
         }
 
-        foreach (IBootstrap boot in app.Services.GetRequiredService<IEnumerable<IBootstrap>>())
-            await boot.RunAsync();
+        await Parallel.ForEachAsync( app.Services.GetRequiredService<IEnumerable<IBootstrap>>(), CancellationToken.None, (bootstrap, _) => bootstrap.RunAsync());
 
         await app.RunAsync();
     }

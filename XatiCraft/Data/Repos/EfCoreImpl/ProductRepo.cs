@@ -92,10 +92,7 @@ internal class ProductRepo : IProductRepo
         return result;
     }
 
-    public Task<Product?> SelectAsync(string objId, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<Product?> SelectAsync(string objId, CancellationToken cancellationToken) => throw new NotImplementedException();
 
     /// <inheritdoc />
     public async Task<Product> InsertAsync(Product product, CancellationToken cancellationToken)
@@ -113,16 +110,24 @@ internal class ProductRepo : IProductRepo
         return product;
     }
 
-    /// <inheritdoc />
-    public async Task<bool> ExistsAsync(long id, CancellationToken cancellationToken)
+    public async Task<Product> UpdateAsync(Product product, CancellationToken cancellationToken)
     {
-        return await _context.Products.AsNoTracking().AnyAsync(p => p.Id == id, cancellationToken);
+        ArgumentNullException.ThrowIfNull(product.Id);
+
+        int affected = await _context.Products
+            .Where(p=>p.Id == product.Id)
+            .ExecuteUpdateAsync(calls => calls
+                .SetProperty(p=>p.Description,product.Description)
+                .SetProperty(p=>p.Title,product.Title)
+                .SetProperty(p=>p.Price,product.Price), cancellationToken);
+
+        return product;
     }
 
-    public Task<bool> ExistsAsync(string objId, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    /// <inheritdoc />
+    public async Task<bool> ExistsAsync(long id, CancellationToken cancellationToken) => await _context.Products.AsNoTracking().AnyAsync(p => p.Id == id, cancellationToken);
+
+    public Task<bool> ExistsAsync(string objId, CancellationToken cancellationToken) => throw new NotImplementedException();
 
     /// <inheritdoc />
     public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
@@ -134,10 +139,7 @@ internal class ProductRepo : IProductRepo
         return affected > 0;
     }
 
-    public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken) => throw new NotImplementedException();
 
     private static IQueryable<VProduct> ApplyOrdering(IQueryable<VProduct> queryable, OrderBy? orderBy) =>
         orderBy switch
