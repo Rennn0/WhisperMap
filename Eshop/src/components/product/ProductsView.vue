@@ -122,7 +122,7 @@ const contextActions = computed<ContextAction[]>(() => [
         key: 'delete',
         labelKey: 'product.actions.delete',
         canDisplay: context =>
-            !!context.userInfo?.can_delete &&
+            (context.userInfo?.can_delete ?? false) &&
             context.selectionMode &&
             context.selectedCount > 0,
         confirmation: {
@@ -362,7 +362,7 @@ onMounted(async () => {
             </div>
 
             <div class="flex flex-wrap items-center gap-2 sm:justify-end">
-                <button v-if="userInfo?.can_delete" type="button"
+                <button v-if="visibleContextActions" type="button"
                     class="inline-flex items-center justify-between gap-2 rounded-xl border border-subtle bg-surface px-2.5 py-2 text-xs text-text transition-colors hover:bg-hover"
                     :class="selectionMode ? 'font-semibold' : ''" @click="selectionMode = !selectionMode">
                     <span class="truncate">
