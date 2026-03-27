@@ -68,7 +68,7 @@ const handleRemoveConfirmed = () => {
                         </div>
                     </div>
 
-                    <BaseDropdown align="right" widthClass="w-40">
+                    <BaseDropdown align="right" widthClass="auto">
                         <template #trigger="{ toggle, open, triggerRef }">
                             <button :ref="triggerRef as any" type="button" :aria-expanded="open" aria-haspopup="menu"
                                 aria-label="Open menu"

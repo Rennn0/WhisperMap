@@ -21,13 +21,13 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
 
     internal sealed record SearchCursor
     {
-        private  uint _batchSize;
+        private uint? _batchSize;
         [JsonPropertyName("0")] public long? Id { get; init; }
 
         [JsonPropertyName("1")]
         public uint BatchSize
         {
-            get => _batchSize;
+            get => _batchSize ?? DefaultBatchSize;
             set => _batchSize = Math.Min(value, MaxBatchSize);
         }
 

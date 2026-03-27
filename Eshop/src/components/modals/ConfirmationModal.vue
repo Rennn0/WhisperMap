@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { watchEffect } from 'vue';
+import { watch, onUnmounted } from 'vue';
 import IconParkCloseIcon from '../freestyle/IconParkCloseIcon.vue';
 
 const props = defineProps<{
     isOpen: boolean;
     title: string;
     description?: string;
-    cancelText: string,
-    confirmText: string,
+    cancelText: string;
+    confirmText: string;
 }>();
 
 const emit = defineEmits<{
@@ -15,39 +15,62 @@ const emit = defineEmits<{
     (e: 'cancelled'): void;
 }>();
 
+const lockBodyScroll = () => {
+    document.body.style.overflow = 'hidden';
+};
 
-watchEffect(() => {
-    if (props.isOpen)
-        document.body.style.overflow = 'hidden';
-    else
-        document.body.style.overflow = '';
-})
+const unlockBodyScroll = () => {
+    document.body.style.overflow = '';
+};
 
+watch(
+    () => props.isOpen,
+    isOpen => {
+        if (isOpen) lockBodyScroll();
+        else unlockBodyScroll();
+    },
+    { immediate: true }
+);
+
+onUnmounted(() => {
+    unlockBodyScroll();
+});
 </script>
 
 <template>
-    <transition enter-active-class="transition opacity duration-200"
-        leave-active-class="transition opacity duration-200" enter-from-class="opacity-0" leave-to-class="opacity-0">
-        <div v-if="isOpen" class="fixed inset-0 flex items-center justify-center backdrop-blur-md z-50"
+    <transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0"
+        enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100"
+        leave-to-class="opacity-0">
+        <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4"
             @click.self="emit('cancelled')">
-            <div class="bg-surface rounded-lg shadow-lg w-11/12 max-w-sm p-6 relative border border-subtle">
-                <button @click="emit('cancelled')" class="absolute top-2 right-2 hover:text-primary transition">
-                    <IconParkCloseIcon class="w-5 h-5" />
+            <div class="relative w-full max-w-sm rounded-2xl border border-subtle bg-surface p-5 shadow-2xl sm:p-6">
+                <button type="button"
+                    class="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full text-text/70 transition-colors hover:bg-hover hover:text-text"
+                    @click="emit('cancelled')">
+                    <IconParkCloseIcon class="h-4 w-4" />
                 </button>
 
-                <h2 class="text-lg text-danger-text font-semibold mb-2">{{ title }}</h2>
-                <p v-if="description" class="text-sm mb-6">{{ description }}</p>
+                <div class="pr-8">
+                    <h2 class="text-base font-semibold text-text sm:text-lg">
+                        {{ title }}
+                    </h2>
 
-                <div class="flex gap-3 justify-end">
-                    <button
-                        class="px-4 py-2 rounded-md border text-text transition border-subtle bg-surface hover:bg-subtle hover:shadow-md"
+                    <p v-if="description" class="mt-2 text-sm leading-6 text-text/80">
+                        {{ description }}
+                    </p>
+                </div>
+
+                <div class="mt-6 flex justify-end gap-2">
+                    <button type="button"
+                        class="rounded-xl border border-subtle bg-surface px-4 py-2 text-sm font-medium text-text transition-colors hover:bg-hover"
                         @click="emit('cancelled')">
-                        {{ props.cancelText }}
+                        {{ cancelText }}
                     </button>
-                    <button
-                        class="px-4 py-2 rounded-md border text-text transition border-subtle bg-surface hover:bg-subtle hover:shadow-md"
+
+                    <button type="button"
+                        class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
                         @click="emit('confirmed')">
-                        {{ props.confirmText }}
+                        {{ confirmText }}
                     </button>
                 </div>
             </div>

@@ -36,6 +36,8 @@ internal class ProductRepo : IProductRepo
         GetProductsGeneralHandler.SearchCursor? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(cursor);
+        
         OrderBy order = orderBy ?? OrderBy.NewestFirst;
         IQueryable<VProduct> dbQuery = _context.VProducts.AsNoTracking();
 
@@ -59,7 +61,7 @@ internal class ProductRepo : IProductRepo
         dbQuery = ApplyOrdering(dbQuery, order);
 
         List<Product> result = await dbQuery
-            .Take((int)(cursor?.BatchSize ?? 0))
+            .Take((int)cursor.BatchSize)
             .Select(v =>
                 new Product(v.Title ?? "", v.Description ?? "", v.Price ?? 0m)
                 {

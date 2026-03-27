@@ -38,6 +38,7 @@
         "info": "Contact info",
         "delete": "Delete",
         "edit": "Edit",
+        "select": "Select",
         "modals": {
             "delete": {
                 "title": "Delete Product",
@@ -57,6 +58,16 @@
             "more": "More",
             "loading": "Loading, please wait...",
             "noMore": "No more results"
+        },
+        "actions": {
+            "title": "მოქმედებები",
+            "delete": "წაშლა",
+            "add": "კალათაში დამატება"
+        },
+        "snackBar": {
+            "addOk": "პროდუქტი დაემატა",
+            "addOkMany": "პროდუქტები დაემატა",
+            "addErr": "შეცდომა დამატებისას"
         }
     },
     "cart": {
