@@ -107,8 +107,9 @@ public class ProductController : ControllerBase
     /// <returns></returns>
     [HttpPut("{productId:long}/cart")]
     public async Task<ApiContract> AddProductInCart(
+        [FromRoute] long productId,
         [FromServices] IEnumerable<IHandler<ApiContract, AddProductInCartContext>> handlers,
-        [FromRoute] long productId, CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
         AddProductInCartContext context = new AddProductInCartContext(productId)
             { UserId = HttpContext.Request.Cookies[AuthGuard.UserIdCookie] };

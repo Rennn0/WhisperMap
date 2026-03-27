@@ -131,12 +131,11 @@ const contextActions = computed<ContextAction[]>(() => [
             cancelKey: 'product.modals.delete.cancel',
             confirmKey: 'product.modals.delete.confirm'
         },
-        action: context => {
-            Promise.all(context.selectedIds.map(id => deleteProduct(id).request)).then(() => {
-                router.push({ name: 'root' }).then(() => {
-                    window.location.reload();
-                })
-            })
+        action: async context => {
+            for (const id of context.selectedIds)
+                await deleteProduct(id).request
+
+            router.push({ name: 'root' }).then(() => { window.location.reload(); })
             // emit('delete-selected', [...context.selectedIds]);
         }
     },
@@ -144,13 +143,12 @@ const contextActions = computed<ContextAction[]>(() => [
         key: 'add',
         labelKey: 'product.actions.add',
         canDisplay: context => context.selectionMode && context.selectedCount > 0,
-        action: context => {
-            Promise.all(context.selectedIds.map(id => includeProduct(id).request)).then(() => {
-                showSnackbar(context.selectedCount > 1 ? 'product.snackBar.addOkMany' : 'product.snackBar.addOk', 'success')
-            }).catch(e => {
-                console.error(e)
-                showSnackbar("product.snackBar.addErr", "error")
-            }).finally(clearSelection)
+        action: async context => {
+            for (const id of context.selectedIds)
+                await includeProduct(id).request;
+
+            showSnackbar(context.selectedCount > 1 ? 'product.snackBar.addOkMany' : 'product.snackBar.addOk', 'success');
+            clearSelection();
             // emit('add-selected', [...context.selectedIds]);
         }
     }

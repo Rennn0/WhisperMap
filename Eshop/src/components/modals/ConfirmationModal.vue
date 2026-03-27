@@ -23,17 +23,38 @@ const unlockBodyScroll = () => {
     document.body.style.overflow = '';
 };
 
+const onKeyDown = (event: KeyboardEvent) => {
+    if (!props.isOpen) return;
+
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        emit('confirmed');
+        return;
+    }
+
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        emit('cancelled');
+    }
+};
+
 watch(
     () => props.isOpen,
     isOpen => {
-        if (isOpen) lockBodyScroll();
-        else unlockBodyScroll();
+        if (isOpen) {
+            lockBodyScroll();
+            window.addEventListener('keydown', onKeyDown);
+        } else {
+            unlockBodyScroll();
+            window.removeEventListener('keydown', onKeyDown);
+        }
     },
     { immediate: true }
 );
 
 onUnmounted(() => {
     unlockBodyScroll();
+    window.removeEventListener('keydown', onKeyDown);
 });
 </script>
 

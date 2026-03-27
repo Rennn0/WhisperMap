@@ -20,7 +20,7 @@ internal class GetProductCartCookieHandler : IProductCartHandler
         IHttpContextAccessor httpContextAccessor)
     {
         _getProductsHandler = getProductsHandler;
-        _security = securities.First(s => s is AspDataProtector);
+        _security = securities.First(s => s is SimpleBase64Protector);
         _httpContext = httpContextAccessor.HttpContext ??
                        throw new NullReferenceException(nameof(httpContextAccessor.HttpContext));
     }

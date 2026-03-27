@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using XatiCraft.ApiContracts;
 using XatiCraft.Data.Objects;
@@ -108,6 +107,7 @@ public static class Program
         builder.Services.AddSingleton<SystemHealthMonitor>();
         builder.Services.AddScoped<UserGuard>();
         builder.Services.AddTransient<Security, AspDataProtector>();
+        builder.Services.AddTransient<Security, SimpleBase64Protector>();
         builder.Services.AddTransient<IProductRepo, ProductRepo>();
         builder.Services.AddTransient<IProductMetadaRepo, ProductMetadataRepo>();
         string mongoConn = builder.Configuration.GetConnectionString("Mongo") ?? throw new Exception("MongoConnection");
