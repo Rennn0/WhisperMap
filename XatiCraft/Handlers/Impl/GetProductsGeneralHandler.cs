@@ -5,6 +5,7 @@ using XatiCraft.ApiContracts;
 using XatiCraft.Data.Objects;
 using XatiCraft.Data.Repos;
 using XatiCraft.Data.Repos.EfCoreImpl;
+using XatiCraft.Guards;
 using XatiCraft.Handlers.Api;
 
 namespace XatiCraft.Handlers.Impl;
@@ -18,6 +19,7 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
     private const uint MaxBatchSize = 50;
     private const uint DefaultBatchSize = 5;
     private readonly IProductRepo _productRepos;
+    private static Security _security = null!;
 
     internal sealed record SearchCursor
     {
@@ -34,34 +36,20 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
         [JsonPropertyName("2")] public DateTime? Timestamp { get; init; }
         [JsonPropertyName("3")] public decimal? Price { get; init; }
 
-        internal static string Encode(SearchCursor cursor)
-        {
-            string json = JsonSerializer.Serialize(cursor);
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
-        }
+        internal static string Encode(SearchCursor cursor) => _security.Pack(JsonSerializer.Serialize(cursor));
 
-        internal static SearchCursor? Decode(string? token)
-        {
-            if (string.IsNullOrEmpty(token)) return null;
-            try
-            {
-                byte[] bytes = Convert.FromBase64String(token);
-                string json = Encoding.UTF8.GetString(bytes);
-                return JsonSerializer.Deserialize<SearchCursor>(json);
-            }
-            catch
-            {
-                return null;
-            }
-        }
+        internal static SearchCursor? Decode(string? token) =>
+            string.IsNullOrEmpty(token) ? null : JsonSerializer.Deserialize<SearchCursor>(_security.UnPack(token));
     }
 
     /// <summary>
     /// </summary>
     /// <param name="productRepos"></param>
-    public GetProductsGeneralHandler(IEnumerable<IProductRepo> productRepos)
+    /// <param name="securities"></param>
+    public GetProductsGeneralHandler(IEnumerable<IProductRepo> productRepos, IEnumerable<Security> securities)
     {
         _productRepos = productRepos.First(p => p is ProductRepo);
+        _security = securities.First(s => s is SimpleBase64Protector);
     }
 
     /// <summary>
