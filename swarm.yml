@@ -135,7 +135,9 @@ services:
         published: 3100
         protocol: tcp
         mode: ingress
-    command: ["-config.file=/etc/loki/config.yml"]
+    command:
+      - "-config.file=/etc/loki/config.yml"
+      - "-target=all"
     volumes:
       - loki_data:/loki
     configs:
