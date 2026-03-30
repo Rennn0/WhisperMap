@@ -45,7 +45,7 @@ loki.source.docker "swarm" {
 loki.process "enrich" {
   stage.static_labels {
     values = {
-      cluster = "swarm"
+      cluster = "swarm",
     }
   }
 
