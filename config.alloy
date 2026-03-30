@@ -2,53 +2,32 @@ logging {
   level = "info"
 }
 
-discovery.dockerswarm "swarm_tasks" {
+discovery.docker "local" {
   host = "unix:///var/run/docker.sock"
-  role = "tasks"
 }
 
 discovery.relabel "docker_logs" {
-  targets = discovery.dockerswarm.swarm_tasks.targets
+  targets = discovery.docker.local.targets
 
   rule {
-    source_labels = ["__meta_dockerswarm_task_container_id"]
+    source_labels = ["__meta_docker_container_name"]
+    target_label  = "container_name"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_id"]
     target_label  = "__container_id"
   }
 
   rule {
-    source_labels = ["__meta_dockerswarm_service_name"]
-    target_label  = "service_name"
-  }
-
-  rule {
-    source_labels = ["__meta_dockerswarm_node_hostname"]
-    target_label  = "node_name"
-  }
-
-  rule {
-    source_labels = ["__meta_dockerswarm_task_name"]
-    target_label  = "task_name"
-  }
-
-  rule {
-    source_labels = ["__meta_dockerswarm_service_label_com_docker_stack_namespace"]
-    target_label  = "stack_name"
+    target_label = "cluster"
+    replacement  = "swarm"
   }
 }
 
-loki.source.docker "swarm" {
+loki.source.docker "local" {
   host       = "unix:///var/run/docker.sock"
   targets    = discovery.relabel.docker_logs.output
-  forward_to = [loki.process.enrich.receiver]
-}
-
-loki.process "enrich" {
-  stage.static_labels {
-    values = {
-      cluster = "swarm",
-    }
-  }
-
   forward_to = [loki.write.local.receiver]
 }
 
