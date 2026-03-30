@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
@@ -16,6 +17,7 @@ using XatiCraft.Handlers.Upload;
 using XatiCraft.Settings;
 using ProductMetadataRepo = XatiCraft.Data.Repos.EfCoreImpl.ProductMetadataRepo;
 using ProductRepo = XatiCraft.Data.Repos.EfCoreImpl.ProductRepo;
+using OpenTelemetry.Metrics;
 
 namespace XatiCraft;
 
@@ -34,6 +36,26 @@ public static class Program
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
+        var meter = new Meter("xc_api_meter");
+        var reqCounter = meter.CreateCounter<long>("xc_req_counter");
+
+        new Timer(_ => reqCounter.Add(1)).Change(1000,1000);
+        
+        builder.Logging.AddJsonConsole(options =>
+        {
+            options.IncludeScopes = false;
+            options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
+        });
+
+        builder.Services.AddOpenTelemetry()
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddPrometheusExporter()
+                    .AddMeter(meter.Name);
+            });
+        
         builder.Services.Configure<ClaudflareR2Settings>(
             builder.Configuration.GetSection(nameof(ClaudflareR2Settings)));
         builder.Services.Configure<IpRestrictionSettings>(
@@ -158,6 +180,8 @@ public static class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        app.MapPrometheusScrapingEndpoint("/metrics");
 
         await Parallel.ForEachAsync( app.Services.GetRequiredService<IEnumerable<IBootstrap>>(), CancellationToken.None, (bootstrap, _) => bootstrap.RunAsync());
 
