@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		nginx.conf = nginx.conf
 		swarm.yml = swarm.yml
 		AGENTS.md = AGENTS.md
+		loki-config.yml = loki-config.yml
+		prometheus.yml = prometheus.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realtime", "Realtime\Realtime.csproj", "{7EF327E2-57CE-4BC8-82C8-351EC01F9948}"
