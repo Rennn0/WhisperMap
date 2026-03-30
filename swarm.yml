@@ -122,7 +122,9 @@ services:
       - source: grafana_datasources
         target: /etc/grafana/provisioning/datasources/datasources.yml
     deploy:
-      replicas: 1 
+      replicas: 1
+      placement:
+        constraints: [ node.labels.obs == true ]
 
   loki:
     image: grafana/loki:latest
@@ -141,6 +143,8 @@ services:
         target: /etc/loki/config.yml
     deploy:
       replicas: 1
+      placement:
+        constraints: [ node.labels.obs == true ]
 
   prometheus:
     image: prom/prometheus:latest
@@ -162,6 +166,8 @@ services:
         target: /etc/prometheus/prometheus.yml
     deploy:
       replicas: 1
+      placement:
+        constraints: [ node.labels.obs == true ]
 
   alloy:
     image: grafana/alloy:latest
