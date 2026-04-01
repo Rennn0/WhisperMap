@@ -112,7 +112,7 @@ services:
     volumes:
       - prometheus-data:/prometheus
     configs:
-      - source: prometheus_conf
+      - source: prometheus_yml
         target: /etc/prometheus/prometheus.yml
     networks:
       - xc-network
@@ -159,5 +159,5 @@ configs:
     external: true
   nginx_conf:
     file: ./nginx.conf
-  prometheus_conf:
+  prometheus_yml:
     file: ./prometheus.yml
