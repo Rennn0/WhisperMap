@@ -139,6 +139,8 @@ volumes:
     external: true
     name: xc_mongo-config
   prometheus-data:
+    external: true
+    name: xc_prometheus-data
 
 secrets:
   mongo_password:

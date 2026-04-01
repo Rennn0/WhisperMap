@@ -1,9 +1,9 @@
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using XatiCraft.ApiContracts;
@@ -39,16 +39,15 @@ public static class Program
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
         Meter meter = new Meter("xc_api_meter", "1.0");
-        Counter<long> reqCounter = meter.CreateCounter<long>("xc_reqs",
-            "{requests}",
-            "Total number of processed requests");
+        Counter<long> reqCounter = meter.CreateCounter<long>("reqs", null, "some stuff");
+        new Timer(_ => { reqCounter.Add(1, new TagList([new KeyValuePair<string, object?>("x", "app")])); }).Change(
+            1000,
+            1000);
 
-        new Timer(_ => reqCounter.Add(1)).Change(1000,1000);
-
-        Uri otlpUri = builder.Environment.IsDevelopment()
-            ? new Uri("http://localhost:9090/api/v1/otlp/v1/metrics")
-            : new Uri("http://xc_prometheus:9090/api/v1/otlp/v1/metrics");
-        
+        // Uri otlpUri = builder.Environment.IsDevelopment()
+        //     ? new Uri("http://localhost:9090/api/v1/otlp/v1/metrics")
+        //     : new Uri("http://xc_prometheus:9090/api/v1/otlp/v1/metrics");
+        //
         builder.Services.AddOpenTelemetry()
             .ConfigureResource(res =>
             {
@@ -61,12 +60,12 @@ public static class Program
                 conf.AddMeter(meter.Name)
                     .AddAspNetCoreInstrumentation()
                     .AddPrometheusExporter()
-                    .AddOtlpExporter((options, metrics) =>
+                    /*.AddOtlpExporter((options, metrics) =>
                     {
                         options.Endpoint = otlpUri;
                         options.Protocol = OtlpExportProtocol.HttpProtobuf;
                         metrics.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 5000;
-                    });
+                    })*/;
             });
         
         builder.Services.Configure<ClaudflareR2Settings>(
@@ -194,7 +193,8 @@ public static class Program
             app.UseSwaggerUI();
         }
 
-        app.MapPrometheusScrapingEndpoint();
+        app.UseOpenTelemetryPrometheusScrapingEndpoint();
+        // app.MapPrometheusScrapingEndpoint();
         await Parallel.ForEachAsync( app.Services.GetRequiredService<IEnumerable<IBootstrap>>(), CancellationToken.None, (bootstrap, _) => bootstrap.RunAsync());
 
         await app.RunAsync();
