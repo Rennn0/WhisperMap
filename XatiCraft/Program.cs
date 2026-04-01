@@ -3,6 +3,9 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using XatiCraft.ApiContracts;
 using XatiCraft.Data.Objects;
 using XatiCraft.Data.Repos;
@@ -17,7 +20,6 @@ using XatiCraft.Handlers.Upload;
 using XatiCraft.Settings;
 using ProductMetadataRepo = XatiCraft.Data.Repos.EfCoreImpl.ProductMetadataRepo;
 using ProductRepo = XatiCraft.Data.Repos.EfCoreImpl.ProductRepo;
-using OpenTelemetry.Metrics;
 
 namespace XatiCraft;
 
@@ -36,26 +38,35 @@ public static class Program
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
-        var meter = new Meter("xc_api_meter");
-        var reqCounter = meter.CreateCounter<long>("xc_req_counter");
+        Meter meter = new Meter("xc_api_meter", "1.0");
+        Counter<long> reqCounter = meter.CreateCounter<long>("xc_reqs",
+            "{requests}",
+            "Total number of processed requests");
 
         new Timer(_ => reqCounter.Add(1)).Change(1000,1000);
-        
-        builder.Logging.AddJsonConsole(options =>
-        {
-            options.IncludeScopes = false;
-            options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
-        });
 
         builder.Services.AddOpenTelemetry()
-            .WithMetrics(metrics =>
+            .ConfigureResource(res =>
             {
-                metrics
-                    .AddAspNetCoreInstrumentation()
-                    .AddPrometheusExporter()
-                    .AddMeter(meter.Name);
+                res.AddService("xc_api", serviceVersion: "1.0", autoGenerateServiceInstanceId: false,
+                    serviceInstanceId: Environment.GetEnvironmentVariable("SERVICE_INSTANCE_ID") ??
+                                       Environment.MachineName);
+            })
+            .WithMetrics(conf =>
+            {
+                conf.AddMeter(meter.Name)
+                    .AddOtlpExporter((options, metrics) =>
+                    {
+#if DEBUG
+                        options.Endpoint = new Uri("http://localhost:9090/api/v1/otlp/v1/metrics");
+#else
+                        options.Endpoint = new Uri("http://xc_prometheus:9090/api/v1/otlp/v1/metrics");
+#endif
+                        options.Protocol = OtlpExportProtocol.HttpProtobuf;
+                        metrics.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 5000;
+                    });
             });
-        
+
         builder.Services.Configure<ClaudflareR2Settings>(
             builder.Configuration.GetSection(nameof(ClaudflareR2Settings)));
         builder.Services.Configure<IpRestrictionSettings>(
@@ -181,8 +192,12 @@ public static class Program
             app.UseSwaggerUI();
         }
 
-        app.MapPrometheusScrapingEndpoint("/metrics");
-
+        app.MapGet("/cnt", () =>
+        {
+            reqCounter.Add(5000);
+            return "ok";
+        });
+        
         await Parallel.ForEachAsync( app.Services.GetRequiredService<IEnumerable<IBootstrap>>(), CancellationToken.None, (bootstrap, _) => bootstrap.RunAsync());
 
         await app.RunAsync();

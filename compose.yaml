@@ -30,6 +30,22 @@
       - mongo-config:/data/config
     networks:
       - xc-network
+  
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: xc-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - xc-network
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=1d"
+      - "--web.enable-otlp-receiver"
 
 networks:
   xc-network:
@@ -38,3 +54,4 @@ volumes:
   pgdata:
   mongo-data:
   mongo-config:
+  prometheus-data:

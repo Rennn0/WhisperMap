@@ -14,6 +14,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - CERT_PATH=/app/certs/xc-dp.pfx
       - CERT_PASS=SAGhJr6c4sVRcIMhrah9Eddp670jXcl2
+      - SERVICE_INSTANCE_ID={{.Task.Slot}}
     configs:
       - source: xc_pfx
         target: /app/certs/xc-dp.pfx
@@ -22,7 +23,6 @@ services:
         target: appsettings.Production.json
     networks:
       - xc-network
-      - obs
   
   realtime:
     image: rennn0/realtime:latest
@@ -102,103 +102,28 @@ services:
           memory: 1G
         reservations:
           memory: 64M
-          
-  grafana:
-    image: grafana/grafana:latest
-    networks:
-      - obs
-    ports:
-      - target: 3000
-        published: 3000
-        protocol: tcp
-        mode: ingress
-    environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin123
-      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
-    volumes:
-      - grafana_data:/var/lib/grafana
-    configs:
-      - source: grafana_datasources
-        target: /etc/grafana/provisioning/datasources/datasources.yml
-    deploy:
-      replicas: 1
-      placement:
-        constraints: [ node.labels.obs == true ]
-
-  loki:
-    image: grafana/loki:latest
-    networks:
-      - obs
-    ports:
-      - target: 3100
-        published: 3100
-        protocol: tcp
-        mode: ingress
-    command:
-      - "-config.file=/etc/loki/config.yml"
-      - "-target=all"
-    volumes:
-      - loki_data:/loki
-    configs:
-      - source: loki_yml
-        target: /etc/loki/config.yml
-    deploy:
-      replicas: 1
-      placement:
-        constraints: [ node.labels.obs == true ]
-
+  
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.5.0
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-otlp-receiver"
+    volumes:
+      - prometheus-data:/prometheus
     networks:
-      - obs
+      - xc-network
     ports:
       - target: 9090
         published: 9090
         protocol: tcp
         mode: ingress
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-      - "--web.enable-lifecycle"
-    volumes:
-      - prometheus_data:/prometheus
-    configs:
-      - source: prometheus_yml
-        target: /etc/prometheus/prometheus.yml
     deploy:
       replicas: 1
-      placement:
-        constraints: [ node.labels.obs == true ]
-
-  alloy:
-    image: grafana/alloy:latest
-    networks:
-      - obs
-    ports:
-      - target: 12345
-        published: 12345
-        protocol: tcp
-        mode: ingress
-    command:
-      - run
-      - /etc/alloy/config.alloy
-      - --server.http.listen-addr=0.0.0.0:12345
-    configs:
-      - source: alloy_config
-        target: /etc/alloy/config.alloy
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    deploy:
-      mode: global
-
 
 networks:
   xc-network:
     driver: overlay
-  obs:
-    driver: overlay
-    attachable: true
 
 volumes:
   pgdata:
@@ -210,9 +135,7 @@ volumes:
   mongo-config:
     external: true
     name: xc_mongo-config
-  grafana_data:
-  prometheus_data:
-  loki_data:
+  prometheus-data:
 
 secrets:
   mongo_password:
@@ -233,11 +156,3 @@ configs:
     external: true
   nginx_conf:
     file: ./nginx.conf
-  prometheus_yml:
-    file: ./prometheus.yml
-  loki_yml:
-    file: ./loki-config.yml
-  alloy_config:
-    file: ./config.alloy
-  grafana_datasources:
-    file: ./grafana-datasources.yml
