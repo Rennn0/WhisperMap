@@ -45,6 +45,10 @@ public static class Program
 
         new Timer(_ => reqCounter.Add(1)).Change(1000,1000);
 
+        Uri otlpUri = builder.Environment.IsDevelopment()
+            ? new Uri("http://localhost:9090/api/v1/otlp/v1/metrics")
+            : new Uri("http://xc_prometheus:9090/api/v1/otlp/v1/metrics");
+        
         builder.Services.AddOpenTelemetry()
             .ConfigureResource(res =>
             {
@@ -55,18 +59,16 @@ public static class Program
             .WithMetrics(conf =>
             {
                 conf.AddMeter(meter.Name)
+                    .AddAspNetCoreInstrumentation()
+                    .AddPrometheusExporter()
                     .AddOtlpExporter((options, metrics) =>
                     {
-#if DEBUG
-                        options.Endpoint = new Uri("http://localhost:9090/api/v1/otlp/v1/metrics");
-#else
-                        options.Endpoint = new Uri("http://xc_prometheus:9090/api/v1/otlp/v1/metrics");
-#endif
+                        options.Endpoint = otlpUri;
                         options.Protocol = OtlpExportProtocol.HttpProtobuf;
                         metrics.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 5000;
                     });
             });
-
+        
         builder.Services.Configure<ClaudflareR2Settings>(
             builder.Configuration.GetSection(nameof(ClaudflareR2Settings)));
         builder.Services.Configure<IpRestrictionSettings>(
@@ -192,12 +194,7 @@ public static class Program
             app.UseSwaggerUI();
         }
 
-        app.MapGet("/cnt", () =>
-        {
-            reqCounter.Add(5000);
-            return "ok";
-        });
-        
+        app.MapPrometheusScrapingEndpoint();
         await Parallel.ForEachAsync( app.Services.GetRequiredService<IEnumerable<IBootstrap>>(), CancellationToken.None, (bootstrap, _) => bootstrap.RunAsync());
 
         await app.RunAsync();

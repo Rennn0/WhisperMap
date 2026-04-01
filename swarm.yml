@@ -107,10 +107,13 @@ services:
     image: prom/prometheus:v3.5.0
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.retention.time=15d"
+      - "--storage.tsdb.retention.time=1d"
       - "--web.enable-otlp-receiver"
     volumes:
       - prometheus-data:/prometheus
+    configs:
+      - source: prometheus_conf
+        target: /etc/prometheus/prometheus.yml
     networks:
       - xc-network
     ports:
@@ -156,3 +159,5 @@ configs:
     external: true
   nginx_conf:
     file: ./nginx.conf
+  prometheus_conf:
+    file: ./prometheus.yml
