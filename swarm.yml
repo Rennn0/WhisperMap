@@ -104,13 +104,10 @@ services:
           memory: 64M
   
   prometheus:
-    image: prom/prometheus:v3.5.0
+    image: prom/prometheus:latest
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.retention.time=1d"
-      - "--web.enable-otlp-receiver"
-    volumes:
-      - prometheus-data:/prometheus
     configs:
       - source: prometheus_yml
         target: /etc/prometheus/prometheus.yml
@@ -138,9 +135,6 @@ volumes:
   mongo-config:
     external: true
     name: xc_mongo-config
-  prometheus-data:
-    external: true
-    name: xc_prometheus-data
 
 secrets:
   mongo_password:

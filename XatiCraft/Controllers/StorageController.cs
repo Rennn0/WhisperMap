@@ -14,7 +14,7 @@ namespace XatiCraft.Controllers;
 [IpSessionGuard]
 [IpAddressGuard]
 [ApiKeyGuard]
-public class StorageController : ControllerBase
+public class StorageController : ApplicationController
 {
     /// <summary>
     /// </summary>

@@ -1,11 +1,18 @@
 ﻿global:
-  scrape_interval: 15s
-  evaluation_interval: 15s
+  scrape_interval: 5s
+  evaluation_interval: 5s
 
 scrape_configs:
   - job_name: "xc_api"
     dns_sd_configs:
       - names:
-          - "host.docker.internal"
+          - "tasks.xc_api"
         type: "A"
-        port: 8888
+        port: 8080
+
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+      - target_label: service
+        replacement: xc_api

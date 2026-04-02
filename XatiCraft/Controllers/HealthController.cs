@@ -7,7 +7,7 @@ namespace XatiCraft.Controllers;
 /// </summary>
 [ApiController]
 [Route("health")]
-public class HealthController : ControllerBase
+public class HealthController : ApplicationController
 {
     private readonly SystemHealthMonitor _healthMonitor;
     private readonly ILogger<HealthController> _logger;
@@ -28,6 +28,8 @@ public class HealthController : ControllerBase
     [HttpGet]
     public IActionResult Get()
     {
+        RunWithMeasurementAsync(MeasureTask).Wait();
+        
         _logger.LogDebug("ok");
         return Ok(new
         {
@@ -35,4 +37,6 @@ public class HealthController : ControllerBase
             _healthMonitor.Uptime
         });
     }
+
+    private Task MeasureTask() => Task.Delay(TimeSpan.FromSeconds(Random.Shared.Next(0, 3)));
 }

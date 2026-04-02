@@ -12,8 +12,8 @@ namespace XatiCraft.Controllers;
 /// </summary>
 [ApiController]
 [Route("s")]
-[ApiKeyGuard]
-public class SessionController : ControllerBase
+// [ApiKeyGuard]
+public class SessionController : ApplicationController
 {
     private readonly Security _aspProtector;
     private readonly CookieOptions _cookieOptions;
@@ -50,7 +50,7 @@ public class SessionController : ControllerBase
         _logger.LogInformation("public ip {ip}", ip);
         string protectedData =
             _aspProtector.Pack(JsonSerializer.Serialize(new SessionData(ip, Guid.NewGuid().ToString("N"))));
-        SetSessionCookie(protectedData);
+        AppendC(AuthGuard.SessionCookie, protectedData, _cookieOptions);
         return NoContent();
     }
 
@@ -92,7 +92,7 @@ public class SessionController : ControllerBase
                 _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null)
             })
             .HandleAsync(new AuthorizationContext(token, provider), cancellationToken);
-        SetUserIdCookie(contract.Uid);
+        AppendC(AuthGuard.UserIdCookie, contract.Uid, _cookieOptions);
         return NoContent();
     }
 
@@ -102,25 +102,9 @@ public class SessionController : ControllerBase
     [HttpGet("lo")]
     public IActionResult Logout()
     {
-        ClearCookie(AuthGuard.UserIdCookie);
-        ClearCookie(AuthGuard.SessionCookie);
+        DeleteC(AuthGuard.UserIdCookie);
+        DeleteC(AuthGuard.SessionCookie);
         //#NOTE invalidate session maybe
         return NoContent();
-    }
-
-    private void SetSessionCookie(string data)
-    {
-        HttpContext.Response.Cookies.Append(AuthGuard.SessionCookie, data, _cookieOptions);
-    }
-
-
-    private void SetUserIdCookie(string data)
-    {
-        HttpContext.Response.Cookies.Append(AuthGuard.UserIdCookie, data, _cookieOptions);
-    }
-
-    private void ClearCookie(string key)
-    {
-        HttpContext.Response.Cookies.Delete(key, _cookieOptions);
     }
 }

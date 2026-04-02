@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
@@ -37,21 +35,15 @@ public static class Program
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
-        string instance = Environment.GetEnvironmentVariable("SERVICE_INSTANCE_ID") ?? Environment.MachineName;
-        Meter meter = new Meter("xc_api_meter", $"1.0.{instance}");
-
-        Counter<long> reqCounter = meter.CreateCounter<long>("req_cnt", null, "test counter");
-        new Timer(_ => { reqCounter.Add(1, new TagList([new KeyValuePair<string, object?>("x", "app")])); }).Change(
-            1000,
-            1000);
-        
+        AppMetrics appMetrics = new AppMetrics();
         builder.Services.AddOpenTelemetry()
             .WithMetrics(conf =>
             {
-                conf.AddMeter(meter.Name)
+                conf.AddMeter(appMetrics.Name)
                     .AddAspNetCoreInstrumentation()
                     .AddPrometheusExporter();
             });
+        builder.Services.AddSingleton<AppMetrics>(appMetrics);        
         
         builder.Services.Configure<ClaudflareR2Settings>(
             builder.Configuration.GetSection(nameof(ClaudflareR2Settings)));
