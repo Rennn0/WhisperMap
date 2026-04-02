@@ -36,6 +36,19 @@ public static class Program
         
         WebApplication app = builder.Build();
         app.UseCors();
+        
+        new Timer(_ =>
+        {
+            var rand = Random.Shared.Next(0, 3);
+            if (rand > 1)
+            {
+                app.Logger.LogWarning(new EventId(rand),DateTimeOffset.Now.ToString());
+            }
+            else
+            {
+                app.Logger.LogInformation(new EventId(rand),DateTimeOffset.Now.ToString());
+            }
+        }).Change(1000, 1000);
 
         RouteGroupBuilder realtimeGroup = app.MapGroup("/realtime");
         RouteGroupBuilder streamGroup = realtimeGroup.MapGroup("/stream");
@@ -60,20 +73,6 @@ public static class Program
                     new SseUserStatsFormatter(),
                     initialVal);
             });
-
-        // rtGroup.MapGet("/signal",
-        //     async ctx =>
-        //     {
-        //         SseSignalStreamer streamer = new SseSignalStreamer(ctx);
-        //         SseSignalRegistry<string>.SignalHandle signalHandle =
-        //             stringSignalRegistry.GetSignal("luka", ctx.RequestAborted);
-        //
-        //         await streamer.StreamAsync(
-        //             signalHandle,
-        //             "signal",
-        //             TimeSpan.FromSeconds(2),
-        //             new SseDefaultStringFormatter());
-        //     });
 
         await app.RunAsync();
     }

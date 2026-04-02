@@ -1,8 +1,19 @@
-﻿services:
+﻿version: "3.8"
+
+services:
+  realtime:
+    build:
+      context: .
+      dockerfile: Realtime/Dockerfile
+    container_name: xc-realtime
+    networks:
+      - xc-network
+    ports:
+      - "8889:8889"
+
   postgres:
     image: docker.io/library/postgres:16
     container_name: xc-pg
-    mem_limit: 1g
     mem_reservation: 512m
     environment:
       POSTGRES_USER: test
@@ -14,23 +25,27 @@
       - pgdata:/var/lib/postgresql/data
     networks:
       - xc-network
-  
+
   mongo:
     image: docker.io/mongodb/mongodb-community-server:8.0-ubi8
     container_name: xc-mongo
-    mem_limit: 1g
     mem_reservation: 512m
     ports:
       - "27017:27017"
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=test
-      - MONGO_INITDB_ROOT_PASSWORD=testTest123
+      MONGO_INITDB_ROOT_USERNAME: test
+      MONGO_INITDB_ROOT_PASSWORD: testTest123
     volumes:
       - mongo-data:/data/db
-      - mongo-config:/data/config
+      - mongo-config:/data/configdb
     networks:
       - xc-network
-  
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   prometheus:
     image: prom/prometheus:latest
     container_name: xc-prometheus
@@ -39,16 +54,63 @@
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - ./prometheus.local.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.local.yml:/etc/prometheus/prometheus.yml:ro
     networks:
       - xc-network
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.retention.time=1d"
-#      - "--web.enable-otlp-receiver"
 
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: xc-loki
+    restart: unless-stopped
+    command:
+      - "-config.file=/etc/loki/config.yml"
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yml:/etc/loki/config.yml:ro
+    networks:
+      - xc-network
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: xc-alloy
+    command:
+      - "run"
+      - "--server.http.listen-addr=0.0.0.0:12345"
+      - "--storage.path=/tmp/alloy"
+      - "/etc/alloy/config.alloy"
+    ports:
+      - "12345:12345"
+    volumes:
+      - ./alloy-config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - loki
+    networks:
+      - xc-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: xc-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    depends_on:
+      - loki
+      - prometheus
+    networks:
+      - xc-network
+        
 networks:
   xc-network:
+    driver: bridge
 
 volumes:
   pgdata:
