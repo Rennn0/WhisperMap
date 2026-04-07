@@ -75,7 +75,7 @@ public class ProductController : ApplicationController
         [FromQuery(Name = "fct")] bool? fromCart = false,
         CancellationToken cancellationToken = default)
     {
-        bool isGuest = !HttpContext.Request.Cookies.ContainsKey(AuthGuard.UserIdCookie);
+        bool isGuest = string.IsNullOrEmpty(UserIdC);
         IHandler<ApiContract, GetProductsContext> handler = (fromCookies, fromCart, isGuest) switch
         {
             (false, false, _) => handlers.First(h => h is GetProductsGeneralHandler),
