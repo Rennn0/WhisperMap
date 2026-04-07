@@ -63,6 +63,8 @@ public class ProductController : ApplicationController
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet]
+    [ResponseCache(Location = ResponseCacheLocation.Client,VaryByQueryKeys =
+    ["q", "o", "b", "ct", "fcs", "fct" ],NoStore = false,Duration = 300)]
     public async Task<ApiContract> GetProducts(
         [FromServices] IEnumerable<IHandler<ApiContract, GetProductsContext>> handlers,
         [FromQuery(Name = "q")] string? query,
