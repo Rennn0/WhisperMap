@@ -108,6 +108,15 @@ services:
     networks:
       - xc-network
         
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Test123test"
+    ports:
+      - "1433:1433"
+        
 networks:
   xc-network:
     driver: bridge

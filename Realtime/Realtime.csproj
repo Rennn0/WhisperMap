@@ -13,5 +13,9 @@
         <DependentUpon>Dockerfile</DependentUpon>
       </Content>
     </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="8.0.0"/>
+    </ItemGroup>
 
 </Project>

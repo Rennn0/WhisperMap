@@ -1,4 +1,6 @@
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using Realtime.Background;
 using Realtime.Sse.Core.Stream;
 using Realtime.Sse.Core.Streamer;
@@ -17,7 +19,7 @@ public static class Program
         const string swarmAppSettingsPath = "/run/secrets/appsettings.Production.json";
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
-
+        builder.Services.AddLogging();
         builder.Services.AddSingleton<SseUserStatsStreamRegistry>();
 
         builder.Services.AddTransient<ISseDataProvider<SseUserStatsFormatter.UserStats>, UserStatsProvider>();
@@ -33,9 +35,23 @@ public static class Program
                 pol.AllowAnyOrigin();
             });
         });
+
+        builder.Services.AddDistributedSqlServerCache(options =>
+        {
+            options.ConnectionString = "Server=localhost;Database=master;User Id=sa;Password=Test123test;Trusted_Connection=False;Persist Security Info=False;Encrypt=False";
+            options.SchemaName = "cache";
+            options.TableName = "RealtimeCache";
+            options.DefaultSlidingExpiration = TimeSpan.FromMinutes(5);
+        });
         
         WebApplication app = builder.Build();
         app.UseCors();
+
+        app.MapGet("/cache", ([FromServices]IDistributedCache cache,[FromQuery(Name="k")]string key,[FromQuery(Name="v")]string value) =>
+        {
+            cache.Set(key, Encoding.UTF8.GetBytes(value));
+            return "x";
+        });
         
         new Timer(_ =>
         {
