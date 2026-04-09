@@ -74,7 +74,7 @@ public static class Program
                 SseSignalRegistry<UserStats>.SignalHandle handle =
                     sseSignalRegistry.GetSignal("users", cancellationToken);
 
-                await streamer.StreamAsync(handle, "users handle");
+                await streamer.StreamAsync(handle);
             });
 
         streamGroup.MapGet("/s",
@@ -93,7 +93,7 @@ public static class Program
 
                 UserStats initialVal = await sseDataProvider.GetAsync(handle, cancellationToken);
 
-                await streamer.StreamAsync(subscription.Reader, string.Empty);
+                await streamer.StreamAsync(subscription.Reader);
             });
 
         await app.RunAsync();

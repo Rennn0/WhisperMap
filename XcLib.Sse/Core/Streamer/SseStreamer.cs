@@ -15,6 +15,7 @@ public abstract class SseStreamer<T>
     protected readonly HttpContext Context;
     protected readonly SseEventFormatter<T> Formatter;
     protected readonly SseOptions DefaultOptions;
+    protected readonly TimeSpan PingInterval;
 
     protected SseStreamer(IHttpContextAccessor context,
         IOptionsMonitor<SseOptions> defaultOptions,
@@ -25,6 +26,7 @@ public abstract class SseStreamer<T>
         ArgumentNullException.ThrowIfNull(context.HttpContext);
 
         DefaultOptions = defaultOptions.CurrentValue;
+        PingInterval = TimeSpan.FromSeconds(DefaultOptions.PingInterval);
         Formatter = formatter;
         Context = context.HttpContext;
         CancellationSource =
@@ -33,24 +35,18 @@ public abstract class SseStreamer<T>
         InitResponse();
     }
 
-    public Task StreamAsync(SseSignal<T> source, string eventName) =>
-        StreamAsync(source, eventName, TimeSpan.FromSeconds(DefaultOptions.PingInterval), Formatter);
+    public Task StreamAsync(SseSignal<T> source, string? eventName = null, TimeSpan? pingInterval = null,
+        SseEventFormatter<T>? formatter = null) =>
+        StreamAsync(source, eventName ?? string.Empty, pingInterval ?? PingInterval, formatter ?? Formatter);
 
-    public Task StreamAsync(IAsyncEnumerable<T> source, string eventName,
-        T initialValue = default!) => StreamAsync(source, eventName, TimeSpan.FromSeconds(DefaultOptions.PingInterval),
-        Formatter, initialValue);
+    public Task StreamAsync(IAsyncEnumerable<T> source, string? eventName = null, TimeSpan? pingInterval = null,
+        SseEventFormatter<T>? formatter = null, T? initialValue = default) =>
+        StreamAsync(source, eventName ?? string.Empty, pingInterval ?? PingInterval, formatter ?? Formatter,
+            initialValue ?? default!);
 
-    public Task StreamAsync(ChannelReader<T> source, string eventName) =>
-        StreamAsync(source, eventName, TimeSpan.FromSeconds(DefaultOptions.PingInterval), Formatter);
-
-    public Task StreamAsync(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval) =>
-        StreamAsync(source, eventName, heartbeatInterval, Formatter);
-
-    public Task StreamAsync(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
-        T initialValue = default!) => StreamAsync(source, eventName, heartbeatInterval, Formatter, initialValue);
-
-    public Task StreamAsync(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval) =>
-        StreamAsync(source, eventName, heartbeatInterval, Formatter);
+    public Task StreamAsync(ChannelReader<T> source, string? eventName = null, TimeSpan? pingInterval = null,
+        SseEventFormatter<T>? formatter = null) =>
+        StreamAsync(source, eventName ?? string.Empty, pingInterval ?? PingInterval, formatter ?? Formatter);
 
     public abstract Task StreamAsync(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter);
