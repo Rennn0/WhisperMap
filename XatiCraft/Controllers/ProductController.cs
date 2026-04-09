@@ -63,6 +63,8 @@ public class ProductController : ApplicationController
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet]
+    [ResponseCache(Location = ResponseCacheLocation.Client,VaryByQueryKeys =
+    ["q", "o", "b", "ct", "fcs", "fct" ],NoStore = false,Duration = 300)]
     public async Task<ApiContract> GetProducts(
         [FromServices] IEnumerable<IHandler<ApiContract, GetProductsContext>> handlers,
         [FromQuery(Name = "q")] string? query,
@@ -73,7 +75,7 @@ public class ProductController : ApplicationController
         [FromQuery(Name = "fct")] bool? fromCart = false,
         CancellationToken cancellationToken = default)
     {
-        bool isGuest = !HttpContext.Request.Cookies.ContainsKey(AuthGuard.UserIdCookie);
+        bool isGuest = string.IsNullOrEmpty(UserIdC);
         IHandler<ApiContract, GetProductsContext> handler = (fromCookies, fromCart, isGuest) switch
         {
             (false, false, _) => handlers.First(h => h is GetProductsGeneralHandler),
