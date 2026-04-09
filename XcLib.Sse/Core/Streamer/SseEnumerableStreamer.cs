@@ -12,11 +12,17 @@ public class SseEnumerableStreamer<T> : SseStreamer<T>
 {
     public SseEnumerableStreamer(IHttpContextAccessor context,
         IOptionsMonitor<SseOptions> defaultOptions,
+        IOptionsMonitor<SseStreamOptions> streamOptions,
         SseEventFormatter<T> formatter,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken = default) :
-        base(context, defaultOptions, formatter, loggerFactory, cancellationToken) =>
+        base(context, defaultOptions, formatter, loggerFactory, cancellationToken)
+    {
         Logger = loggerFactory.CreateLogger($"XcLib.Streamer.{nameof(SseEnumerableStreamer<T>)}<{typeof(T).Name}>");
+        PingInterval = TimeSpan.FromSeconds(streamOptions.CurrentValue.PingInterval);
+
+        Logger.LogTrace("ping interval {X}", PingInterval);
+    }
 
     public override Task StreamAsync(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter) => throw new NotImplementedException();
@@ -25,8 +31,7 @@ public class SseEnumerableStreamer<T> : SseStreamer<T>
         SseEventFormatter<T> formatter, T initialValue = default!)
     {
         Logger.LogDebug(new EventId((int)StreamerLogs.StartStream, nameof(StreamerLogs.StartStream)),
-            "Starting SSE streaming for {RequestPath}, query {Query}, event {EventName}", Context.Request.Path,
-            Context.Request.QueryString, eventName);
+            "Starting SSE streaming for {a}, event {EventName}", Url, eventName);
 
         IAsyncEnumerator<T>? enumerator = null;
         Task<bool>? moveNextTask = null;

@@ -7,11 +7,25 @@ using XcLib.Sse.Core.Stream;
 using XcLib.Sse.Core.Streamer;
 using XcLib.Sse.DataProvider;
 using XcLib.Sse.Formatters;
+using XcLib.Sse.Options;
 
-namespace XcLib.Sse.Options;
+namespace XcLib.Sse;
 
-public static class ServiceCollectionExtensions
+public static class ServiceExtensions
 {
+    public static IServiceCollection AddSseService(this IServiceCollection services, params Assembly[] assemblies)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddOptionsWithValidateOnStart<SseOptions>().BindConfiguration(nameof(SseOptions))
+            .ValidateDataAnnotations();
+        services.AddOptionsWithValidateOnStart<SseSignalOptions>().BindConfiguration(nameof(SseSignalOptions))
+            .ValidateDataAnnotations();
+        services.AddOptionsWithValidateOnStart<SseStreamOptions>().BindConfiguration(nameof(SseStreamOptions))
+            .ValidateDataAnnotations();
+
+        return services.AddSseCore(assemblies);
+    }
     public static IServiceCollection AddSseService(
         this IServiceCollection services,
         IConfiguration configuration,

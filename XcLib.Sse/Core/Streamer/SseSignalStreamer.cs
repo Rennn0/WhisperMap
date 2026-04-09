@@ -12,17 +12,23 @@ public class SseSignalStreamer<T> : SseStreamer<T>
 {
     public SseSignalStreamer(IHttpContextAccessor context,
         IOptionsMonitor<SseOptions> defaultOptions,
+        IOptionsMonitor<SseSignalOptions> signalOptions,
         SseEventFormatter<T> formatter,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken = default)
-        : base(context, defaultOptions, formatter, loggerFactory, cancellationToken) =>
+        : base(context, defaultOptions, formatter, loggerFactory, cancellationToken)
+    {
         Logger = loggerFactory.CreateLogger($"XcLib.Streamer.{nameof(SseSignalStreamer<T>)}<{typeof(T).Name}>");
+        PingInterval = TimeSpan.FromSeconds(signalOptions.CurrentValue.PingInterval);
+
+        Logger.LogTrace("ping interval {X}", PingInterval);
+    }
 
     public override async Task StreamAsync(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter)
     {
         Logger.LogDebug(new EventId((int)StreamerLogs.StartSignal, nameof(StreamerLogs.StartSignal)),
-            "Starting SSE signal for {RequestPath}, event {EventName}", Context.Request.Path, eventName);
+            "Starting SSE signal for {a}, event {b}", Url, eventName);
 
         try
         {

@@ -47,7 +47,7 @@ public abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         if (_subscribers.TryGetValue(id, out StreamSubscriber? subscriber))
             return new StreamSubscription(this, subscriber, cancellationToken);
 
-        Channel<T> channel = Channel.CreateBounded<T>(new BoundedChannelOptions(100)
+        Channel<T> channel = Channel.CreateBounded<T>(new BoundedChannelOptions(1)
         {
             SingleReader = true,
             SingleWriter = false,

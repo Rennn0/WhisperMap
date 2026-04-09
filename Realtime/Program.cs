@@ -2,11 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Realtime.Background;
 using Realtime.SseFeatures.Formatters;
+using XcLib.Sse;
 using XcLib.Sse.Core.Signal;
 using XcLib.Sse.Core.Stream;
 using XcLib.Sse.Core.Streamer;
 using XcLib.Sse.DataProvider;
-using XcLib.Sse.Options;
 
 namespace Realtime;
 
@@ -20,7 +20,8 @@ public static class Program
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
-        builder.Services.AddSseService("SseOptions");
+        builder.Configuration.ConfigureSseDefaults();
+        builder.Services.AddSseService();
 
         builder.Services.AddHostedService<UserStatsBackgroundService>();
 
@@ -97,21 +98,5 @@ public static class Program
             });
 
         await app.RunAsync();
-    }
-}
-
-file class SomeConfigSource : IConfigurationSource
-{
-    public IConfigurationProvider Build(IConfigurationBuilder builder) => new SomeConfigProvider();
-}
-
-file class SomeConfigProvider : ConfigurationProvider
-{
-    public override void Load()
-    {
-        Data = new Dictionary<string, string?>
-        {
-            { "x", "y" }
-        };
     }
 }

@@ -15,7 +15,6 @@ public abstract class SseStreamer<T>
     protected readonly HttpContext Context;
     protected readonly SseEventFormatter<T> Formatter;
     protected readonly SseOptions DefaultOptions;
-    protected readonly TimeSpan PingInterval;
 
     protected SseStreamer(IHttpContextAccessor context,
         IOptionsMonitor<SseOptions> defaultOptions,
@@ -58,7 +57,8 @@ public abstract class SseStreamer<T>
         SseEventFormatter<T> formatter);
 
     protected ILogger Logger { get; init; }
-
+    protected TimeSpan PingInterval { get; init; }
+    protected string Url => Context.Request.Path + Context.Request.QueryString;
     protected CancellationToken CancellationToken => CancellationSource.Token;
 
     protected void InitResponse()
@@ -72,7 +72,7 @@ public abstract class SseStreamer<T>
     protected async Task WriteEventAsync(string eventName, T data, SseEventFormatter<T> formatter)
     {
         CancellationToken.ThrowIfCancellationRequested();
-
+        Logger.LogTrace("sending data {a}", Url);
         string payload = formatter.Format(eventName, data);
         await Context.Response.WriteAsync(payload, CancellationToken);
         await Context.Response.Body.FlushAsync(CancellationToken);
@@ -81,7 +81,7 @@ public abstract class SseStreamer<T>
     protected async Task WriteCommentAsync(string comment)
     {
         CancellationToken.ThrowIfCancellationRequested();
-
+        Logger.LogTrace("sending comment {a}: {b}", Url, comment);
         string payload = $": {comment}\n\n";
         await Context.Response.WriteAsync(payload, CancellationToken);
         await Context.Response.Body.FlushAsync(CancellationToken);

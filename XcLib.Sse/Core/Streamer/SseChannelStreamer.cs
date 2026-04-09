@@ -12,25 +12,30 @@ public class SseChannelStreamer<T> : SseStreamer<T>
 {
     public SseChannelStreamer(IHttpContextAccessor context,
         IOptionsMonitor<SseOptions> defaultOptions,
+        IOptionsMonitor<SseStreamOptions> streamOptions,
         SseEventFormatter<T> formatter,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken = default)
-        : base(context, defaultOptions, formatter, loggerFactory, cancellationToken) =>
+        : base(context, defaultOptions, formatter, loggerFactory, cancellationToken)
+    {
         Logger = loggerFactory.CreateLogger($"XcLib.Streamer.{nameof(SseChannelStreamer<T>)}<{typeof(T).Name}>");
+        PingInterval = TimeSpan.FromSeconds(streamOptions.CurrentValue.PingInterval);
+
+        Logger.LogTrace("ping interval {X}", PingInterval);
+    }
 
     public override Task StreamAsync(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter) => throw new NotImplementedException();
 
     public override Task StreamAsync(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
-        SseEventFormatter<T> formatter,
-        T initialValue = default!) =>
+        SseEventFormatter<T> formatter, T initialValue = default!) =>
         throw new NotImplementedException();
 
     public override async Task StreamAsync(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter)
     {
         Logger.LogDebug(new EventId((int)StreamerLogs.StartStream, nameof(StreamerLogs.StartStream)),
-            "Starting SSE streaming for {RequestPath}, event {EventName}", Context.Request.Path, eventName);
+            "Starting SSE streaming for {a}, event {b}", Url, eventName);
 
         try
         {
