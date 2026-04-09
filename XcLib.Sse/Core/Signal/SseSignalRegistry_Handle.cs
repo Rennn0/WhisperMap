@@ -1,15 +1,18 @@
-namespace Realtime.Sse.Core.Signal;
+using Microsoft.Extensions.Logging;
 
-internal abstract partial class SseSignalRegistry<T>
+namespace XcLib.Sse.Core.Signal;
+
+public partial class SseSignalRegistry<T>
 {
-    internal class SignalHandle : SseSignal<T>
+    public class SignalHandle : SseSignal<T>
     {
         private readonly CancellationTokenSource _cts;
         private readonly SseSignalRegistry<T> _owner;
         private readonly CancellationTokenRegistration _reg;
         private int _disposed;
 
-        internal SignalHandle(SseSignalRegistry<T> owner, string key, CancellationToken ct)
+        public SignalHandle(SseSignalRegistry<T> owner, string key, ILoggerFactory loggerFactory, CancellationToken ct)
+            : base(loggerFactory)
         {
             _owner = owner;
             Key = key;
@@ -21,12 +24,13 @@ internal abstract partial class SseSignalRegistry<T>
             }, this);
         }
 
-        internal string Key { get; }
-        internal CancellationToken Token => _cts.Token;
-        internal bool IsDisposed => Volatile.Read(ref _disposed) == 1;
+        public string Key { get; }
+        public CancellationToken Token => _cts.Token;
+        public bool IsDisposed => Volatile.Read(ref _disposed) == 1;
 
         public override void Dispose()
         {
+            GC.SuppressFinalize(this);
             if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
 
             try
@@ -44,6 +48,7 @@ internal abstract partial class SseSignalRegistry<T>
 
         public override ValueTask DisposeAsync()
         {
+            GC.SuppressFinalize(this);
             Dispose();
             return base.DisposeAsync();
         }

@@ -1,8 +1,10 @@
 ﻿using System.Collections.Concurrent;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
-namespace Realtime.Sse.Core.Signal;
+namespace XcLib.Sse.Core.Signal;
 
-internal abstract class SseSignal<T> : IDisposable, IAsyncDisposable
+public abstract class SseSignal<T> : IDisposable, IAsyncDisposable
 {
     private enum SignalLogs
     {
@@ -16,24 +18,15 @@ internal abstract class SseSignal<T> : IDisposable, IAsyncDisposable
     private readonly ILogger<SseSignal<T>> _logger;
     private readonly ConcurrentDictionary<Guid, TaskCompletionSource<T>> _waiters;
 
-    internal SseSignal()
+    protected SseSignal(ILoggerFactory loggerFactory)
     {
         _waiters = new ConcurrentDictionary<Guid, TaskCompletionSource<T>>();
-        ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
-        {
-            builder.SetMinimumLevel(LogLevel.Debug).AddSimpleConsole(opt =>
-            {
-                opt.IncludeScopes = true;
-                opt.SingleLine = true;
-                opt.TimestampFormat = "[HH:mm:ss] ";
-            });
-        });
         _logger = loggerFactory.CreateLogger<SseSignal<T>>();
     }
 
-    internal int Waiters => _waiters.Count;
+    public int Waiters => _waiters.Count;
 
-    internal async ValueTask<T> WaitAsync(CancellationToken cancellationToken = default)
+    public async ValueTask<T> WaitAsync(CancellationToken cancellationToken = default)
     {
         Guid id = Guid.NewGuid();
         TaskCompletionSource<T> waiter =
@@ -67,7 +60,7 @@ internal abstract class SseSignal<T> : IDisposable, IAsyncDisposable
         }
     }
 
-    internal ValueTask PublishAsync(T value, CancellationToken cancellationToken = default)
+    public ValueTask PublishAsync(T value, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (_waiters.IsEmpty) return ValueTask.CompletedTask;

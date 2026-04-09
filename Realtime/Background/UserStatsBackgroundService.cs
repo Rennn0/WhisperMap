@@ -1,19 +1,21 @@
-﻿using Realtime.Sse.Core.Stream;
-using Realtime.Sse.Features.SseData;
-using Realtime.Sse.Features.StreamRegistries;
-using Realtime.Sse.Formatters;
+﻿using Realtime.SseFeatures.Formatters;
+using XcLib.Sse.Core.Signal;
+using XcLib.Sse.Core.Stream;
+using XcLib.Sse.DataProvider;
 
 namespace Realtime.Background;
 
 internal class UserStatsBackgroundService : BackgroundService
 {
-    private readonly SseUserStatsStreamRegistry _registry;
-    private readonly ISseDataProvider<SseUserStatsFormatter.UserStats> _sseDataProvider;
+    private readonly ISseDataProvider<UserStats> _sseDataProvider;
+    private readonly SseStreamRegistry<UserStats> _registry;
+    private readonly SseSignalRegistry<UserStats> _sseSignalRegistry;
 
-    public UserStatsBackgroundService(SseUserStatsStreamRegistry registry,
-        ISseDataProvider<SseUserStatsFormatter.UserStats> sseDataProvider)
+    public UserStatsBackgroundService(SseStreamRegistry<UserStats> sseStreamRegistry,SseSignalRegistry<UserStats> sseSignalRegistry,
+        ISseDataProvider<UserStats> sseDataProvider)
     {
-        _registry = registry;
+        _registry = sseStreamRegistry;
+        _sseSignalRegistry = sseSignalRegistry;
         _sseDataProvider = sseDataProvider;
     }
 
@@ -21,16 +23,18 @@ internal class UserStatsBackgroundService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            SseStreamRegistry<SseUserStatsFormatter.UserStats>.StreamHandle streamHandle =
+            SseStreamRegistry<UserStats>.StreamHandle streamHandle =
                 _registry.GetStream("users", stoppingToken);
 
             if (streamHandle.SubscribersCount > 0)
             {
-                SseUserStatsFormatter.UserStats stats = await _sseDataProvider.Instant(streamHandle, stoppingToken);
+                UserStats stats = await _sseDataProvider.GetAsync(streamHandle, stoppingToken);
                 await streamHandle.PublishAsync(stats, stoppingToken);
             }
 
             await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            
+            await _sseSignalRegistry.GetSignal("users", stoppingToken).PublishAsync(new UserStats(){Offline = 22,Online = 1},stoppingToken);
         }
     }
 }

@@ -1,17 +1,19 @@
 ﻿using System.Threading.Channels;
-using Realtime.Sse.Formatters;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using XcLib.Sse.Formatters;
 
-namespace Realtime.Sse.Core.Streamer;
+namespace XcLib.Sse.Core.Streamer;
 
-internal class SseChannelStreamer : SseStreamer
+public class SseChannelStreamer : SseStreamer
 {
-    internal SseChannelStreamer(HttpContext context)
-        : base(context, CancellationToken.None) => Logger = LogFactory.CreateLogger<SseChannelStreamer>();
+    public SseChannelStreamer(IHttpContextAccessor context, ILoggerFactory factory)
+        : base(context, factory, CancellationToken.None) => Logger = LogFactory.CreateLogger<SseChannelStreamer>();
 
-    internal SseChannelStreamer(HttpContext context, CancellationToken cancellationToken)
-        : base(context, cancellationToken) => Logger = LogFactory.CreateLogger<SseChannelStreamer>();
+    public SseChannelStreamer(IHttpContextAccessor context, ILoggerFactory factory, CancellationToken cancellationToken)
+        : base(context, factory, cancellationToken) => Logger = LogFactory.CreateLogger<SseChannelStreamer>();
 
-    internal async Task StreamAsync<T>(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval,
+    public override async Task StreamAsync<T>(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter)
     {
         Logger.LogDebug(new EventId((int)SseLogs.StartStream, nameof(SseLogs.StartStream)),

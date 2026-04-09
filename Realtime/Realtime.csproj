@@ -18,4 +18,8 @@
         <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="8.0.0"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\XcLib.Sse\XcLib.Sse.csproj"/>
+    </ItemGroup>
+
 </Project>

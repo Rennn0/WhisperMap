@@ -1,11 +1,11 @@
 ﻿using System.Text;
 
-namespace Realtime.Sse.Formatters;
+namespace XcLib.Sse.Formatters;
 
-internal abstract class SseEventFormatter<T>
+public abstract class SseEventFormatter<T>
 {
-    internal string Format(string eventName, T data) => BuildEventPayload(eventName, FormatData(data));
-    internal string Format(T data) => BuildEventPayload(string.Empty, FormatData(data));
+    public string Format(string eventName, T data) => BuildEventPayload(eventName, FormatData(data));
+    public string Format(T data) => BuildEventPayload(string.Empty, FormatData(data));
 
     protected abstract string FormatData(T data);
 

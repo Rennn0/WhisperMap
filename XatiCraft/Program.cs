@@ -52,7 +52,11 @@ public static class Program
         builder.Services.Configure<ApiKeySettings>(builder.Configuration.GetSection(nameof(ApiKeySettings)));
         builder.Services.Configure<GithubAuthSettings>(builder.Configuration.GetSection(nameof(GithubAuthSettings)));
         builder.Services.Configure<GoogleAuthSettings>(builder.Configuration.GetSection(nameof(GoogleAuthSettings)));
-
+        builder.Services
+            .AddOptionsWithValidateOnStart<GoogleAuthSettings>()
+            .BindConfiguration(nameof(GoogleAuthSettings))
+            .ValidateDataAnnotations();
+        
         builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
         {
             options.SuppressMapClientErrors = true;

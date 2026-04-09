@@ -1,21 +1,20 @@
-﻿using Realtime.Sse.Formatters;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using XcLib.Sse.Formatters;
 
-namespace Realtime.Sse.Core.Streamer;
+namespace XcLib.Sse.Core.Streamer;
 
-internal class SseEnumerableStreamer : SseStreamer
+public class SseEnumerableStreamer : SseStreamer
 {
-    public SseEnumerableStreamer(HttpContext context) :
-        base(context, CancellationToken.None) => Logger = LogFactory.CreateLogger<SseEnumerableStreamer>();
+    public SseEnumerableStreamer(IHttpContextAccessor context, ILoggerFactory factory) :
+        base(context, factory, CancellationToken.None) => Logger = LogFactory.CreateLogger<SseEnumerableStreamer>();
 
-    public SseEnumerableStreamer(HttpContext context, CancellationToken cancellationToken) :
-        base(context, cancellationToken) => Logger = LogFactory.CreateLogger<SseEnumerableStreamer>();
+    public SseEnumerableStreamer(IHttpContextAccessor context, ILoggerFactory factory,
+        CancellationToken cancellationToken) :
+        base(context, factory, cancellationToken) => Logger = LogFactory.CreateLogger<SseEnumerableStreamer>();
 
-    internal Task StreamAsync<T>(IAsyncEnumerable<T> source, TimeSpan heartbeatInterval,
-        SseEventFormatter<T> formatter, T? initialValue = default) =>
-        StreamAsync(source, string.Empty, heartbeatInterval, formatter, initialValue);
-    
-    internal async Task StreamAsync<T>(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
-        SseEventFormatter<T> formatter, T? initialValue = default)
+    public override async Task StreamAsync<T>(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
+        SseEventFormatter<T> formatter, T initialValue = default!)
     {
         Logger.LogDebug(new EventId((int)SseLogs.StartStream, nameof(SseLogs.StartStream)),
             "Starting SSE streaming for {RequestPath}, event {EventName}", Context.Request.Path, eventName);

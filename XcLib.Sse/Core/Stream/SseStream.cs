@@ -1,45 +1,37 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading.Channels;
-using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Logging;
 
-namespace Realtime.Sse.Core.Stream;
+namespace XcLib.Sse.Core.Stream;
 
-internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
+public abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
 {
     private readonly ConcurrentDictionary<string, StreamSubscriber> _subscribers =
         new ConcurrentDictionary<string, StreamSubscriber>();
 
     private int _disposed;
 
-    internal SseStream()
+    protected SseStream(ILoggerFactory loggerFactory)
     {
-        ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
-        {
-            builder.SetMinimumLevel(LogLevel.Debug).AddSimpleConsole(opt =>
-            {
-                opt.IncludeScopes = true;
-                opt.SingleLine = false;
-                opt.ColorBehavior = LoggerColorBehavior.Enabled;
-                opt.TimestampFormat = "[HH:mm:ss] ";
-            });
-        });
         Logger = loggerFactory.CreateLogger<SseStream<T>>();
     }
 
-    internal bool IsDisposed => Volatile.Read(ref _disposed) == 1;
+    protected bool IsDisposed => Volatile.Read(ref _disposed) == 1;
 
     protected ILogger<SseStream<T>> Logger { get; init; }
 
-    internal int SubscribersCount => _subscribers.Count;
+    public int SubscribersCount => _subscribers.Count;
 
     public virtual ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
         Dispose();
         return ValueTask.CompletedTask;
     }
 
     public virtual void Dispose()
     {
+        GC.SuppressFinalize(this);
         if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
         foreach (StreamSubscriber subscriber in _subscribers.Values) subscriber.Writer.TryComplete();
         _subscribers.Clear();
@@ -49,11 +41,12 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
             SubscribersCount);
     }
 
-    internal StreamSubscription Subscribe(string? streamId, CancellationToken cancellationToken)
+    public StreamSubscription Subscribe(string? streamId, CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
         string id = streamId ?? Guid.NewGuid().ToString("N");
 
+        // ReSharper disable once HeapView.CanAvoidClosure
         StreamSubscriber sub = _subscribers.GetOrAdd(id, key =>
         {
             Channel<T> channel = Channel.CreateBounded<T>(new BoundedChannelOptions(100)
@@ -63,24 +56,22 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
                 FullMode = BoundedChannelFullMode.DropOldest,
                 AllowSynchronousContinuations = false
             });
-
+        
             Logger.LogDebug(new EventId((int)StreamLogs.Subscribe, nameof(StreamLogs.Subscribe)),
                 "New subscriber {Id}, subs {Count}", id,
                 _subscribers.Count);
-
+        
             return new StreamSubscriber(id, channel);
         });
 
         return new StreamSubscription(this, sub, cancellationToken);
     }
 
-    internal ValueTask PublishAsync(T value, CancellationToken cancellationToken)
+    public ValueTask PublishAsync(T value, CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
         cancellationToken.ThrowIfCancellationRequested();
         if (_subscribers.IsEmpty) return ValueTask.CompletedTask;
-        Logger.LogDebug(new EventId((int)StreamLogs.Publish, nameof(StreamLogs.Publish)),
-            "Pub, subs {Count}", _subscribers.Count);
 
         int delivered = 0;
         HashSet<string> brokenChannels = new HashSet<string>();
@@ -110,7 +101,7 @@ internal abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         return ValueTask.CompletedTask;
     }
 
-    internal void Unsubscribe(string id)
+    public void Unsubscribe(string id)
     {
         RemoveSubscriber(id);
         Logger.LogDebug(new EventId((int)StreamLogs.Unsubscribe, nameof(StreamLogs.Unsubscribe)),

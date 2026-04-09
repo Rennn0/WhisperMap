@@ -1,39 +1,55 @@
-﻿using Microsoft.Extensions.Logging.Console;
+﻿using System.Threading.Channels;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using Realtime.Sse.Formatters;
+using XcLib.Sse.Core.Signal;
+using XcLib.Sse.Formatters;
 
-namespace Realtime.Sse.Core.Streamer;
+namespace XcLib.Sse.Core.Streamer;
 
-internal abstract class SseStreamer
+public abstract class SseStreamer
 {
     protected readonly CancellationTokenSource CancellationSource;
     protected readonly HttpContext Context;
     protected readonly ILoggerFactory LogFactory;
 
-    internal SseStreamer(HttpContext context, CancellationToken cancellationToken)
+    protected SseStreamer(IHttpContextAccessor context, ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
     {
-        Context = context;
+        ArgumentNullException.ThrowIfNull(context.HttpContext);
+
+        Context = context.HttpContext;
         CancellationSource =
-            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, context.RequestAborted);
-        LogFactory = LoggerFactory.Create(builder =>
-        {
-            builder.SetMinimumLevel(LogLevel.Debug).AddSimpleConsole(opt =>
-            {
-                opt.IncludeScopes = true;
-                opt.SingleLine = false;
-                opt.ColorBehavior = LoggerColorBehavior.Enabled;
-                opt.TimestampFormat = "[HH:mm:ss] ";
-            });
-        });
+            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, Context.RequestAborted);
+        LogFactory = loggerFactory;
         Logger = LogFactory.CreateLogger<SseStreamer>();
         InitResponse();
     }
 
+    [Flags]
+    public enum StreamerType
+    {
+        Signal,
+        Enumerable,
+        Channel
+    }
+
+    public delegate SseStreamer StreamerFactory(StreamerType streamerType);
+
+    public virtual Task StreamAsync<T>(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
+        SseEventFormatter<T> formatter) => throw new NotImplementedException();
+
+    public virtual Task StreamAsync<T>(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
+        SseEventFormatter<T> formatter, T initialValue = default!) => throw new NotImplementedException();
+
+    public virtual Task StreamAsync<T>(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval,
+        SseEventFormatter<T> formatter) => throw new NotImplementedException();
+    
     protected ILogger<SseStreamer> Logger { get; init; }
 
-    internal CancellationToken CancellationToken => CancellationSource.Token;
+    protected CancellationToken CancellationToken => CancellationSource.Token;
 
-    internal void InitResponse()
+    protected void InitResponse()
     {
         Context.Response.Headers.ContentType = new StringValues("text/event-stream");
         Context.Response.Headers.CacheControl = new StringValues("no-cache");

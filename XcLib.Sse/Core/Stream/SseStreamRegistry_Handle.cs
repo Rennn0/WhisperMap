@@ -1,23 +1,27 @@
-namespace Realtime.Sse.Core.Stream;
+using Microsoft.Extensions.Logging;
 
-internal abstract partial class SseStreamRegistry<T>
+namespace XcLib.Sse.Core.Stream;
+
+public partial class SseStreamRegistry<T>
 {
-    internal class StreamHandle : SseStream<T>
+    public class StreamHandle : SseStream<T>
     {
         private readonly SseStreamRegistry<T> _owner;
         private readonly CancellationTokenRegistration _reg;
 
-        internal StreamHandle(SseStreamRegistry<T> owner, string key, CancellationToken ct)
+        public StreamHandle(SseStreamRegistry<T> owner, string key, ILoggerFactory loggerFactory, CancellationToken ct)
+            : base(loggerFactory)
         {
             Key = key;
             _owner = owner;
             _reg = ct.Register(state => ((StreamHandle)state!).Dispose(), this);
         }
 
-        internal string Key { get; }
+        public string Key { get; }
 
         public override void Dispose()
         {
+            GC.SuppressFinalize(this);
             if (IsDisposed) return;
 
             try
@@ -33,6 +37,7 @@ internal abstract partial class SseStreamRegistry<T>
 
         public override ValueTask DisposeAsync()
         {
+            GC.SuppressFinalize(this);
             Dispose();
             return base.DisposeAsync();
         }
