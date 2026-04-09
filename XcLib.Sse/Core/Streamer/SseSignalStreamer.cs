@@ -1,22 +1,27 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Threading.Channels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using XcLib.Sse.Core.Signal;
 using XcLib.Sse.Formatters;
+using XcLib.Sse.Options;
 
 namespace XcLib.Sse.Core.Streamer;
 
-public class SseSignalStreamer : SseStreamer
+public class SseSignalStreamer<T> : SseStreamer<T>
 {
-    public SseSignalStreamer(IHttpContextAccessor context, ILoggerFactory factory)
-        : base(context, factory, CancellationToken.None) => Logger = LogFactory.CreateLogger<SseSignalStreamer>();
+    public SseSignalStreamer(IHttpContextAccessor context,
+        IOptionsMonitor<SseOptions> defaultOptions,
+        SseEventFormatter<T> formatter,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken = default)
+        : base(context, defaultOptions, formatter, loggerFactory, cancellationToken) =>
+        Logger = loggerFactory.CreateLogger($"XcLib.Streamer.{nameof(SseSignalStreamer<T>)}<{typeof(T).Name}>");
 
-    public SseSignalStreamer(IHttpContextAccessor context, ILoggerFactory factory, CancellationToken cancellationToken)
-        : base(context, factory, cancellationToken) => Logger = LogFactory.CreateLogger<SseSignalStreamer>();
-
-    public override async Task StreamAsync<T>(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
+    public override async Task StreamAsync(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter)
     {
-        Logger.LogDebug(new EventId((int)SseLogs.StartSignal, nameof(SseLogs.StartSignal)),
+        Logger.LogDebug(new EventId((int)StreamerLogs.StartSignal, nameof(StreamerLogs.StartSignal)),
             "Starting SSE signal for {RequestPath}, event {EventName}", Context.Request.Path, eventName);
 
         try
@@ -33,7 +38,7 @@ public class SseSignalStreamer : SseStreamer
                     T data = await signalTask;
                     await SafeWriteAsync(() => WriteEventAsync(eventName, data, formatter));
 
-                    Logger.LogDebug(new EventId((int)SseLogs.EndSignal, nameof(SseLogs.EndSignal)),
+                    Logger.LogDebug(new EventId((int)StreamerLogs.EndSignal, nameof(StreamerLogs.EndSignal)),
                         "End signal for {RequestPath}, event {EventName}", Context.Request.Path,
                         eventName);
                     break;
@@ -44,14 +49,23 @@ public class SseSignalStreamer : SseStreamer
         }
         catch (OperationCanceledException)
         {
-            Logger.LogDebug(new EventId((int)SseLogs.ExcSignalCancelled, nameof(SseLogs.ExcSignalCancelled)),
+            Logger.LogDebug(new EventId((int)StreamerLogs.ExcSignalCancelled, nameof(StreamerLogs.ExcSignalCancelled)),
                 "Signaling for {RequestPath}, event {EventName} cancelled", Context.Request.Path, eventName);
         }
         catch (Exception e)
         {
-            Logger.LogError(new EventId((int)SseLogs.ExcSignalDestroyed, nameof(SseLogs.ExcSignalDestroyed)), e,
+            Logger.LogError(new EventId((int)StreamerLogs.ExcSignalDestroyed, nameof(StreamerLogs.ExcSignalDestroyed)),
+                e,
                 "Signaling for {RequestPath}, event {EventName} destroyed, exception {Exception}",
                 Context.Request.Path, eventName, e.Message);
         }
     }
+
+    public override Task StreamAsync(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
+        SseEventFormatter<T> formatter,
+        T initialValue = default!) =>
+        throw new NotImplementedException();
+
+    public override Task StreamAsync(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval,
+        SseEventFormatter<T> formatter) => throw new NotImplementedException();
 }

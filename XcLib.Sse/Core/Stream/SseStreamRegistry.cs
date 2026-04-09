@@ -11,11 +11,11 @@ public partial class SseStreamRegistry<T> : IDisposable, IAsyncDisposable
         new ConcurrentDictionary<string, StreamHandle>();
 
     private readonly ILoggerFactory _loggerFactory;
-    private readonly SseStreamOptions _optionsSnapshot;
+    private readonly SseStreamOptions _streamOptions;
 
     public SseStreamRegistry(IOptionsMonitor<SseStreamOptions> optionsMonitor, ILoggerFactory loggerFactory)
     {
-        _optionsSnapshot = optionsMonitor.CurrentValue;
+        _streamOptions = optionsMonitor.CurrentValue;
         _loggerFactory = loggerFactory;
     }
 

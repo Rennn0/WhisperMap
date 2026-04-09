@@ -1,51 +1,67 @@
 ﻿using System.Threading.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using XcLib.Sse.Core.Signal;
 using XcLib.Sse.Formatters;
+using XcLib.Sse.Options;
 
 namespace XcLib.Sse.Core.Streamer;
 
-public abstract class SseStreamer
+public abstract class SseStreamer<T>
 {
     protected readonly CancellationTokenSource CancellationSource;
     protected readonly HttpContext Context;
-    protected readonly ILoggerFactory LogFactory;
+    protected readonly SseEventFormatter<T> Formatter;
+    protected readonly SseOptions DefaultOptions;
 
-    protected SseStreamer(IHttpContextAccessor context, ILoggerFactory loggerFactory,
-        CancellationToken cancellationToken)
+    protected SseStreamer(IHttpContextAccessor context,
+        IOptionsMonitor<SseOptions> defaultOptions,
+        SseEventFormatter<T> formatter,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context.HttpContext);
 
+        DefaultOptions = defaultOptions.CurrentValue;
+        Formatter = formatter;
         Context = context.HttpContext;
         CancellationSource =
             CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, Context.RequestAborted);
-        LogFactory = loggerFactory;
-        Logger = LogFactory.CreateLogger<SseStreamer>();
+        Logger = loggerFactory.CreateLogger($"XcLib.Streamer.{nameof(SseStreamer<T>)}<{typeof(T).Name}>");
         InitResponse();
     }
 
-    [Flags]
-    public enum StreamerType
-    {
-        Signal,
-        Enumerable,
-        Channel
-    }
+    public Task StreamAsync(SseSignal<T> source, string eventName) =>
+        StreamAsync(source, eventName, TimeSpan.FromSeconds(DefaultOptions.PingInterval), Formatter);
 
-    public delegate SseStreamer StreamerFactory(StreamerType streamerType);
+    public Task StreamAsync(IAsyncEnumerable<T> source, string eventName,
+        T initialValue = default!) => StreamAsync(source, eventName, TimeSpan.FromSeconds(DefaultOptions.PingInterval),
+        Formatter, initialValue);
 
-    public virtual Task StreamAsync<T>(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
-        SseEventFormatter<T> formatter) => throw new NotImplementedException();
+    public Task StreamAsync(ChannelReader<T> source, string eventName) =>
+        StreamAsync(source, eventName, TimeSpan.FromSeconds(DefaultOptions.PingInterval), Formatter);
 
-    public virtual Task StreamAsync<T>(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
-        SseEventFormatter<T> formatter, T initialValue = default!) => throw new NotImplementedException();
+    public Task StreamAsync(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval) =>
+        StreamAsync(source, eventName, heartbeatInterval, Formatter);
 
-    public virtual Task StreamAsync<T>(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval,
-        SseEventFormatter<T> formatter) => throw new NotImplementedException();
-    
-    protected ILogger<SseStreamer> Logger { get; init; }
+    public Task StreamAsync(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
+        T initialValue = default!) => StreamAsync(source, eventName, heartbeatInterval, Formatter, initialValue);
+
+    public Task StreamAsync(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval) =>
+        StreamAsync(source, eventName, heartbeatInterval, Formatter);
+
+    public abstract Task StreamAsync(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
+        SseEventFormatter<T> formatter);
+
+    public abstract Task StreamAsync(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
+        SseEventFormatter<T> formatter, T initialValue = default!);
+
+    public abstract Task StreamAsync(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval,
+        SseEventFormatter<T> formatter);
+
+    protected ILogger Logger { get; init; }
 
     protected CancellationToken CancellationToken => CancellationSource.Token;
 
@@ -57,7 +73,7 @@ public abstract class SseStreamer
         Context.Response.Headers["X-Accel-Buffering"] = new StringValues("no");
     }
 
-    protected async Task WriteEventAsync<T>(string eventName, T data, SseEventFormatter<T> formatter)
+    protected async Task WriteEventAsync(string eventName, T data, SseEventFormatter<T> formatter)
     {
         CancellationToken.ThrowIfCancellationRequested();
 
@@ -97,9 +113,9 @@ public abstract class SseStreamer
             or NotSupportedException;
     }
 
-    protected enum SseLogs
+    protected enum StreamerLogs
     {
-        StartStream,
+        StartStream = 10,
         EndStream,
         StartSignal,
         EndSignal,

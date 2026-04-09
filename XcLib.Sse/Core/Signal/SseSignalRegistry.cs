@@ -12,25 +12,26 @@ public partial class SseSignalRegistry<T> : IDisposable, IAsyncDisposable
     private readonly ConcurrentDictionary<string, SignalHandle> _signals =
         new ConcurrentDictionary<string, SignalHandle>();
 
-    private readonly SseSignalOptions _optionsSnapshot;
+    private readonly SseSignalOptions _signalOptions;
 
     public SseSignalRegistry(IOptionsMonitor<SseSignalOptions> optionsMonitor, ILoggerFactory loggerFactory)
     {
-        _optionsSnapshot = optionsMonitor.CurrentValue;
+        _signalOptions = optionsMonitor.CurrentValue;
         _loggerFactory = loggerFactory;
     }
 
     public ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
         Dispose();
         return ValueTask.CompletedTask;
     }
 
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
         foreach ((_, SignalHandle handle) in _signals) handle.Dispose();
         _signals.Clear();
-        GC.SuppressFinalize(this);
     }
 
     public SignalHandle GetSignal(string key, CancellationToken cancellationToken = default)

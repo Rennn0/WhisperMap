@@ -1,27 +1,17 @@
 ﻿using System.Collections.Concurrent;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace XcLib.Sse.Core.Signal;
 
 public abstract class SseSignal<T> : IDisposable, IAsyncDisposable
 {
-    private enum SignalLogs
-    {
-        Wait = 200,
-        CancelledWaiter,
-        CompletedWaiters,
-        ExcCannotAdd,
-        Dispose
-    }
-
-    private readonly ILogger<SseSignal<T>> _logger;
+    private readonly ILogger _logger;
     private readonly ConcurrentDictionary<Guid, TaskCompletionSource<T>> _waiters;
 
     protected SseSignal(ILoggerFactory loggerFactory)
     {
         _waiters = new ConcurrentDictionary<Guid, TaskCompletionSource<T>>();
-        _logger = loggerFactory.CreateLogger<SseSignal<T>>();
+        _logger = loggerFactory.CreateLogger($"XcLib.Signal.{nameof(SseSignal<T>)}<{typeof(T).Name}>");
     }
 
     public int Waiters => _waiters.Count;
@@ -84,6 +74,7 @@ public abstract class SseSignal<T> : IDisposable, IAsyncDisposable
 
     public virtual void Dispose()
     {
+        GC.SuppressFinalize(this);
         foreach (TaskCompletionSource<T> taskCompletionSource in _waiters.Values) taskCompletionSource.TrySetCanceled();
         _waiters.Clear();
         _logger.LogDebug(new EventId((int)SignalLogs.Dispose, nameof(SignalLogs.Dispose)),
@@ -92,7 +83,17 @@ public abstract class SseSignal<T> : IDisposable, IAsyncDisposable
 
     public virtual ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
         Dispose();
         return ValueTask.CompletedTask;
+    }
+
+    private enum SignalLogs
+    {
+        Wait = 200,
+        CancelledWaiter,
+        CompletedWaiters,
+        ExcCannotAdd,
+        Dispose
     }
 }

@@ -11,14 +11,12 @@ public abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
 
     private int _disposed;
 
-    protected SseStream(ILoggerFactory loggerFactory)
-    {
-        Logger = loggerFactory.CreateLogger<SseStream<T>>();
-    }
+    protected SseStream(ILoggerFactory loggerFactory) =>
+        Logger = loggerFactory.CreateLogger($"XcLib.Stream.{nameof(SseStream<T>)}<{typeof(T).Name}>");
 
     protected bool IsDisposed => Volatile.Read(ref _disposed) == 1;
 
-    protected ILogger<SseStream<T>> Logger { get; init; }
+    protected ILogger Logger { get; init; }
 
     public int SubscribersCount => _subscribers.Count;
 
@@ -46,25 +44,25 @@ public abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         ThrowIfDisposed();
         string id = streamId ?? Guid.NewGuid().ToString("N");
 
-        // ReSharper disable once HeapView.CanAvoidClosure
-        StreamSubscriber sub = _subscribers.GetOrAdd(id, key =>
+        if (_subscribers.TryGetValue(id, out StreamSubscriber? subscriber))
+            return new StreamSubscription(this, subscriber, cancellationToken);
+
+        Channel<T> channel = Channel.CreateBounded<T>(new BoundedChannelOptions(100)
         {
-            Channel<T> channel = Channel.CreateBounded<T>(new BoundedChannelOptions(100)
-            {
-                SingleReader = true,
-                SingleWriter = false,
-                FullMode = BoundedChannelFullMode.DropOldest,
-                AllowSynchronousContinuations = false
-            });
-        
-            Logger.LogDebug(new EventId((int)StreamLogs.Subscribe, nameof(StreamLogs.Subscribe)),
-                "New subscriber {Id}, subs {Count}", id,
-                _subscribers.Count);
-        
-            return new StreamSubscriber(id, channel);
+            SingleReader = true,
+            SingleWriter = false,
+            FullMode = BoundedChannelFullMode.DropOldest,
+            AllowSynchronousContinuations = false
         });
 
-        return new StreamSubscription(this, sub, cancellationToken);
+        subscriber = new StreamSubscriber(id, channel);
+        _subscribers[id] = subscriber;
+
+        Logger.LogDebug(new EventId((int)StreamLogs.Subscribe, nameof(StreamLogs.Subscribe)),
+            "New subscriber {Id}, subs {Count}", id,
+            _subscribers.Count);
+
+        return new StreamSubscription(this, subscriber, cancellationToken);
     }
 
     public ValueTask PublishAsync(T value, CancellationToken cancellationToken)

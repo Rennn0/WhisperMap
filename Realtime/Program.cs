@@ -1,4 +1,3 @@
-using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Realtime.Background;
@@ -7,7 +6,6 @@ using XcLib.Sse.Core.Signal;
 using XcLib.Sse.Core.Stream;
 using XcLib.Sse.Core.Streamer;
 using XcLib.Sse.DataProvider;
-using XcLib.Sse.Formatters;
 using XcLib.Sse.Options;
 
 namespace Realtime;
@@ -22,7 +20,7 @@ public static class Program
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
-        builder.Services.AddSseService(builder.Configuration.GetSection("SseOptions"));
+        builder.Services.AddSseService("SseOptions");
 
         builder.Services.AddHostedService<UserStatsBackgroundService>();
 
@@ -47,9 +45,17 @@ public static class Program
         WebApplication app = builder.Build();
         app.UseCors();
 
-        app.MapGet("/cache", ([FromServices]IDistributedCache cache,[FromQuery(Name="k")]string key,[FromQuery(Name="v")]string value) =>
+        app.MapGet("/cache", (
+            [FromServices] IDistributedCache cache,
+            [FromServices] SseSignalRegistry<UserStats> signalReg,
+            [FromQuery(Name = "k")] string key,
+            [FromQuery(Name = "v")] string value) =>
         {
-            cache.Set(key, Encoding.UTF8.GetBytes(value));
+            // #NOTE table daamate cli_dan
+            // cache.Set(key, Encoding.UTF8.GetBytes(value));
+
+            signalReg.GetSignal("users").PublishAsync(new UserStats { Offline = 99, Online = 33 }).GetAwaiter()
+                .GetResult();
             return "x";
         });
 
@@ -58,31 +64,36 @@ public static class Program
         streamGroup.MapGet("/u",
             async (HttpContext context,
                 [FromQuery(Name = "sid")] string? streamId,
-                [FromServices] SseStreamer.StreamerFactory streamerFactory,
-                [FromServices] SseStreamRegistry<UserStats> sseStreamRegistry,
                 [FromServices] SseSignalRegistry<UserStats> sseSignalRegistry,
-                [FromServices] SseEventFormatter<UserStats> sseEventFormatter,
+                [FromKeyedServices(StreamerType.Signal)]
+                SseStreamer<UserStats> streamer,
                 [FromServices] ISseDataProvider<UserStats> sseDataProvider) =>
             {
                 CancellationToken cancellationToken = context.RequestAborted;
-                // SseStreamRegistry<UserStats>.StreamHandle handle =
-                //     sseStreamRegistry.GetStream("users", cancellationToken);
-                // SseStream<UserStats>.StreamSubscription subscription =
-                //     handle.Subscribe(streamId, cancellationToken);
-                // UserStats initialVal = await sseDataProvider.GetAsync(handle, cancellationToken);
 
                 SseSignalRegistry<UserStats>.SignalHandle handle =
                     sseSignalRegistry.GetSignal("users", cancellationToken);
 
-                await streamerFactory(SseStreamer.StreamerType.Signal).StreamAsync(handle, "users handle",
-                    TimeSpan.FromSeconds(1), sseEventFormatter);
+                await streamer.StreamAsync(handle, "users handle");
+            });
 
-                // await streamerFactory(SseStreamer.StreamerType.Enumerable).StreamAsync(
-                //     subscription.ReadAllAsync(cancellationToken),
-                //     string.Empty,
-                //     TimeSpan.FromSeconds(10),
-                //     sseEventFormatter,
-                //     initialVal);
+        streamGroup.MapGet("/s",
+            async (HttpContext context,
+                [FromQuery(Name = "sid")] string? streamId,
+                [FromServices] SseStreamRegistry<UserStats> sseStreamRegistry,
+                [FromKeyedServices(StreamerType.Channel)]
+                SseStreamer<UserStats> streamer,
+                [FromServices] ISseDataProvider<UserStats> sseDataProvider) =>
+            {
+                CancellationToken cancellationToken = context.RequestAborted;
+                SseStreamRegistry<UserStats>.StreamHandle handle =
+                    sseStreamRegistry.GetStream("users", cancellationToken);
+                SseStream<UserStats>.StreamSubscription subscription =
+                    handle.Subscribe(streamId, cancellationToken);
+
+                UserStats initialVal = await sseDataProvider.GetAsync(handle, cancellationToken);
+
+                await streamer.StreamAsync(subscription.Reader, string.Empty);
             });
 
         await app.RunAsync();

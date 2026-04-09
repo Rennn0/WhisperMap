@@ -1,22 +1,35 @@
 ﻿using System.Threading.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using XcLib.Sse.Core.Signal;
 using XcLib.Sse.Formatters;
+using XcLib.Sse.Options;
 
 namespace XcLib.Sse.Core.Streamer;
 
-public class SseChannelStreamer : SseStreamer
+public class SseChannelStreamer<T> : SseStreamer<T>
 {
-    public SseChannelStreamer(IHttpContextAccessor context, ILoggerFactory factory)
-        : base(context, factory, CancellationToken.None) => Logger = LogFactory.CreateLogger<SseChannelStreamer>();
+    public SseChannelStreamer(IHttpContextAccessor context,
+        IOptionsMonitor<SseOptions> defaultOptions,
+        SseEventFormatter<T> formatter,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken = default)
+        : base(context, defaultOptions, formatter, loggerFactory, cancellationToken) =>
+        Logger = loggerFactory.CreateLogger($"XcLib.Streamer.{nameof(SseChannelStreamer<T>)}<{typeof(T).Name}>");
 
-    public SseChannelStreamer(IHttpContextAccessor context, ILoggerFactory factory, CancellationToken cancellationToken)
-        : base(context, factory, cancellationToken) => Logger = LogFactory.CreateLogger<SseChannelStreamer>();
+    public override Task StreamAsync(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
+        SseEventFormatter<T> formatter) => throw new NotImplementedException();
 
-    public override async Task StreamAsync<T>(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval,
+    public override Task StreamAsync(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
+        SseEventFormatter<T> formatter,
+        T initialValue = default!) =>
+        throw new NotImplementedException();
+
+    public override async Task StreamAsync(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter)
     {
-        Logger.LogDebug(new EventId((int)SseLogs.StartStream, nameof(SseLogs.StartStream)),
+        Logger.LogDebug(new EventId((int)StreamerLogs.StartStream, nameof(StreamerLogs.StartStream)),
             "Starting SSE streaming for {RequestPath}, event {EventName}", Context.Request.Path, eventName);
 
         try
@@ -31,7 +44,7 @@ public class SseChannelStreamer : SseStreamer
                 {
                     if (!await waitForDataTask)
                     {
-                        Logger.LogDebug(new EventId((int)SseLogs.EndStream, nameof(SseLogs.EndStream)),
+                        Logger.LogDebug(new EventId((int)StreamerLogs.EndStream, nameof(StreamerLogs.EndStream)),
                             "End channel streaming for {RequestPath}, event {EventName}", Context.Request.Path,
                             eventName);
                         break;
@@ -48,12 +61,13 @@ public class SseChannelStreamer : SseStreamer
         }
         catch (OperationCanceledException)
         {
-            Logger.LogDebug(new EventId((int)SseLogs.ExcStreamCancelled, nameof(SseLogs.ExcStreamCancelled)),
+            Logger.LogDebug(new EventId((int)StreamerLogs.ExcStreamCancelled, nameof(StreamerLogs.ExcStreamCancelled)),
                 "Streaming for {RequestPath}, event {EventName} cancelled", Context.Request.Path, eventName);
         }
         catch (Exception e)
         {
-            Logger.LogError(new EventId((int)SseLogs.ExcStreamDestroyed, nameof(SseLogs.ExcStreamDestroyed)), e,
+            Logger.LogError(new EventId((int)StreamerLogs.ExcStreamDestroyed, nameof(StreamerLogs.ExcStreamDestroyed)),
+                e,
                 "Streaming for {RequestPath}, event {EventName} destroyed, exception {Exception}",
                 Context.Request.Path, eventName, e.Message);
         }

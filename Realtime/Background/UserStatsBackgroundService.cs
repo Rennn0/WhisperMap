@@ -1,5 +1,4 @@
 ﻿using Realtime.SseFeatures.Formatters;
-using XcLib.Sse.Core.Signal;
 using XcLib.Sse.Core.Stream;
 using XcLib.Sse.DataProvider;
 
@@ -9,13 +8,11 @@ internal class UserStatsBackgroundService : BackgroundService
 {
     private readonly ISseDataProvider<UserStats> _sseDataProvider;
     private readonly SseStreamRegistry<UserStats> _registry;
-    private readonly SseSignalRegistry<UserStats> _sseSignalRegistry;
 
-    public UserStatsBackgroundService(SseStreamRegistry<UserStats> sseStreamRegistry,SseSignalRegistry<UserStats> sseSignalRegistry,
+    public UserStatsBackgroundService(SseStreamRegistry<UserStats> sseStreamRegistry,
         ISseDataProvider<UserStats> sseDataProvider)
     {
         _registry = sseStreamRegistry;
-        _sseSignalRegistry = sseSignalRegistry;
         _sseDataProvider = sseDataProvider;
     }
 
@@ -32,9 +29,7 @@ internal class UserStatsBackgroundService : BackgroundService
                 await streamHandle.PublishAsync(stats, stoppingToken);
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
-            
-            await _sseSignalRegistry.GetSignal("users", stoppingToken).PublishAsync(new UserStats(){Offline = 22,Online = 1},stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(13), stoppingToken);
         }
     }
 }

@@ -20,13 +20,20 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
+        services.AddOptions<SseOptions>()
+            .Bind(configuration)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddOptions<SseSignalOptions>()
             .Bind(configuration)
-            .ValidateDataAnnotations();
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddOptions<SseStreamOptions>()
             .Bind(configuration)
-            .ValidateDataAnnotations();
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         return services.AddSseCore(assemblies);
     }
@@ -39,6 +46,10 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrWhiteSpace(sectionName);
 
+        services.AddOptionsWithValidateOnStart<SseOptions>()
+            .BindConfiguration(sectionName)
+            .ValidateDataAnnotations();
+        
         services.AddOptionsWithValidateOnStart<SseSignalOptions>()
             .BindConfiguration(sectionName)
             .ValidateDataAnnotations();
@@ -73,12 +84,9 @@ public static class ServiceCollectionExtensions
         services.AddLogging();
         services.AddHttpContextAccessor();
 
-        services.TryAddKeyedTransient<SseStreamer, SseSignalStreamer>(SseStreamer.StreamerType.Signal);
-        services.TryAddKeyedTransient<SseStreamer, SseEnumerableStreamer>(SseStreamer.StreamerType.Enumerable);
-        services.TryAddKeyedTransient<SseStreamer, SseChannelStreamer>(SseStreamer.StreamerType.Channel);
-
-        services.TryAddTransient<SseStreamer.StreamerFactory>(sp =>
-            key => sp.GetRequiredKeyedService<SseStreamer>(key));
+        services.TryAddKeyedTransient(typeof(SseStreamer<>), StreamerType.Signal, typeof(SseSignalStreamer<>));
+        services.TryAddKeyedTransient(typeof(SseStreamer<>), StreamerType.Enumerable, typeof(SseEnumerableStreamer<>));
+        services.TryAddKeyedTransient(typeof(SseStreamer<>), StreamerType.Channel, typeof(SseChannelStreamer<>));
 
         services.TryAddSingleton(typeof(SseStreamRegistry<>));
         services.TryAddSingleton(typeof(SseSignalRegistry<>));

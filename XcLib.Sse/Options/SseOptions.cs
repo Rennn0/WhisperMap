@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace XcLib.Sse.Options;
 
-public abstract class SseOptions
+public class SseOptions
 {
-    public bool Enabled { get; init; }
+    [Range(1, uint.MaxValue)] public uint PingInterval { get; init; }
 }
