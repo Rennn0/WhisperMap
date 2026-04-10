@@ -26,14 +26,12 @@ public static class Program
         builder.Configuration.ConfigureSseDefaults();
         builder.Services.AddSseService();
 
-        builder.Services.AddAntiforgery();
-        
         builder.Services.AddCors(opt =>
         {
             opt.AddPolicy("prod", pol =>
             {
                 pol.WithMethods("GET");
-                pol.WithOrigins("https://xati.org");
+                pol.WithOrigins("https://xati.org", "https://api.xati.org");
                 
             });
             opt.AddPolicy("dev", pol =>
@@ -74,7 +72,6 @@ public static class Program
         else
         {
             app.UseCors("prod");
-            app.UseAntiforgery();
         }
 
         app.MapGet("/cache", (
