@@ -41,8 +41,6 @@ public static class Program
             });
         });
 
-        Console.WriteLine("conn string " + builder.Configuration.GetConnectionString("SqlDefault"));
-        
         builder.Services.AddDbContext<RealtimeDbContext>(opt =>
         {
             opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlDefault"),
@@ -79,7 +77,7 @@ public static class Program
         RouteGroupBuilder realtimeGroup = app.MapGroup("/realtime");
         RouteGroupBuilder streamGroup = realtimeGroup.MapGroup("/stream");
 
-        realtimeGroup.MapGet("/cache", (
+        streamGroup.MapGet("/cache", (
             [FromServices] IDistributedCache cache,
             [FromServices] SseSignalRegistry<UserStats> signalReg,
             [FromServices] ILogger<WebApplication> logger,
