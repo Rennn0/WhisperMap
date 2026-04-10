@@ -18,7 +18,7 @@ public partial class RealtimeDbContext : DbContext
     public virtual DbSet<RealtimeCache> RealtimeCaches { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("");
+        => base.OnConfiguring(optionsBuilder);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
