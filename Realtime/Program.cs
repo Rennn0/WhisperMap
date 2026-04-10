@@ -41,6 +41,8 @@ public static class Program
             });
         });
 
+        Console.WriteLine("conn string " + builder.Configuration.GetConnectionString("SqlDefault"));
+        
         builder.Services.AddDbContext<RealtimeDbContext>(opt =>
         {
             opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlDefault"),
