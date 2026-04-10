@@ -28,8 +28,6 @@ public static class Program
 
         builder.Services.AddCors(opt =>
         {
-            opt.AddDefaultPolicy(cpb => cpb.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
-            
             opt.AddPolicy("prod", pol =>
             {
                 pol.WithMethods("GET");
@@ -69,15 +67,15 @@ public static class Program
 
         app.UseCors();
 
-        // if (app.Environment.IsDevelopment())
-        // {
-        //     app.UseCors("dev");
-        //     app.UseDeveloperExceptionPage();
-        // }
-        // else
-        // {
-        //     app.UseCors("prod");
-        // }
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseCors("dev");
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseCors("prod");
+        }
 
         RouteGroupBuilder realtimeGroup = app.MapGroup("/realtime");
         RouteGroupBuilder streamGroup = realtimeGroup.MapGroup("/stream");
@@ -99,7 +97,7 @@ public static class Program
                 SlidingExpiration = TimeSpan.FromMinutes(1)
             });
 
-            logger.LogWarning("hello there");
+            logger.LogWarning("hello there" + DateTimeOffset.UtcNow.ToLocalTime());
 
             signalReg.GetSignal("users").PublishAsync(new UserStats { Offline = 99, Online = 33 }).GetAwaiter()
                 .GetResult();

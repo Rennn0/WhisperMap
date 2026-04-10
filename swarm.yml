@@ -73,7 +73,16 @@ services:
         published: 1433
         protocol: tcp
         mode: host
-
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [ node.labels.db == true ]
+      resources:
+        reservations:
+          memory: 2G
+        limits:
+          memory: 4G
+  
   mongo:
     image: mongodb/mongodb-community-server:8.0-ubi8
     secrets:
@@ -157,6 +166,8 @@ secrets:
   postgres_password:
     external: true
   postgres_user:
+    external: true
+  sql_password:
     external: true
   xc_appsettings_prod:
     external: true
