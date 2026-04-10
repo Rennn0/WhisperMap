@@ -31,8 +31,8 @@ public static class Program
             opt.AddPolicy("prod", pol =>
             {
                 pol.WithMethods("GET");
-                pol.WithOrigins("https://xati.org", "https://api.xati.org");
-                
+                pol.WithOrigins("https://xati.org", "https://api.xati.org", "https://www.xati.org",
+                    "https://www.api.xati.org");
             });
             opt.AddPolicy("dev", pol =>
             {
@@ -74,7 +74,10 @@ public static class Program
             app.UseCors("prod");
         }
 
-        app.MapGet("/cache", (
+        RouteGroupBuilder realtimeGroup = app.MapGroup("/realtime");
+        RouteGroupBuilder streamGroup = realtimeGroup.MapGroup("/stream");
+
+        realtimeGroup.MapGet("/cache", (
             [FromServices] IDistributedCache cache,
             [FromServices] SseSignalRegistry<UserStats> signalReg,
             [FromServices] ILogger<WebApplication> logger,
@@ -92,14 +95,12 @@ public static class Program
             });
 
             logger.LogWarning("hello there");
-            
+
             signalReg.GetSignal("users").PublishAsync(new UserStats { Offline = 99, Online = 33 }).GetAwaiter()
                 .GetResult();
             return "x";
         });
-
-        RouteGroupBuilder realtimeGroup = app.MapGroup("/realtime");
-        RouteGroupBuilder streamGroup = realtimeGroup.MapGroup("/stream");
+        
         streamGroup.MapGet("/signal",
             async (HttpContext context,
                 [FromQuery(Name = "sid")] string? streamId,
