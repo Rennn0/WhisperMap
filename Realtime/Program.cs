@@ -1,6 +1,9 @@
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Realtime.Background;
+using Realtime.Context;
 using Realtime.SseFeatures.Formatters;
 using XcLib.Sse;
 using XcLib.Sse.Core.Signal;
@@ -19,42 +22,78 @@ public static class Program
         const string swarmAppSettingsPath = "/run/secrets/appsettings.Production.json";
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
-
+        
         builder.Configuration.ConfigureSseDefaults();
         builder.Services.AddSseService();
-
-        builder.Services.AddHostedService<UserStatsBackgroundService>();
-
+        
         builder.Services.AddCors(opt =>
         {
-            opt.AddDefaultPolicy(pol =>
+            opt.AddPolicy("prod", pol =>
             {
-                pol.AllowAnyHeader();
-                pol.AllowAnyMethod();
-                pol.AllowAnyOrigin();
+                pol.WithMethods("GET");
+                pol.WithOrigins("https://xati.org");
+                
+            });
+            opt.AddPolicy("dev", pol =>
+            {
+                pol.WithMethods("GET");
+                pol.WithOrigins("http://localhost:18000");
             });
         });
 
-        builder.Services.AddDistributedSqlServerCache(options =>
+        builder.Services.AddDbContext<RealtimeDbContext>(opt =>
         {
-            options.ConnectionString = "Server=localhost;Database=master;User Id=sa;Password=Test123test;Trusted_Connection=False;Persist Security Info=False;Encrypt=False";
-            options.SchemaName = "cache";
-            options.TableName = "RealtimeCache";
-            options.DefaultSlidingExpiration = TimeSpan.FromMinutes(5);
+            opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlDefault"),
+                sqlOpt => { sqlOpt.EnableRetryOnFailure(); });
+
+            opt.EnableSensitiveDataLogging(false);
+            opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
         
+        builder.Services.AddDistributedSqlServerCache(options =>
+        {
+            options.ConnectionString = builder.Configuration.GetConnectionString("SqlDefault");
+            options.SchemaName = "cache";
+            options.TableName = "RealtimeCache";
+            options.DefaultSlidingExpiration = TimeSpan.FromMinutes(10);
+            options.ExpiredItemsDeletionInterval = TimeSpan.FromMinutes(5);
+        });
+
+        builder.Logging.AddEntityFramework<RealtimeDbContext>();
+
+        builder.Services.AddHostedService<UserStatsBackgroundService>();
+        
         WebApplication app = builder.Build();
-        app.UseCors();
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseCors("dev");
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseCors("prod");
+            app.UseAntiforgery();
+        }
 
         app.MapGet("/cache", (
             [FromServices] IDistributedCache cache,
             [FromServices] SseSignalRegistry<UserStats> signalReg,
+            [FromServices] ILogger<WebApplication> logger,
             [FromQuery(Name = "k")] string key,
             [FromQuery(Name = "v")] string value) =>
         {
-            // #NOTE table daamate cli_dan
-            // cache.Set(key, Encoding.UTF8.GetBytes(value));
+            // byte[]? c1 = cache.Get(key);
+            // byte[]? c2 = cache.Get(key + "2");
 
+            cache.Set(key, Encoding.UTF8.GetBytes(value));
+            cache.Set(key + "2", Encoding.UTF8.GetBytes(value), new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10),
+                SlidingExpiration = TimeSpan.FromMinutes(1)
+            });
+
+            logger.LogWarning("hello there");
+            
             signalReg.GetSignal("users").PublishAsync(new UserStats { Offline = 99, Online = 33 }).GetAwaiter()
                 .GetResult();
             return "x";
@@ -62,7 +101,7 @@ public static class Program
 
         RouteGroupBuilder realtimeGroup = app.MapGroup("/realtime");
         RouteGroupBuilder streamGroup = realtimeGroup.MapGroup("/stream");
-        streamGroup.MapGet("/u",
+        streamGroup.MapGet("/signal",
             async (HttpContext context,
                 [FromQuery(Name = "sid")] string? streamId,
                 [FromServices] SseSignalRegistry<UserStats> sseSignalRegistry,
@@ -78,11 +117,11 @@ public static class Program
                 await streamer.StreamAsync(handle);
             });
 
-        streamGroup.MapGet("/s",
+        streamGroup.MapGet("/u",
             async (HttpContext context,
                 [FromQuery(Name = "sid")] string? streamId,
                 [FromServices] SseStreamRegistry<UserStats> sseStreamRegistry,
-                [FromKeyedServices(StreamerType.Channel)]
+                [FromKeyedServices(StreamerType.Enumerable)]
                 SseStreamer<UserStats> streamer,
                 [FromServices] ISseDataProvider<UserStats> sseDataProvider) =>
             {
@@ -94,7 +133,7 @@ public static class Program
 
                 UserStats initialVal = await sseDataProvider.GetAsync(handle, cancellationToken);
 
-                await streamer.StreamAsync(subscription.Reader);
+                await streamer.StreamAsync(subscription.ReadAllAsync(cancellationToken), initialValue: initialVal);
             });
 
         await app.RunAsync();

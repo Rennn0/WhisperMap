@@ -97,6 +97,7 @@ public class ProductController : ApplicationController
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("{id}")]
+    [ResponseCache(Location = ResponseCacheLocation.Client, NoStore = false, Duration = 300)]
     public async Task<ApiContract> GetProduct([FromServices] IGetProductHandler handler, [FromRoute] string id,
         CancellationToken cancellationToken) =>
         await handler.HandleAsync(new GetProductContext(id) { UserId = UserIdC }, cancellationToken);

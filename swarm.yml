@@ -60,6 +60,24 @@ services:
     deploy:
       placement:
         constraints: [ node.labels.db == true ]
+  
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    secrets:
+      - sql_password
+    environment:
+      ACCEPT_EULA: "Y"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        export MSSQL_SA_PASSWORD="$(cat /run/secrets/sql_password)"
+        exec /opt/mssql/bin/sqlserver
+    ports:
+      - target: 1433
+        published: 1433
+        protocol: tcp
+        mode: host
 
   mongo:
     image: mongodb/mongodb-community-server:8.0-ubi8
@@ -144,6 +162,8 @@ secrets:
   postgres_password:
     external: true
   postgres_user:
+    external: true
+  sql_password:
     external: true
   xc_appsettings_prod:
     external: true

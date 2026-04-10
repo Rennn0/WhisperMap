@@ -1,23 +1,23 @@
 ﻿version: "3.8"
 
 services:
-  realtime:
-    build:
-      context: .
-      dockerfile: Realtime/Dockerfile
-    container_name: xc-realtime
-    networks:
-      - xc-network
-    ports:
-      - "8889:8889"
+  #  realtime:
+  #    build:
+  #      context: .
+  #      dockerfile: Realtime/Dockerfile
+  #    container_name: xc-realtime
+  #    networks:
+  #      - xc-network
+  #    ports:
+  #      - "8889:8889"
 
   postgres:
     image: docker.io/library/postgres:16
     container_name: xc-pg
     mem_reservation: 512m
     environment:
-      POSTGRES_USER: test
-      POSTGRES_PASSWORD: testTest123
+      POSTGRES_USER: "test"
+      POSTGRES_PASSWORD: "testTest123"
       POSTGRES_DB: xc-db
     ports:
       - "5442:5432"
@@ -33,8 +33,8 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: test
-      MONGO_INITDB_ROOT_PASSWORD: testTest123
+      MONGO_INITDB_ROOT_USERNAME: "test"
+      MONGO_INITDB_ROOT_PASSWORD: "testTest123"
     volumes:
       - mongo-data:/data/db
       - mongo-config:/data/configdb
@@ -69,6 +69,8 @@ services:
       MSSQL_SA_PASSWORD: "Test123test"
     ports:
       - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
         
 networks:
   xc-network:
@@ -78,3 +80,4 @@ volumes:
   pgdata:
   mongo-data:
   mongo-config:
+  sqldata:
