@@ -25,6 +25,8 @@ public static class Program
         
         builder.Configuration.ConfigureSseDefaults();
         builder.Services.AddSseService();
+
+        builder.Services.AddAntiforgery();
         
         builder.Services.AddCors(opt =>
         {
