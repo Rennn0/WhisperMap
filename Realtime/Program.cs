@@ -28,6 +28,8 @@ public static class Program
 
         builder.Services.AddCors(opt =>
         {
+            opt.AddDefaultPolicy(cpb => cpb.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+            
             opt.AddPolicy("prod", pol =>
             {
                 pol.WithMethods("GET");
@@ -64,15 +66,18 @@ public static class Program
         builder.Services.AddHostedService<UserStatsBackgroundService>();
         
         WebApplication app = builder.Build();
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseCors("dev");
-            app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            app.UseCors("prod");
-        }
+
+        app.UseCors();
+
+        // if (app.Environment.IsDevelopment())
+        // {
+        //     app.UseCors("dev");
+        //     app.UseDeveloperExceptionPage();
+        // }
+        // else
+        // {
+        //     app.UseCors("prod");
+        // }
 
         RouteGroupBuilder realtimeGroup = app.MapGroup("/realtime");
         RouteGroupBuilder streamGroup = realtimeGroup.MapGroup("/stream");
