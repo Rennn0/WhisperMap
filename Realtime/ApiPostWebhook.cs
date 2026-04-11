@@ -81,7 +81,7 @@ public static partial class Program
                         {
                             FileName = "/bin/bash",
                             ArgumentList = { scriptPath },
-                            RedirectStandardInput = true,
+                            RedirectStandardOutput = true,
                             RedirectStandardError = true,
                             UseShellExecute = false
                         }
