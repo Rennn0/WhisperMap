@@ -22,8 +22,9 @@ public static partial class Program
                                       """;
         builder.MapPost("{idx:int}",
             async ([FromRoute] int idx, [FromBody] JsonDocument webHookJson,
-                [FromServices] ILogger<RouteGroupBuilder> logger) =>
+                [FromServices] ILoggerFactory loggerFactory) =>
             {
+                ILogger logger = loggerFactory.CreateLogger("webhook");
                 logger.LogInformation(webHookJson.RootElement.ToString());
 
                 string? serviceName = idx switch
@@ -74,7 +75,7 @@ public static partial class Program
                         StartInfo = new ProcessStartInfo
                         {
                             FileName = "/bin/sh",
-                            ArgumentList = { scriptPath },
+                            ArgumentList = { "-c", $"{scriptPath} > /tmp/webhook-{idx}.log 2>&1 &" },
                             RedirectStandardOutput = true,
                             RedirectStandardError = true,
                             UseShellExecute = false
@@ -82,25 +83,15 @@ public static partial class Program
                     };
 
                     proc.Start();
-                    string stdOut = await proc.StandardOutput.ReadToEndAsync();
-                    string stdErr = await proc.StandardError.ReadToEndAsync();
-                    await proc.WaitForExitAsync();
+                    logger.LogWarning("Started webhook update for idx {Idx}, service {Service}", idx, serviceName);
 
-                    logger.LogError(stdErr);
-                    logger.LogWarning(stdOut);
-
-                    return proc.ExitCode == 0
-                        ? Results.Ok(new
-                        {
-                            success = true,
-                            idx,
-                            service = serviceName,
-                            output = stdOut
-                        })
-                        : Results.Problem(
-                            title: "Script execution failed",
-                            detail: stdErr,
-                            statusCode: StatusCodes.Status500InternalServerError);
+                    return Results.Ok(new
+                    {
+                        success = true,
+                        idx,
+                        service = serviceName,
+                        started = true
+                    });
                 }
                 catch (Exception ex)
                 {

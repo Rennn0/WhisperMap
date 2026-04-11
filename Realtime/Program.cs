@@ -68,7 +68,7 @@ public static partial class Program
         builder.Services.AddHostedService<UserStatsBackgroundService>();
         
         WebApplication app = builder.Build();
-        app.UseCors();
+        
         if (app.Environment.IsDevelopment())
         {
             app.UseCors("dev");
