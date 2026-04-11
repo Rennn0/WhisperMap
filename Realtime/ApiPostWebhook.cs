@@ -63,6 +63,7 @@ public static partial class Program
 
                     proc.Start();
                     await proc.WaitForExitAsync();
+                    
                     if (proc.ExitCode != 0)
                     {
                         string chmodErr = await proc.StandardError.ReadToEndAsync();
