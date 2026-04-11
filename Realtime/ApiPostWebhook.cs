@@ -24,7 +24,7 @@ public static partial class Program
             async ([FromRoute] int idx, [FromBody] JsonDocument webHookJson,
                 [FromServices] ILogger<RouteGroupBuilder> logger) =>
             {
-                logger.LogInformation(webHookJson.RootElement.ToString());
+                logger.LogWarning(webHookJson.RootElement.ToString());
 
                 string? serviceName = idx switch
                 {
@@ -50,7 +50,7 @@ public static partial class Program
                 string script = scriptTemplate
                     .Replace("__SERVICE__", serviceName, StringComparison.Ordinal)
                     .Replace("__IMAGE__", imageName, StringComparison.Ordinal);
-                logger.LogInformation(script);
+                logger.LogWarning(script);
                 string scriptPath = Path.Combine(Path.GetTempPath(), $"swarm_update_{Guid.NewGuid():N}.sh");
                 try
                 {
@@ -93,7 +93,7 @@ public static partial class Program
                     await proc.WaitForExitAsync();
 
                     logger.LogError(stdErr);
-                    logger.LogInformation(stdOut);
+                    logger.LogWarning(stdOut);
 
                     return proc.ExitCode == 0
                         ? Results.Ok(new
