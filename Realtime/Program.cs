@@ -80,12 +80,15 @@ public static partial class Program
         }
 
         RouteGroupBuilder mainGroup = app.MapGroup("/realtime");
+        RouteGroupBuilder webHookGroup = mainGroup.MapGroup("/webhook");
         RouteGroupBuilder streamGroup = mainGroup.MapGroup("/stream");
 
+        webHookGroup.ApiPostWebhook();
+        
         streamGroup.ApiGetStreamCache();
         streamGroup.ApiGetSignal();
         streamGroup.ApiGetStream();
-
+        
         await app.RunAsync();
     }
 }

@@ -33,6 +33,11 @@ services:
           memory: 512M
         reservations:
           memory: 256M
+      placement:
+        constraints:
+          - node.role == manager
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     secrets:
       - source: rt_appsettings_prod
         target: appsettings.Production.json
