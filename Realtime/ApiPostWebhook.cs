@@ -24,7 +24,7 @@ public static partial class Program
             async ([FromRoute] int idx, [FromBody] JsonDocument webHookJson,
                 [FromServices] ILogger<RouteGroupBuilder> logger) =>
             {
-                logger.LogWarning(webHookJson.RootElement.ToString());
+                logger.LogInformation(webHookJson.RootElement.ToString());
 
                 string? serviceName = idx switch
                 {
@@ -40,17 +40,11 @@ public static partial class Program
                     _ => null
                 };
 
-                string expectedRepo = idx switch
-                {
-                    1 => "rennn0/realtime",
-                    2 => "rennn0/xaticraft",
-                    _ => string.Empty
-                };
-
                 string script = scriptTemplate
                     .Replace("__SERVICE__", serviceName, StringComparison.Ordinal)
                     .Replace("__IMAGE__", imageName, StringComparison.Ordinal);
-                logger.LogWarning(script);
+
+                logger.LogInformation(script);
                 string scriptPath = Path.Combine(Path.GetTempPath(), $"swarm_update_{Guid.NewGuid():N}.sh");
                 try
                 {
@@ -111,18 +105,6 @@ public static partial class Program
                 catch (Exception ex)
                 {
                     return Results.Problem(ex.Message);
-                }
-                finally
-                {
-                    try
-                    {
-                        if (File.Exists(scriptPath))
-                            File.Delete(scriptPath);
-                    }
-                    catch
-                    {
-                        //ignored
-                    }
                 }
             });
     }
