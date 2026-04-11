@@ -1,6 +1,6 @@
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.DataProtection;
-using XatiCraft.Data.Repos.EfCoreImpl;
+using XcLib.Data.Postgres.XatiCraft.Context;
 
 namespace XatiCraft;
 

@@ -4,10 +4,6 @@ using System.Threading.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Metrics;
 using XatiCraft.ApiContracts;
-using XatiCraft.Data.Objects;
-using XatiCraft.Data.Repos;
-using XatiCraft.Data.Repos.EfCoreImpl;
-using XatiCraft.Data.Repos.MongoImpl;
 using XatiCraft.Guards;
 using XatiCraft.Handlers;
 using XatiCraft.Handlers.Api;
@@ -15,8 +11,12 @@ using XatiCraft.Handlers.Impl;
 using XatiCraft.Handlers.Read;
 using XatiCraft.Handlers.Upload;
 using XatiCraft.Settings;
-using ProductMetadataRepo = XatiCraft.Data.Repos.EfCoreImpl.ProductMetadataRepo;
-using ProductRepo = XatiCraft.Data.Repos.EfCoreImpl.ProductRepo;
+using XcLib.Data.Abstractions;
+using XcLib.Data.ApplicationObjects;
+using XcLib.Data.Mongo.XatiCraft;
+using XcLib.Data.Postgres.XatiCraft.Context;
+using ProductMetadataRepo = XcLib.Data.Postgres.XatiCraft.ProductMetadataRepo;
+using ProductRepo = XcLib.Data.Postgres.XatiCraft.ProductRepo;
 
 namespace XatiCraft;
 
@@ -28,9 +28,10 @@ public static class Program
     /// </summary>
     /// <param name="args"></param>
     public static async Task Main(string[] args)
-    {
+    {   
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
+        builder.Configuration.AddEnvironmentVariables();
+        
         const string swarmAppSettingsPath = "/run/secrets/appsettings.Production.json";
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
@@ -125,15 +126,17 @@ public static class Program
         builder.Services.AddTransient<Security, SimpleBase64Protector>();
         builder.Services.AddTransient<IProductRepo, ProductRepo>();
         builder.Services.AddTransient<IProductMetadaRepo, ProductMetadataRepo>();
+        
         string mongoConn = builder.Configuration.GetConnectionString("Mongo") ?? throw new Exception("MongoConnection");
-        builder.Services.AddTransient<IProductRepo, Data.Repos.MongoImpl.ProductRepo>(_ =>
-            new Data.Repos.MongoImpl.ProductRepo(mongoConn));
-        builder.Services.AddTransient<IProductMetadaRepo, Data.Repos.MongoImpl.ProductMetadataRepo>(_ =>
-            new Data.Repos.MongoImpl.ProductMetadataRepo(mongoConn));
+        builder.Services.AddTransient<IProductRepo, XcLib.Data.Mongo.XatiCraft.ProductRepo>(_ =>
+            new XcLib.Data.Mongo.XatiCraft.ProductRepo(mongoConn));
+        builder.Services.AddTransient<IProductMetadaRepo, XcLib.Data.Mongo.XatiCraft.ProductMetadataRepo>(_ =>
+            new XcLib.Data.Mongo.XatiCraft.ProductMetadataRepo(mongoConn));
         builder.Services.AddTransient<IAuthorizationRepo, AuthorizationRepo>(_ =>
             new AuthorizationRepo(mongoConn));
         builder.Services.AddTransient<IProductCartRepo, ProductCartRepo>(_ =>
             new ProductCartRepo(mongoConn));
+        
         builder.Services.AddTransient<IUploader, ClaudflareR2StorageService>();
         builder.Services.AddTransient<IReader, ClaudflareR2StorageService>();
         builder.Services.AddTransient<IProductManager, ProductManager>();

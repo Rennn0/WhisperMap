@@ -1,9 +1,9 @@
 using XatiCraft.ApiContracts;
-using XatiCraft.Data.Objects;
-using XatiCraft.Data.Repos;
-using XatiCraft.Data.Repos.MongoImpl;
 using XatiCraft.Handlers.Api;
-using ProductRepo = XatiCraft.Data.Repos.EfCoreImpl.ProductRepo;
+using XcLib.Data.Abstractions;
+using XcLib.Data.ApplicationObjects;
+using XcLib.Data.Mongo.XatiCraft;
+using ProductRepo = XcLib.Data.Postgres.XatiCraft.ProductRepo;
 
 namespace XatiCraft.Handlers.Impl;
 
@@ -26,7 +26,7 @@ internal class GetProductHandler : IGetProductHandler
     {
         IEnumerable<IProductRepo> repos = productRepos.ToList();
         _productRepos = repos.First(p => p is ProductRepo);
-        _productObjRepos = repos.First(p => p is Data.Repos.MongoImpl.ProductRepo);
+        _productObjRepos = repos.First(p => p is XcLib.Data.Mongo.XatiCraft.ProductRepo);
         _productCartHandler = productCartHandler;
         _productCartMongo = productCartRepos.First(x => x is ProductCartRepo);
     }

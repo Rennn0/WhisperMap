@@ -3,9 +3,9 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using XatiCraft.ApiContracts;
-using XatiCraft.Data.Objects;
-using XatiCraft.Data.Repos;
 using XatiCraft.Settings;
+using XcLib.Data.Abstractions;
+using XcLib.Data.ApplicationObjects;
 
 namespace XatiCraft.Handlers.Impl;
 

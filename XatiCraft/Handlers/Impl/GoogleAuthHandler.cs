@@ -3,11 +3,11 @@ using System.Text.Json;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Options;
 using XatiCraft.ApiContracts;
-using XatiCraft.Data.Objects;
-using XatiCraft.Data.Repos;
-using XatiCraft.Data.Repos.MongoImpl;
 using XatiCraft.Handlers.Api;
 using XatiCraft.Settings;
+using XcLib.Data.Abstractions;
+using XcLib.Data.ApplicationObjects;
+using XcLib.Data.Mongo.XatiCraft;
 
 namespace XatiCraft.Handlers.Impl;
 

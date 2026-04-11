@@ -1,7 +1,7 @@
 ﻿using XatiCraft.ApiContracts;
-using XatiCraft.Data.Objects;
-using XatiCraft.Data.Repos;
 using XatiCraft.Handlers.Api;
+using XcLib.Data.Abstractions;
+using XcLib.Data.ApplicationObjects;
 
 namespace XatiCraft.Handlers.Impl;
 

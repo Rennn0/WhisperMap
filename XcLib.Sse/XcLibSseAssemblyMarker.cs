@@ -1,5 +1,8 @@
 namespace XcLib.Sse;
 
-public sealed class XcLibSseAssemblyMarker
+public abstract class XcLibSseAssemblyMarker
 {
+    private XcLibSseAssemblyMarker()
+    {
+    }
 }

@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using XatiCraft.Data.Objects;
+using XcLib.Data.ApplicationObjects;
 
 namespace XatiCraft.ApiContracts;
 

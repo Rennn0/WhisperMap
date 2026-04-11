@@ -1,9 +1,9 @@
 ﻿using XatiCraft.ApiContracts;
-using XatiCraft.Data.Objects;
-using XatiCraft.Data.Repos;
-using XatiCraft.Data.Repos.MongoImpl;
 using XatiCraft.Handlers.Api;
-using ProductRepo = XatiCraft.Data.Repos.EfCoreImpl.ProductRepo;
+using XcLib.Data.Abstractions;
+using XcLib.Data.ApplicationObjects;
+using XcLib.Data.Mongo.XatiCraft;
+using ProductRepo = XcLib.Data.Postgres.XatiCraft.ProductRepo;
 
 namespace XatiCraft.Handlers.Impl;
 
@@ -30,7 +30,7 @@ internal class GetProductsCartHandler : IGetProductsHandler
 
         List<Product> products =
             await _productRepo.SelectAsync(cart.ProductIds.Select(long.Parse),
-                cursor: new GetProductsGeneralHandler.SearchCursor { BatchSize = (uint)cart.ProductIds.Count },
+                cursor: new GetProductsGeneralHandler.Cursor { BatchSize = (uint)cart.ProductIds.Count },
                 cancellationToken: cancellationToken);
         
         GetProductsContract contract = new GetProductsContract(products.Select(p =>

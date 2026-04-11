@@ -1,8 +1,8 @@
 using XatiCraft.ApiContracts;
-using XatiCraft.Data.Objects;
-using XatiCraft.Data.Repos;
-using XatiCraft.Data.Repos.EfCoreImpl;
 using XatiCraft.Handlers.Api;
+using XcLib.Data.Abstractions;
+using XcLib.Data.ApplicationObjects;
+using XcLib.Data.Postgres.XatiCraft;
 
 namespace XatiCraft.Handlers.Impl;
 
@@ -20,7 +20,7 @@ internal class ProductManager : IProductManager
     {
         IEnumerable<IProductRepo> repos = productRepos.ToList();
         _productRepo = repos.First(p => p is ProductRepo);
-        _productRepoMongo = repos.First(p => p is Data.Repos.MongoImpl.ProductRepo);
+        _productRepoMongo = repos.First(p => p is XcLib.Data.Mongo.XatiCraft.ProductRepo);
     }
 
     /// <summary>

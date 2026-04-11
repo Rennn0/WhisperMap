@@ -1,12 +1,11 @@
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using XatiCraft.ApiContracts;
-using XatiCraft.Data.Objects;
-using XatiCraft.Data.Repos;
-using XatiCraft.Data.Repos.EfCoreImpl;
 using XatiCraft.Guards;
 using XatiCraft.Handlers.Api;
+using XcLib.Data.Abstractions;
+using XcLib.Data.ApplicationObjects;
+using XcLib.Data.Postgres.XatiCraft;
 
 namespace XatiCraft.Handlers.Impl;
 
@@ -16,32 +15,17 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
 {
     private const int MaxLenDesc = 44;
     private const int MaxLenTitle = 32;
-    private const uint MaxBatchSize = 50;
-    private const uint DefaultBatchSize = 5;
     private readonly IProductRepo _productRepos;
     private static Security _security = null!;
 
-    internal sealed record SearchCursor
+    internal record Cursor : SearchCursor
     {
-        private uint? _batchSize;
-        [JsonPropertyName("0")] public long? Id { get; init; }
+        public override string Encode(SearchCursor cursor) => _security.Pack(JsonSerializer.Serialize(cursor));
 
-        [JsonPropertyName("1")]
-        public uint BatchSize
-        {
-            get => _batchSize ?? DefaultBatchSize;
-            set => _batchSize = Math.Min(value, MaxBatchSize);
-        }
-
-        [JsonPropertyName("2")] public DateTime? Timestamp { get; init; }
-        [JsonPropertyName("3")] public decimal? Price { get; init; }
-
-        internal static string Encode(SearchCursor cursor) => _security.Pack(JsonSerializer.Serialize(cursor));
-
-        internal static SearchCursor? Decode(string? token) =>
-            string.IsNullOrEmpty(token) ? null : JsonSerializer.Deserialize<SearchCursor>(_security.UnPack(token));
+        public override SearchCursor? Decode(string? token) =>
+            string.IsNullOrEmpty(token) ? null : JsonSerializer.Deserialize<Cursor>(_security.UnPack(token));
     }
-
+    
     /// <summary>
     /// </summary>
     /// <param name="productRepos"></param>
@@ -59,9 +43,9 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
     /// <returns></returns>
     public async ValueTask<ApiContract> HandleAsync(GetProductsContext context, CancellationToken cancellationToken)
     {
-        SearchCursor cursor = SearchCursor.Decode(context.ContinuationToken) ??
-                               new SearchCursor();
-        cursor.BatchSize = context.Batch ?? DefaultBatchSize;
+        Cursor def = new Cursor();
+        SearchCursor cursor = def.Decode(context.ContinuationToken) ?? def;
+        if (context.Batch.HasValue) cursor.BatchSize = context.Batch.Value;
         
         List<Product> products =
             await _productRepos.SelectAsync(context.Ids, context.OrderBy, context.Query, cursor,
@@ -86,7 +70,7 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
                 _ => throw new ArgumentOutOfRangeException(nameof(context), context, null)
             };
 
-            continuationToken = SearchCursor.Encode(nextCursor);
+            continuationToken = def.Encode(nextCursor);
         }
         
         GetProductsContract contract = new GetProductsContract(products.Select(p =>

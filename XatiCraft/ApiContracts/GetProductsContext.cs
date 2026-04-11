@@ -1,3 +1,5 @@
+using XcLib.Data.Abstractions;
+
 namespace XatiCraft.ApiContracts;
 
 /// <summary>

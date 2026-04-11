@@ -1,9 +1,9 @@
 using XatiCraft.ApiContracts;
-using XatiCraft.Data.Objects;
-using XatiCraft.Data.Repos;
-using XatiCraft.Data.Repos.EfCoreImpl;
 using XatiCraft.Handlers.Api;
 using XatiCraft.Handlers.Upload;
+using XcLib.Data.Abstractions;
+using XcLib.Data.ApplicationObjects;
+using XcLib.Data.Postgres.XatiCraft;
 
 namespace XatiCraft.Handlers.Impl;
 
