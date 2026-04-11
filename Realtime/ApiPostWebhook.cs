@@ -26,11 +26,6 @@ public static partial class Program
             {
                 logger.LogInformation(webHookJson.RootElement.ToString());
 
-                string? repo = webHookJson.RootElement.GetProperty("repository").GetProperty("repo_name").GetString();
-                string? tag = webHookJson.RootElement.GetProperty("push_data").GetProperty("tag").GetString();
-
-                if (string.IsNullOrEmpty(repo) || string.IsNullOrEmpty(tag)) throw new Exception("invalid repo/tag");
-
                 string? serviceName = idx switch
                 {
                     1 => "xc_realtime",
@@ -52,14 +47,6 @@ public static partial class Program
                     _ => string.Empty
                 };
 
-                if (!string.Equals(repo, expectedRepo, StringComparison.OrdinalIgnoreCase))
-                    return Results.Ok(new
-                    {
-                        success = true,
-                        skipped = true,
-                        reason = $"Repo mismatch. Expected '{expectedRepo}', got '{repo}'."
-                    });
-
                 string script = scriptTemplate
                     .Replace("__SERVICE__", serviceName, StringComparison.Ordinal)
                     .Replace("__IMAGE__", imageName, StringComparison.Ordinal);
@@ -74,9 +61,8 @@ public static partial class Program
                         {
                             FileName = "/bin/chmod",
                             ArgumentList = { "+x", scriptPath },
-                            RedirectStandardInput = true,
                             RedirectStandardError = true,
-                            UseShellExecute = true
+                            UseShellExecute = false
                         }
                     };
 
@@ -97,7 +83,7 @@ public static partial class Program
                             ArgumentList = { scriptPath },
                             RedirectStandardInput = true,
                             RedirectStandardError = true,
-                            UseShellExecute = true
+                            UseShellExecute = false
                         }
                     };
 
@@ -114,8 +100,6 @@ public static partial class Program
                         {
                             success = true,
                             idx,
-                            repo,
-                            tag,
                             service = serviceName,
                             output = stdOut
                         })
