@@ -11,17 +11,14 @@ namespace XcLib.Sse.Core.Streamer;
 public class SseEnumerableStreamer<T> : SseStreamer<T>
 {
     public SseEnumerableStreamer(IHttpContextAccessor context,
-        IOptionsMonitor<SseOptions> defaultOptions,
         IOptionsMonitor<SseStreamOptions> streamOptions,
         SseEventFormatter<T> formatter,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken = default) :
-        base(context, defaultOptions, formatter, loggerFactory, cancellationToken)
+        base(context, streamOptions, formatter, loggerFactory, cancellationToken)
     {
         Logger = loggerFactory.CreateLogger($"XcLib.Streamer.{nameof(SseEnumerableStreamer<T>)}<{typeof(T).Name}>");
-        PingInterval = TimeSpan.FromSeconds(streamOptions.CurrentValue.PingInterval);
-
-        Logger.LogTrace("ping interval {X}", PingInterval);
+        LogIntervalA(Logger, PingInterval);
     }
 
     public override Task StreamAsync(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
@@ -30,12 +27,11 @@ public class SseEnumerableStreamer<T> : SseStreamer<T>
     public override async Task StreamAsync(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter, T initialValue = default!)
     {
-        Logger.LogDebug(new EventId((int)StreamerLogs.StartStream, nameof(StreamerLogs.StartStream)),
-            "Starting SSE streaming for {a}, event {EventName}", Url, eventName);
+        LogStartStreamingForAEventEventname(Logger, Url, eventName);
 
         IAsyncEnumerator<T>? enumerator = null;
         Task<bool>? moveNextTask = null;
-
+        
         try
         {
             if (initialValue is not null)
@@ -46,6 +42,7 @@ public class SseEnumerableStreamer<T> : SseStreamer<T>
 
             while (!CancellationToken.IsCancellationRequested)
             {
+                heartbeatInterval = OptionsChanged ? PingInterval : heartbeatInterval;
                 Task pingTask = Task.Delay(heartbeatInterval, CancellationToken);
                 Task completed = await Task.WhenAny(moveNextTask, pingTask);
                 CancellationToken.ThrowIfCancellationRequested();
@@ -65,15 +62,12 @@ public class SseEnumerableStreamer<T> : SseStreamer<T>
         }
         catch (OperationCanceledException)
         {
-            Logger.LogDebug(new EventId((int)StreamerLogs.ExcStreamCancelled, nameof(StreamerLogs.ExcStreamCancelled)),
-                "Streaming for {RequestPath}, event {EventName} cancelled", Context.Request.Path, eventName);
+            LogStreamingForRequestpathEventEventnameCancelled(Logger, Url, eventName);
         }
         catch (Exception e)
         {
-            Logger.LogError(new EventId((int)StreamerLogs.ExcStreamDestroyed, nameof(StreamerLogs.ExcStreamDestroyed)),
-                e,
-                "Streaming for {RequestPath}, event {EventName} destroyed, exception {Exception}",
-                Context.Request.Path, eventName, e.Message);
+            LogStreamingForRequestpathEventEventnameDestroyedExceptionException(Logger, Url, eventName,
+                e.Message, e);
         }
         finally
         {
@@ -96,6 +90,8 @@ public class SseEnumerableStreamer<T> : SseStreamer<T>
                 {
                     // ignored
                 }
+
+            LogEndStreamingForRequestpathEventEventname(Logger, Url, eventName);
         }
     }
 

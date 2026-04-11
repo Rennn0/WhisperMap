@@ -16,6 +16,7 @@ public partial class RealtimeDbContext : DbContext
     }
 
     public virtual DbSet<RealtimeCache> RealtimeCaches { get; set; }
+    public virtual DbSet<Log> Logs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => base.OnConfiguring(optionsBuilder);

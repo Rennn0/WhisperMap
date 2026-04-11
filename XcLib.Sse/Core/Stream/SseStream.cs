@@ -33,10 +33,7 @@ public abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
         foreach (StreamSubscriber subscriber in _subscribers.Values) subscriber.Writer.TryComplete();
         _subscribers.Clear();
-        Logger.LogDebug(
-            new EventId((int)StreamLogs.Disposed, nameof(StreamLogs.Disposed)),
-            "Disposed stream, subscribers {SubscribersCount}",
-            SubscribersCount);
+        LogDisposedStreamSubscribersSubscriberscount(Logger, SubscribersCount);
     }
 
     public StreamSubscription Subscribe(string? streamId, CancellationToken cancellationToken)
@@ -58,9 +55,7 @@ public abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         subscriber = new StreamSubscriber(id, channel);
         _subscribers[id] = subscriber;
 
-        Logger.LogDebug(new EventId((int)StreamLogs.Subscribe, nameof(StreamLogs.Subscribe)),
-            "New subscriber {Id}, subs {Count}", id,
-            _subscribers.Count);
+        LogNewSubscriberIdSubsCount(Logger, id, _subscribers.Count);
 
         return new StreamSubscription(this, subscriber, cancellationToken);
     }
@@ -87,14 +82,12 @@ public abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
 
         if (brokenChannels.Count > 0)
         {
-            Logger.LogWarning(new EventId((int)StreamLogs.BrokenSubInfo, nameof(StreamLogs.BrokenSubInfo)),
-                "Broken subs {Count}, dropping", brokenChannels.Count);
+            LogBrokenSubsCountDropping(Logger, brokenChannels.Count);
             foreach (string id in brokenChannels)
                 RemoveSubscriber(id);
         }
 
-        Logger.LogInformation(new EventId((int)StreamLogs.Publish, nameof(StreamLogs.Publish)),
-            "Deliver {Delivered}, subs {Subs}", delivered, SubscribersCount);
+        LogDeliverDeliveredSubsSubs(Logger, delivered, SubscribersCount);
 
         return ValueTask.CompletedTask;
     }
@@ -102,8 +95,7 @@ public abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
     public void Unsubscribe(string id)
     {
         RemoveSubscriber(id);
-        Logger.LogDebug(new EventId((int)StreamLogs.Unsubscribe, nameof(StreamLogs.Unsubscribe)),
-            "Removed sub {Id}", id);
+        LogRemovedSubId(Logger, id);
     }
 
     private void RemoveSubscriber(string id)
@@ -122,4 +114,20 @@ public abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
         BrokenSubInfo,
         Disposed
     }
+
+    [LoggerMessage(LogLevel.Warning, "broken subs {Count}, dropping", EventId = (int)StreamLogs.BrokenSubInfo)]
+    protected static partial void LogBrokenSubsCountDropping(ILogger logger, int count);
+
+    [LoggerMessage(LogLevel.Information, "deliver {Delivered}, subs {Subs}", EventId = (int)StreamLogs.Publish)]
+    protected static partial void LogDeliverDeliveredSubsSubs(ILogger logger, int delivered, int subs);
+
+    [LoggerMessage(LogLevel.Debug, "disposed stream, subscribers {SubscribersCount}",
+        EventId = (int)StreamLogs.Disposed)]
+    protected static partial void LogDisposedStreamSubscribersSubscriberscount(ILogger logger, int subscribersCount);
+
+    [LoggerMessage(LogLevel.Debug, "new subscriber {Id}, subs {Count}", EventId = (int)StreamLogs.Subscribe)]
+    protected static partial void LogNewSubscriberIdSubsCount(ILogger logger, string id, int count);
+
+    [LoggerMessage(LogLevel.Debug, "removed sub {Id}", EventId = (int)StreamLogs.Unsubscribe)]
+    protected static partial void LogRemovedSubId(ILogger logger, string id);
 }

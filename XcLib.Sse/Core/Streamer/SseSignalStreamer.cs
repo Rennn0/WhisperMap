@@ -11,24 +11,20 @@ namespace XcLib.Sse.Core.Streamer;
 public class SseSignalStreamer<T> : SseStreamer<T>
 {
     public SseSignalStreamer(IHttpContextAccessor context,
-        IOptionsMonitor<SseOptions> defaultOptions,
         IOptionsMonitor<SseSignalOptions> signalOptions,
         SseEventFormatter<T> formatter,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken = default)
-        : base(context, defaultOptions, formatter, loggerFactory, cancellationToken)
+        : base(context, signalOptions, formatter, loggerFactory, cancellationToken)
     {
         Logger = loggerFactory.CreateLogger($"XcLib.Streamer.{nameof(SseSignalStreamer<T>)}<{typeof(T).Name}>");
-        PingInterval = TimeSpan.FromSeconds(signalOptions.CurrentValue.PingInterval);
-
-        Logger.LogTrace("ping interval {X}", PingInterval);
+        LogIntervalA(Logger, PingInterval);
     }
 
     public override async Task StreamAsync(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter)
     {
-        Logger.LogDebug(new EventId((int)StreamerLogs.StartSignal, nameof(StreamerLogs.StartSignal)),
-            "Starting SSE signal for {a}, event {b}", Url, eventName);
+        LogStartingSseSignalForAEventB(Logger, Url, eventName);
 
         try
         {
@@ -44,9 +40,7 @@ public class SseSignalStreamer<T> : SseStreamer<T>
                     T data = await signalTask;
                     await SafeWriteAsync(() => WriteEventAsync(eventName, data, formatter));
 
-                    Logger.LogDebug(new EventId((int)StreamerLogs.EndSignal, nameof(StreamerLogs.EndSignal)),
-                        "End signal for {RequestPath}, event {EventName}", Context.Request.Path,
-                        eventName);
+                    LogEndSignalForRequestpathEventEventname(Logger, Url, eventName);
                     break;
                 }
 
@@ -55,15 +49,12 @@ public class SseSignalStreamer<T> : SseStreamer<T>
         }
         catch (OperationCanceledException)
         {
-            Logger.LogDebug(new EventId((int)StreamerLogs.ExcSignalCancelled, nameof(StreamerLogs.ExcSignalCancelled)),
-                "Signaling for {RequestPath}, event {EventName} cancelled", Context.Request.Path, eventName);
+            LogSignalingForRequestpathEventEventnameCancelled(Logger, Url, eventName);
         }
         catch (Exception e)
         {
-            Logger.LogError(new EventId((int)StreamerLogs.ExcSignalDestroyed, nameof(StreamerLogs.ExcSignalDestroyed)),
-                e,
-                "Signaling for {RequestPath}, event {EventName} destroyed, exception {Exception}",
-                Context.Request.Path, eventName, e.Message);
+            LogSignalingForRequestpathEventEventnameDestroyedExceptionException(Logger, Url, eventName,
+                e.Message, e);
         }
     }
 

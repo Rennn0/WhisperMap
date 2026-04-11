@@ -63,8 +63,8 @@ public class ProductController : ApplicationController
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet]
-    [ResponseCache(Location = ResponseCacheLocation.Client,VaryByQueryKeys =
-    ["q", "o", "b", "ct", "fcs", "fct" ],NoStore = false,Duration = 300)]
+    // [ResponseCache(Location = ResponseCacheLocation.Client,VaryByQueryKeys =
+    // ["q", "o", "b", "ct", "fcs", "fct" ],NoStore = false,Duration = 300)]
     public async Task<ApiContract> GetProducts(
         [FromServices] IEnumerable<IHandler<ApiContract, GetProductsContext>> handlers,
         [FromQuery(Name = "q")] string? query,
@@ -97,7 +97,6 @@ public class ProductController : ApplicationController
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("{id}")]
-    [ResponseCache(Location = ResponseCacheLocation.Client, NoStore = false, Duration = 300)]
     public async Task<ApiContract> GetProduct([FromServices] IGetProductHandler handler, [FromRoute] string id,
         CancellationToken cancellationToken) =>
         await handler.HandleAsync(new GetProductContext(id) { UserId = UserIdC }, cancellationToken);

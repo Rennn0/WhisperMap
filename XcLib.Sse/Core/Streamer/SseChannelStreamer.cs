@@ -11,16 +11,13 @@ namespace XcLib.Sse.Core.Streamer;
 public class SseChannelStreamer<T> : SseStreamer<T>
 {
     public SseChannelStreamer(IHttpContextAccessor context,
-        IOptionsMonitor<SseOptions> defaultOptions,
         IOptionsMonitor<SseStreamOptions> streamOptions,
         SseEventFormatter<T> formatter,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken = default)
-        : base(context, defaultOptions, formatter, loggerFactory, cancellationToken)
+        : base(context, streamOptions, formatter, loggerFactory, cancellationToken)
     {
         Logger = loggerFactory.CreateLogger($"XcLib.Streamer.{nameof(SseChannelStreamer<T>)}<{typeof(T).Name}>");
-        PingInterval = TimeSpan.FromSeconds(streamOptions.CurrentValue.PingInterval);
-
         Logger.LogTrace("ping interval {X}", PingInterval);
     }
 
@@ -34,8 +31,7 @@ public class SseChannelStreamer<T> : SseStreamer<T>
     public override async Task StreamAsync(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter)
     {
-        Logger.LogDebug(new EventId((int)StreamerLogs.StartStream, nameof(StreamerLogs.StartStream)),
-            "Starting SSE streaming for {a}, event {b}", Url, eventName);
+        LogStartStreamingForAEventEventname(Logger, Url, eventName);
 
         try
         {
@@ -49,9 +45,7 @@ public class SseChannelStreamer<T> : SseStreamer<T>
                 {
                     if (!await waitForDataTask)
                     {
-                        Logger.LogDebug(new EventId((int)StreamerLogs.EndStream, nameof(StreamerLogs.EndStream)),
-                            "End channel streaming for {RequestPath}, event {EventName}", Context.Request.Path,
-                            eventName);
+                        LogEndStreamingForRequestpathEventEventname(Logger, Url, eventName);
                         break;
                     }
 
@@ -66,15 +60,12 @@ public class SseChannelStreamer<T> : SseStreamer<T>
         }
         catch (OperationCanceledException)
         {
-            Logger.LogDebug(new EventId((int)StreamerLogs.ExcStreamCancelled, nameof(StreamerLogs.ExcStreamCancelled)),
-                "Streaming for {RequestPath}, event {EventName} cancelled", Context.Request.Path, eventName);
+            LogStreamingForRequestpathEventEventnameCancelled(Logger, Url, eventName);
         }
         catch (Exception e)
         {
-            Logger.LogError(new EventId((int)StreamerLogs.ExcStreamDestroyed, nameof(StreamerLogs.ExcStreamDestroyed)),
-                e,
-                "Streaming for {RequestPath}, event {EventName} destroyed, exception {Exception}",
-                Context.Request.Path, eventName, e.Message);
+            LogStreamingForRequestpathEventEventnameDestroyedExceptionException(Logger, Url, eventName,
+                e.Message, e);
         }
     }
 }

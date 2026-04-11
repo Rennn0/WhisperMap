@@ -25,6 +25,19 @@ namespace Microsoft.Extensions.Logging;
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Public API")]
 public static class EntityFrameworkLoggerBuilderExtensions
 {
+    public static ILoggingBuilder SuppressUntil<TContext, TLog>(this ILoggingBuilder builder, LogLevel level)
+        where TContext : DbContext
+        where TLog : Log<int>
+    {
+        builder.AddFilter<EntityFrameworkLoggerProvider<TContext, TLog>>(null, level);
+
+        //#NOTE rorame aq daamate rac daaignoros
+        // builder.AddFilter<EntityFrameworkLoggerProvider<TContext>>("Microsoft", LogLevel.Critical);
+        // builder.AddFilter<EntityFrameworkLoggerProvider<TContext>>("System", LogLevel.Critical);
+
+        return builder;
+    }
+    
     /// <summary>
     ///     Adds a entity framework logger named 'EntityFramework' to the factory.
     /// </summary>
@@ -37,12 +50,6 @@ public static class EntityFrameworkLoggerBuilderExtensions
     public static ILoggingBuilder AddEntityFramework<TContext>(this ILoggingBuilder builder) where TContext : DbContext
     {
         ArgumentNullException.ThrowIfNull(builder);
-
-        builder.AddFilter<EntityFrameworkLoggerProvider<TContext>>(null, LogLevel.Warning);
-
-        //#NOTE rorame aq daamate rac daaignoros
-        // builder.AddFilter<EntityFrameworkLoggerProvider<TContext>>("Microsoft", LogLevel.Critical);
-        // builder.AddFilter<EntityFrameworkLoggerProvider<TContext>>("System", LogLevel.Critical);
 
         builder.Services.TryAddEnumerable(ServiceDescriptor
             .Singleton<ILoggerProvider, EntityFrameworkLoggerProvider<TContext>>());
@@ -91,7 +98,7 @@ public static class EntityFrameworkLoggerBuilderExtensions
         where TLog : Log<int>
     {
         ArgumentNullException.ThrowIfNull(builder);
-
+        
         builder.Services.TryAddEnumerable(ServiceDescriptor
             .Singleton<ILoggerProvider, EntityFrameworkLoggerProvider<TContext, TLog>>());
 

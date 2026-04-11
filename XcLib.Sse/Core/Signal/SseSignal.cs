@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace XcLib.Sse.Core.Signal;
 
-public abstract class SseSignal<T> : IDisposable, IAsyncDisposable
+public abstract partial class SseSignal<T> : IDisposable, IAsyncDisposable
 {
     private readonly ILogger _logger;
     private readonly ConcurrentDictionary<Guid, TaskCompletionSource<T>> _waiters;
@@ -23,21 +23,18 @@ public abstract class SseSignal<T> : IDisposable, IAsyncDisposable
             new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
         if (!_waiters.TryAdd(id, waiter))
         {
-            _logger.LogError(new EventId((int)SignalLogs.ExcCannotAdd, nameof(SignalLogs.ExcCannotAdd)),
-                "Cant add waiter '{Guid}'.", id);
+            LogCantAddWaiterGuid(id);
             throw new InvalidOperationException();
         }
 
-        _logger.LogDebug(new EventId((int)SignalLogs.Wait, nameof(SignalLogs.Wait)),
-            "Add waiter '{Guid}', total waiters {Total}", id, Waiters);
+        LogAddWaiterGuidTotalWaitersTotal(id, Waiters);
 
         await using CancellationTokenRegistration registration = cancellationToken.Register(() =>
         {
             if (!_waiters.TryRemove(id, out TaskCompletionSource<T>? removed)) return;
 
             removed.SetCanceled(cancellationToken);
-            _logger.LogDebug(new EventId((int)SignalLogs.CancelledWaiter, nameof(SignalLogs.CancelledWaiter)),
-                "Cancelled waiter {Guid}, remaining waiters {Remaining}", id, Waiters);
+            LogCancelledWaiterGuidRemainingWaitersRemaining(id, Waiters);
         });
 
         try
@@ -66,8 +63,7 @@ public abstract class SseSignal<T> : IDisposable, IAsyncDisposable
             delivered++;
         }
 
-        _logger.LogDebug(new EventId((int)SignalLogs.CompletedWaiters, nameof(SignalLogs.CompletedWaiters)),
-            "Delivered to {Delivered} waiter, remaining {Remaining}", delivered, Waiters);
+        LogDeliveredToDeliveredWaiterRemainingRemaining(delivered, Waiters);
 
         return ValueTask.CompletedTask;
     }
@@ -77,8 +73,7 @@ public abstract class SseSignal<T> : IDisposable, IAsyncDisposable
         GC.SuppressFinalize(this);
         foreach (TaskCompletionSource<T> taskCompletionSource in _waiters.Values) taskCompletionSource.TrySetCanceled();
         _waiters.Clear();
-        _logger.LogDebug(new EventId((int)SignalLogs.Dispose, nameof(SignalLogs.Dispose)),
-            "Disposed signal, waiters {Waiters}", Waiters);
+        LogDisposedSignalWaitersWaiters(Waiters);
     }
 
     public virtual ValueTask DisposeAsync()
@@ -96,4 +91,21 @@ public abstract class SseSignal<T> : IDisposable, IAsyncDisposable
         ExcCannotAdd,
         Dispose
     }
+
+    [LoggerMessage(LogLevel.Error, "cant add waiter {Guid}", EventId = (int)SignalLogs.ExcCannotAdd)]
+    protected partial void LogCantAddWaiterGuid(Guid guid);
+
+    [LoggerMessage(LogLevel.Debug, "add waiter {Guid}, total waiters {Total}", EventId = (int)SignalLogs.Wait)]
+    protected partial void LogAddWaiterGuidTotalWaitersTotal(Guid guid, int total);
+
+    [LoggerMessage(LogLevel.Debug, "cancelled waiter {Guid}, remaining waiters {Remaining}",
+        EventId = (int)SignalLogs.CancelledWaiter)]
+    protected partial void LogCancelledWaiterGuidRemainingWaitersRemaining(Guid guid, int remaining);
+
+    [LoggerMessage(LogLevel.Debug, "delivered to {Delivered} waiter, remaining {Remaining}",
+        EventId = (int)SignalLogs.CompletedWaiters)]
+    protected partial void LogDeliveredToDeliveredWaiterRemainingRemaining(int delivered, int remaining);
+
+    [LoggerMessage(LogLevel.Debug, "disposed signal, waiters {Waiters}", EventId = (int)SignalLogs.Dispose)]
+    protected partial void LogDisposedSignalWaitersWaiters(int waiters);
 }

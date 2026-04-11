@@ -12,12 +12,14 @@ public partial class SseSignalRegistry<T> : IDisposable, IAsyncDisposable
     private readonly ConcurrentDictionary<string, SignalHandle> _signals =
         new ConcurrentDictionary<string, SignalHandle>();
 
-    private readonly SseSignalOptions _signalOptions;
-
+    private readonly IOptionsMonitor<SseSignalOptions> _signalOptions;
+    protected SseSignalOptions SignalOptions => _signalOptions.CurrentValue;
+    protected ILogger Logger { get; init; }
     public SseSignalRegistry(IOptionsMonitor<SseSignalOptions> optionsMonitor, ILoggerFactory loggerFactory)
     {
-        _signalOptions = optionsMonitor.CurrentValue;
+        _signalOptions = optionsMonitor;
         _loggerFactory = loggerFactory;
+        Logger = _loggerFactory.CreateLogger($"XcLib.Signal.{nameof(SseSignalRegistry<T>)}<{typeof(T).Name}>");
     }
 
     public ValueTask DisposeAsync()

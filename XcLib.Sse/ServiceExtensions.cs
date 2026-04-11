@@ -1,7 +1,9 @@
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using XcLib.Sse.Configuration;
 using XcLib.Sse.Core.Signal;
 using XcLib.Sse.Core.Stream;
 using XcLib.Sse.Core.Streamer;
@@ -17,11 +19,14 @@ public static class ServiceExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddOptionsWithValidateOnStart<SseOptions>().BindConfiguration(nameof(SseOptions))
+        services.AddOptionsWithValidateOnStart<SseOptions>()
+            .BindConfiguration(nameof(SseOptions))
             .ValidateDataAnnotations();
-        services.AddOptionsWithValidateOnStart<SseSignalOptions>().BindConfiguration(nameof(SseSignalOptions))
+        services.AddOptionsWithValidateOnStart<SseSignalOptions>()
+            .BindConfiguration(nameof(SseSignalOptions))
             .ValidateDataAnnotations();
-        services.AddOptionsWithValidateOnStart<SseStreamOptions>().BindConfiguration(nameof(SseStreamOptions))
+        services.AddOptionsWithValidateOnStart<SseStreamOptions>()
+            .BindConfiguration(nameof(SseStreamOptions))
             .ValidateDataAnnotations();
 
         return services.AddSseCore(assemblies);
@@ -96,7 +101,6 @@ public static class ServiceExtensions
         params Assembly[] assemblies)
     {
         services.AddLogging();
-        services.AddHttpContextAccessor();
 
         services.TryAddKeyedTransient(typeof(SseStreamer<>), StreamerType.Signal, typeof(SseSignalStreamer<>));
         services.TryAddKeyedTransient(typeof(SseStreamer<>), StreamerType.Enumerable, typeof(SseEnumerableStreamer<>));
@@ -107,6 +111,11 @@ public static class ServiceExtensions
 
         RegisterDiscoveredServices(services, ResolveAssemblies(assemblies));
 
+        //#NOTE default implementations in case client assembly dont include features
+        services.TryAddScoped<IConfigurationTrigger>(_ => ConfigurationExtensions.Trigger);
+        services.TryAddSingleton(typeof(SseEventFormatter<>), typeof(DefaultEventFormatter<>));
+        services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        
         return services;
     }
 

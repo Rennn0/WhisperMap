@@ -1,5 +1,5 @@
 namespace XcLib.Sse.Options;
 
-public class SseSignalOptions : SseOptions
+public record SseSignalOptions : SseOptions
 {
 }

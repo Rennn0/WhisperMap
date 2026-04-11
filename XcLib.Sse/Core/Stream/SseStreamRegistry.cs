@@ -10,13 +10,15 @@ public partial class SseStreamRegistry<T> : IDisposable, IAsyncDisposable
     private readonly ConcurrentDictionary<string, StreamHandle> _streams =
         new ConcurrentDictionary<string, StreamHandle>();
 
+    private readonly IOptionsMonitor<SseStreamOptions> _streamOptions;
     private readonly ILoggerFactory _loggerFactory;
-    private readonly SseStreamOptions _streamOptions;
-
+    protected SseStreamOptions SseStreamOptions => _streamOptions.CurrentValue;
+    protected ILogger Logger { get; init; }
     public SseStreamRegistry(IOptionsMonitor<SseStreamOptions> optionsMonitor, ILoggerFactory loggerFactory)
     {
-        _streamOptions = optionsMonitor.CurrentValue;
+        _streamOptions = optionsMonitor;
         _loggerFactory = loggerFactory;
+        Logger = _loggerFactory.CreateLogger($"XcLib.Stream.{nameof(SseStreamRegistry<T>)}<{typeof(T).Name}>");
     }
 
     public ValueTask DisposeAsync()
@@ -46,7 +48,9 @@ public partial class SseStreamRegistry<T> : IDisposable, IAsyncDisposable
 
     public void UnregisterStream(string key)
     {
-        if (_streams.TryRemove(key, out StreamHandle? handle)) handle.Dispose();
+        if (_streams.TryRemove(key, out StreamHandle? _))
+        {
+        }
     }
 
     public void UnregisterStream(StreamHandle streamHandle) => UnregisterStream(streamHandle.Key);
