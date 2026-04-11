@@ -9,8 +9,8 @@ public static partial class Program
     private static void ApiPostWebhook(this RouteGroupBuilder builder)
     {
         const string scriptTemplate = """
-                                      #!/usr/bin/env bash
-                                      set -euo pipefail
+                                      #!/bin/sh
+                                      set -eu
 
                                       SERVICE="__SERVICE__"
                                       IMAGE="__IMAGE__"
@@ -79,7 +79,7 @@ public static partial class Program
                     {
                         StartInfo = new ProcessStartInfo
                         {
-                            FileName = "/bin/bash",
+                            FileName = "/bin/sh",
                             ArgumentList = { scriptPath },
                             RedirectStandardOutput = true,
                             RedirectStandardError = true,
