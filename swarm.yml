@@ -74,7 +74,7 @@ services:
     networks:
       - xc-network
     volumes:
-      - sql-data:/var/opt/msssql
+      - sql-data:/var/opt/mssql
     ports:
       - target: 1433
         published: 1433
@@ -165,7 +165,8 @@ volumes:
     external: true
     name: xc_mongo-config
   sql-data:
-
+    external: true
+    name: xc_sql-data
 secrets:
   mongo_password:
     external: true

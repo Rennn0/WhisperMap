@@ -8,12 +8,14 @@ namespace Realtime;
 
 public static partial class Program
 {
+    private static readonly SemaphoreSlim Sema = new SemaphoreSlim(1, 1);
     private static void ApiPostWebhook(this RouteGroupBuilder builder)
     {
         builder.MapPost("{idx:int}",
             async ([FromRoute] int idx, [FromBody] JsonDocument webHookJson,
                 [FromServices] ILoggerFactory loggerFactory, [FromServices] IDistributedCache cache) =>
             {
+                await Sema.WaitAsync();
                 ILogger logger = loggerFactory.CreateLogger("webhook");
                 logger.LogInformation("webhook {a}", webHookJson);
 
@@ -40,10 +42,10 @@ public static partial class Program
                     $"""
                      #!/bin/sh
                      set -eu
-                     docker service update --image {image}:latest --force --with-registry-auth {service}
+                     docker service update {service} --image {image}:latest --force
                      """;
                 logger.LogInformation("exec script {a}", script);
-                
+
                 try
                 {
                     Process proc = new Process
@@ -72,6 +74,10 @@ public static partial class Program
                 catch (Exception ex)
                 {
                     return Results.Problem(ex.Message);
+                }
+                finally
+                {
+                    Sema.Release();
                 }
             });
     }

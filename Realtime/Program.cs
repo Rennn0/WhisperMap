@@ -47,8 +47,7 @@ public static partial class Program
         {
             opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlDefault"),
                 sqlOpt => { sqlOpt.EnableRetryOnFailure(); });
-
-            opt.EnableSensitiveDataLogging();
+            opt.EnableSensitiveDataLogging(false);
             opt.EnableDetailedErrors();
             opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
