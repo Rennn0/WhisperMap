@@ -73,6 +73,8 @@ services:
       MSSQL_SA_PASSWORD: ""
     networks:
       - xc-network
+    volumes:
+      - sql-data:/var/opt/msssql
     ports:
       - target: 1433
         published: 1433
@@ -162,6 +164,7 @@ volumes:
   mongo-config:
     external: true
     name: xc_mongo-config
+  sql-data:
 
 secrets:
   mongo_password:
