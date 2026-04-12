@@ -14,6 +14,7 @@ jobs:
   xaticraft:
     name: Build & Push XatiCraft
     runs-on: ubuntu-latest
+    if: contains(join(github.event.commits.*.message, ' '), '[XC]')
 
     steps:
       - name: Checkout code
@@ -42,6 +43,7 @@ jobs:
   realtime:
     name: Build & Push Realtime
     runs-on: ubuntu-latest
+    if: contains(join(github.event.commits.*.message, ' '), '[RT]')
 
     steps:
       - name: Checkout code
