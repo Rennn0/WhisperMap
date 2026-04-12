@@ -15,9 +15,8 @@ public static partial class Program
             async ([FromRoute] int idx, [FromBody] JsonDocument webHookJson,
                 [FromServices] ILoggerFactory loggerFactory, [FromServices] IDistributedCache cache) =>
             {
-                await Sema.WaitAsync();
                 ILogger logger = loggerFactory.CreateLogger("webhook");
-                logger.LogInformation("webhook {a}", webHookJson);
+                logger.LogInformation("webhook {a}", webHookJson.RootElement);
 
                 (string service, string image) = idx switch
                 {
@@ -26,12 +25,14 @@ public static partial class Program
                     _ => throw new ArgumentOutOfRangeException(nameof(idx))
                 };
 
-                string cacheKey = $"wh_redeploy_{service}";
+                await Sema.WaitAsync();
+
+                DateTimeOffset deployTime = DateTimeOffset.Now;
+                string cacheKey = $"wh.redeploy.{service}.{deployTime.ToUnixTimeMilliseconds()}";
                 byte[]? maybeDeploying = await cache.GetAsync(cacheKey);
                 if (maybeDeploying is { Length: > 0 })
                     return Results.Ok();
 
-                DateTimeOffset deployTime = DateTimeOffset.UtcNow;
                 await cache.SetAsync(cacheKey, Encoding.UTF8.GetBytes(deployTime.ToString()),
                     new DistributedCacheEntryOptions
                 {
@@ -59,7 +60,6 @@ public static partial class Program
                             UseShellExecute = false
                         }
                     };
-
                     proc.Start();
                     logger.LogInformation("started webhook update for idx {Idx}, service {Service}", idx, service);
 
