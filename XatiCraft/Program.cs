@@ -15,6 +15,8 @@ using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
 using XcLib.Data.Mongo.XatiCraft;
 using XcLib.Data.Postgres.XatiCraft.Context;
+using XcLib.Data.SqlServer.Realtime.Context;
+using XcLib.Data.SqlServer.Realtime.Entities;
 using ProductMetadataRepo = XcLib.Data.Postgres.XatiCraft.ProductMetadataRepo;
 using ProductRepo = XcLib.Data.Postgres.XatiCraft.ProductRepo;
 
@@ -114,6 +116,13 @@ public static class Program
         builder.Services.AddDbContext<ApplicationContext>(options =>
         {
             options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(ApplicationContext)), pgOptions => pgOptions.EnableRetryOnFailure(int.MaxValue));
+        }).AddDbContext<MasterDbContext>(options =>
+        {
+            options.UseSqlServer(builder.Configuration.GetConnectionString(nameof(MasterDbContext)),
+                sqlOpt => { sqlOpt.EnableRetryOnFailure(); });
+            options.EnableSensitiveDataLogging(false);
+            options.EnableDetailedErrors();
+            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
 
         builder.Services.AddExceptionHandler<GeneralExceptionHandler>();
@@ -157,6 +166,10 @@ public static class Program
 
         builder.Services.AddTransient<IBootstrap, MongoBootstrap>(_ => new MongoBootstrap(mongoConn));
 
+        builder.Logging.AddEntityFramework<MasterDbContext, XaticraftLog>()
+            .SuppressUntil<MasterDbContext, XaticraftLog>(LogLevel.Warning)
+            .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+        
 #if USE_CERT
         builder.Services.AddCert();
 #endif

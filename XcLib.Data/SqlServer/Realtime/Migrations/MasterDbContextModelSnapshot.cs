@@ -8,10 +8,10 @@ using XcLib.Data.SqlServer.Realtime.Context;
 
 #nullable disable
 
-namespace Realtime.Entities
+namespace XcLib.Data.SqlServer.Realtime.Migrations
 {
-    [DbContext(typeof(RealtimeDbContext))]
-    partial class RealtimeDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(MasterDbContext))]
+    partial class MasterDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -22,7 +22,36 @@ namespace Realtime.Entities
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Realtime.Entities.RealtimeCache", b =>
+            modelBuilder.Entity("XcLib.Data.SqlServer.Realtime.Entities.MasterLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset>("TimeStamp")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Log", "dbo");
+                });
+
+            modelBuilder.Entity("XcLib.Data.SqlServer.Realtime.Entities.RealtimeCache", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(449)
@@ -50,7 +79,7 @@ namespace Realtime.Entities
                     b.ToTable("RealtimeCache", "cache");
                 });
 
-            modelBuilder.Entity("ZNetCS.AspNetCore.Logging.EntityFrameworkCore.Log", b =>
+            modelBuilder.Entity("XcLib.Data.SqlServer.Realtime.Entities.RealtimeLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -76,7 +105,36 @@ namespace Realtime.Entities
 
                     b.HasKey("Id");
 
-                    b.ToTable("Logs", (string)null);
+                    b.ToTable("Log", "realtime");
+                });
+
+            modelBuilder.Entity("XcLib.Data.SqlServer.Realtime.Entities.XaticraftLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset>("TimeStamp")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Log", "xaticraft");
                 });
 #pragma warning restore 612, 618
         }

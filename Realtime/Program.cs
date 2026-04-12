@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Realtime.Background;
 using XcLib.Data.SqlServer.Realtime.Context;
+using XcLib.Data.SqlServer.Realtime.Entities;
 using XcLib.Sse;
 using XcLib.Sse.Options;
-using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
 
 namespace Realtime;
 
@@ -33,8 +35,12 @@ public static partial class Program
             opt.AddPolicy("prod", pol =>
             {
                 pol.WithMethods("GET");
-                pol.WithOrigins("https://xati.org", "https://api.xati.org", "https://www.xati.org",
-                    "https://www.api.xati.org");
+                pol.WithOrigins(
+                    "https://xati.org",
+                    "https://api.xati.org",
+                    "https://www.xati.org",
+                    "https://www.api.xati.org"
+                );
             });
             opt.AddPolicy("dev", pol =>
             {
@@ -43,9 +49,9 @@ public static partial class Program
             });
         });
 
-        builder.Services.AddDbContext<RealtimeDbContext>(opt =>
+        builder.Services.AddDbContext<MasterDbContext>(opt =>
         {
-            opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlDefault"),
+            opt.UseSqlServer(builder.Configuration.GetConnectionString(nameof(MasterDbContext)),
                 sqlOpt => { sqlOpt.EnableRetryOnFailure(); });
             opt.EnableSensitiveDataLogging(false);
             opt.EnableDetailedErrors();
@@ -53,15 +59,15 @@ public static partial class Program
         });
         builder.Services.AddDistributedSqlServerCache(options =>
         {
-            options.ConnectionString = builder.Configuration.GetConnectionString("SqlDefault");
+            options.ConnectionString = builder.Configuration.GetConnectionString(nameof(MasterDbContext));
             options.SchemaName = "cache";
             options.TableName = "RealtimeCache";
             options.DefaultSlidingExpiration = TimeSpan.FromMinutes(10);
             options.ExpiredItemsDeletionInterval = TimeSpan.FromMinutes(5);
         });
         builder.Logging
-            .AddEntityFramework<RealtimeDbContext, Log>()
-            .SuppressUntil<RealtimeDbContext, Log>(LogLevel.Warning)
+            .AddEntityFramework<MasterDbContext, RealtimeLog>()
+            .SuppressUntil<MasterDbContext, RealtimeLog>(LogLevel.Warning)
             .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
         
         builder.Services.AddHostedService<UserStatsBackgroundService>();
@@ -87,6 +93,25 @@ public static partial class Program
         streamGroup.ApiGetStreamCache();
         streamGroup.ApiGetSignal();
         streamGroup.ApiGetStream();
+
+        mainGroup.MapGet("/test",
+            ([FromServices] MasterDbContext context, [FromServices] ILoggerFactory loggerFactory,
+                [FromServices] IDistributedCache cache) =>
+            {
+                List<MasterLog> logs = context.MasterLogs.ToList();
+                List<RealtimeCache> caches = context.RealtimeCaches.ToList();
+
+                foreach (RealtimeCache cach in caches) cach.Value = ",M"u8.ToArray();
+
+                context.SaveChanges();
+
+                cache.SetString(DateTimeOffset.Now.ToString(), "1");
+                ILogger logger = loggerFactory.CreateLogger("test");
+
+                logger.LogWarning("oops");
+
+                return Results.Ok();
+            });
         
         await app.RunAsync();
     }

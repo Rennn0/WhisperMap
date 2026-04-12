@@ -1,26 +1,23 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using XcLib.Data.SqlServer.Realtime.Entities;
-using ZNetCS.AspNetCore.Logging.EntityFrameworkCore;
-using Log = ZNetCS.AspNetCore.Logging.EntityFrameworkCore.Log;
 
 namespace XcLib.Data.SqlServer.Realtime.Context;
 
-public partial class RealtimeDbContext : DbContext
+public partial class MasterDbContext : DbContext
 {
-    public RealtimeDbContext(DbContextOptions<RealtimeDbContext> options)
+    public MasterDbContext(DbContextOptions<MasterDbContext> options)
         : base(options)
     {
     }
 
-    public virtual DbSet<Log> Logs { get; set; }
+    public virtual DbSet<MasterLog> MasterLogs { get; set; }
+    public virtual DbSet<RealtimeLog> RealtimeLogs { get; set; }
+    public virtual DbSet<XaticraftLog> XatiCraftLogs { get; set; } 
 
     public virtual DbSet<RealtimeCache> RealtimeCaches { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        LogModelBuilderHelper.Build(modelBuilder.Entity<Log>());
-        modelBuilder.Entity<Log>().ToTable("Logs");
-        
         modelBuilder.Entity<RealtimeCache>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Realtime__3214EC077108BA1A");

@@ -11,17 +11,45 @@ GO
 BEGIN TRANSACTION;
 GO
 
+IF SCHEMA_ID(N'realtime') IS NULL EXEC(N'CREATE SCHEMA [realtime];');
+GO
+
+IF SCHEMA_ID(N'xaticraft') IS NULL EXEC(N'CREATE SCHEMA [xaticraft];');
+GO
+
 IF SCHEMA_ID(N'cache') IS NULL EXEC(N'CREATE SCHEMA [cache];');
 GO
 
-CREATE TABLE [Logs] (
+CREATE TABLE [dbo].[Log] (
     [Id] int NOT NULL IDENTITY,
     [EventId] int NOT NULL,
     [Level] int NOT NULL,
     [Message] nvarchar(max) NULL,
     [Name] nvarchar(255) NULL,
     [TimeStamp] datetimeoffset NOT NULL,
-    CONSTRAINT [PK_Logs] PRIMARY KEY ([Id])
+    CONSTRAINT [PK_Log] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [realtime].[Log] (
+    [Id] int NOT NULL IDENTITY,
+    [EventId] int NOT NULL,
+    [Level] int NOT NULL,
+    [Message] nvarchar(max) NULL,
+    [Name] nvarchar(255) NULL,
+    [TimeStamp] datetimeoffset NOT NULL,
+    CONSTRAINT [PK_Log] PRIMARY KEY ([Id])
+);
+GO
+
+CREATE TABLE [xaticraft].[Log] (
+    [Id] int NOT NULL IDENTITY,
+    [EventId] int NOT NULL,
+    [Level] int NOT NULL,
+    [Message] nvarchar(max) NULL,
+    [Name] nvarchar(255) NULL,
+    [TimeStamp] datetimeoffset NOT NULL,
+    CONSTRAINT [PK_Log] PRIMARY KEY ([Id])
 );
 GO
 
@@ -39,7 +67,7 @@ CREATE INDEX [Index_ExpiresAtTime] ON [cache].[RealtimeCache] ([ExpiresAtTime]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20260410122317_Initial', N'8.0.22');
+VALUES (N'20260412175233_Initial', N'8.0.22');
 GO
 
 COMMIT;

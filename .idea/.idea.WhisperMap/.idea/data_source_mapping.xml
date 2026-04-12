@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
-    <file url="file://$PROJECT_DIR$/script.sql" value="def1dfd9-efe9-4258-bd54-33e41f4e0902" />
+    <file url="file://$PROJECT_DIR$/XcLib.Data/SqlServer/Realtime/Context/script.sql" value="def1dfd9-efe9-4258-bd54-33e41f4e0902" />
   </component>
 </project>
