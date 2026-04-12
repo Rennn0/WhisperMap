@@ -18,6 +18,11 @@ public static partial class Program
                 ILogger logger = loggerFactory.CreateLogger("webhook");
                 logger.LogInformation("webhook {a}", webHookJson.RootElement);
 
+                string? tag = webHookJson.RootElement.GetProperty("push_data").GetProperty("tag").GetString();
+                logger.LogInformation("tag {a}", tag);
+
+                if (tag != "latest") return Results.BadRequest();
+
                 (string service, string image) = idx switch
                 {
                     1 => ("xc_realtime", "rennn0/realtime"),
@@ -28,12 +33,12 @@ public static partial class Program
                 await Sema.WaitAsync();
 
                 DateTimeOffset deployTime = DateTimeOffset.Now;
-                string cacheKey = $"wh.redeploy.{service}.{deployTime.ToUnixTimeMilliseconds()}";
+                string cacheKey = $"wh.redeploy.{service}";
                 byte[]? maybeDeploying = await cache.GetAsync(cacheKey);
                 if (maybeDeploying is { Length: > 0 })
                     return Results.Ok();
 
-                await cache.SetAsync(cacheKey, Encoding.UTF8.GetBytes(deployTime.ToString()),
+                await cache.SetAsync(cacheKey, Encoding.UTF8.GetBytes($"{deployTime:G}_{tag}"),
                     new DistributedCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(3)
