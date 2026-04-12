@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
 namespace XcLib.Data.Mongo.XatiCraft.Context;
 
@@ -6,12 +7,7 @@ namespace XcLib.Data.Mongo.XatiCraft.Context;
 /// </summary>
 public class MongoBase<T> : MongoConnector
 {
-    
-    /// <summary>
-    /// </summary>
-    /// <param name="connection"></param>
-    /// <param name="db"></param>
-    protected MongoBase(string connection, string db = "xc-db") : base(connection, db)
+    protected MongoBase(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 

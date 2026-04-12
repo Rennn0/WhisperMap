@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using XcLib.Data.Abstractions;
 using XcLib.Data.Mongo.XatiCraft.Context;
 using XcLib.Data.Mongo.XatiCraft.Model;
@@ -7,7 +8,7 @@ namespace XcLib.Data.Mongo.XatiCraft;
 
 public class ProductCartRepo : MongoBase<ProductCart>, IProductCartRepo
 {
-    public ProductCartRepo(string connection, string db = "xc-db") : base(connection, db)
+    public ProductCartRepo(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 

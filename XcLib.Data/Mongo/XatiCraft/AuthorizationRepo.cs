@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using XcLib.Data.Abstractions;
 using XcLib.Data.Mongo.XatiCraft.Context;
@@ -7,7 +8,7 @@ namespace XcLib.Data.Mongo.XatiCraft;
 
 public class AuthorizationRepo : MongoBase<AuthorizationInfo>, IAuthorizationRepo
 {
-    public AuthorizationRepo(string connection, string db = "xc-db") : base(connection, db)
+    public AuthorizationRepo(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 

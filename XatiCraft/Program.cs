@@ -13,7 +13,9 @@ using XatiCraft.Handlers.Upload;
 using XatiCraft.Settings;
 using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
+using XcLib.Data.Mongo;
 using XcLib.Data.Mongo.XatiCraft;
+using XcLib.Data.Mongo.XatiCraft.Context;
 using XcLib.Data.Postgres.XatiCraft.Context;
 using XcLib.Data.SqlServer.Realtime.Context;
 using XcLib.Data.SqlServer.Realtime.Entities;
@@ -59,16 +61,22 @@ public static class Program
             .AddOptionsWithValidateOnStart<GoogleAuthSettings>()
             .BindConfiguration(nameof(GoogleAuthSettings))
             .ValidateDataAnnotations();
-        
-        builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
+        builder.Services.Configure<MongoConnectionOptions>(opt =>
         {
-            options.SuppressMapClientErrors = true;
-        }).AddJsonOptions(opt =>
-        {
-            opt.JsonSerializerOptions.PropertyNamingPolicy = new SnakeCaseSerializer();
-            opt.JsonSerializerOptions.WriteIndented = true;
-            opt.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            opt.ConnectionString = builder.Configuration.GetConnectionString("Mongo");
+            opt.Database = "xc-db";
         });
+
+        builder.Services
+            .AddControllers()
+            .ConfigureApiBehaviorOptions(options => { options.SuppressMapClientErrors = true; })
+            .AddJsonOptions(opt =>
+            {
+                opt.JsonSerializerOptions.PropertyNamingPolicy = new SnakeCaseSerializer();
+                opt.JsonSerializerOptions.WriteIndented = true;
+                opt.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            });
+        
         builder.Services.AddRateLimiter(opt =>
         {
             opt.AddPolicy(AuthGuard.SessionPolicy, context =>
@@ -113,11 +121,13 @@ public static class Program
         builder.Services.AddResponseCompression();
         builder.Services.AddHttpContextAccessor();
 
-        builder.Services.AddDbContext<ApplicationContext>(options =>
-        {
+        builder.Services
+            .AddDbContext<ApplicationContext>(options =>
+            {
             options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(ApplicationContext)), pgOptions => pgOptions.EnableRetryOnFailure(int.MaxValue));
-        }).AddDbContext<MasterDbContext>(options =>
-        {
+            })
+            .AddDbContext<MasterDbContext>(options =>
+            {
             options.UseSqlServer(builder.Configuration.GetConnectionString(nameof(MasterDbContext)),
                 sqlOpt => { sqlOpt.EnableRetryOnFailure(); });
             options.EnableSensitiveDataLogging(false);
@@ -133,18 +143,14 @@ public static class Program
         builder.Services.AddScoped<UserGuard>();
         builder.Services.AddTransient<Security, AspDataProtector>();
         builder.Services.AddTransient<Security, SimpleBase64Protector>();
+        
         builder.Services.AddTransient<IProductRepo, ProductRepo>();
         builder.Services.AddTransient<IProductMetadaRepo, ProductMetadataRepo>();
-        
-        string mongoConn = builder.Configuration.GetConnectionString("Mongo") ?? throw new Exception("MongoConnection");
-        builder.Services.AddTransient<IProductRepo, XcLib.Data.Mongo.XatiCraft.ProductRepo>(_ =>
-            new XcLib.Data.Mongo.XatiCraft.ProductRepo(mongoConn));
-        builder.Services.AddTransient<IProductMetadaRepo, XcLib.Data.Mongo.XatiCraft.ProductMetadataRepo>(_ =>
-            new XcLib.Data.Mongo.XatiCraft.ProductMetadataRepo(mongoConn));
-        builder.Services.AddTransient<IAuthorizationRepo, AuthorizationRepo>(_ =>
-            new AuthorizationRepo(mongoConn));
-        builder.Services.AddTransient<IProductCartRepo, ProductCartRepo>(_ =>
-            new ProductCartRepo(mongoConn));
+
+        builder.Services.AddTransient<IProductRepo, XcLib.Data.Mongo.XatiCraft.ProductRepo>();
+        builder.Services.AddTransient<IProductMetadaRepo, XcLib.Data.Mongo.XatiCraft.ProductMetadataRepo>();
+        builder.Services.AddTransient<IAuthorizationRepo, AuthorizationRepo>();
+        builder.Services.AddTransient<IProductCartRepo, ProductCartRepo>();
         
         builder.Services.AddTransient<IUploader, ClaudflareR2StorageService>();
         builder.Services.AddTransient<IReader, ClaudflareR2StorageService>();
@@ -164,7 +170,9 @@ public static class Program
         builder.Services.AddTransient<IAuthorizationHandler, GoogleAuthHandler>();
         builder.Services.AddTransient<IAuthorizationHandler, GithubAuthHandler>();
 
-        builder.Services.AddTransient<IBootstrap, MongoBootstrap>(_ => new MongoBootstrap(mongoConn));
+        builder.Services.AddTransient<IBootstrap, MongoBootstrap>();
+        builder.Services.AddTransient<IBootstrap, PostgresBootstrap>();
+        builder.Services.AddTransient<IBootstrap, SqlServerBootstrap>();
 
         builder.Logging.AddEntityFramework<MasterDbContext, XaticraftLog>()
             .SuppressUntil<MasterDbContext, XaticraftLog>(LogLevel.Warning)
