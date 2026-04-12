@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
@@ -16,12 +15,9 @@ public static partial class Program
                 [FromServices] ILoggerFactory loggerFactory, [FromServices] IDistributedCache cache) =>
             {
                 ILogger logger = loggerFactory.CreateLogger("webhook");
-                logger.LogInformation("webhook {a}", webHookJson.RootElement);
-
                 string? tag = webHookJson.RootElement.GetProperty("push_data").GetProperty("tag").GetString();
-                logger.LogInformation("tag {a}", tag);
-
                 if (tag != "latest") return Results.BadRequest();
+                logger.LogInformation("webhook {a}", webHookJson.RootElement);
 
                 (string service, string image) = idx switch
                 {
@@ -38,7 +34,11 @@ public static partial class Program
                 if (maybeDeploying is { Length: > 0 })
                     return Results.Ok();
 
-                await cache.SetAsync(cacheKey, Encoding.UTF8.GetBytes($"{deployTime:G}_{tag}"),
+                await cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(new
+                    {
+                        time = deployTime.ToString("G"),
+                        tag
+                    }),
                     new DistributedCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(3)
@@ -50,7 +50,7 @@ public static partial class Program
                      set -eu
                      docker service update {service} --image {image}:latest --force
                      """;
-                logger.LogInformation("exec script {a}", script);
+                logger.LogWarning("exec script {a}", script);
 
                 try
                 {
@@ -66,7 +66,7 @@ public static partial class Program
                         }
                     };
                     proc.Start();
-                    logger.LogInformation("started webhook update for idx {Idx}, service {Service}", idx, service);
+                    logger.LogWarning("started webhook update for idx {Idx}, service {Service}", idx, service);
 
                     return Results.Ok(new
                     {
