@@ -31,9 +31,13 @@ public static partial class Program
                 DateTimeOffset deployTime = DateTimeOffset.Now;
                 string cacheKey = $"wh.redeploy.{service}";
                 byte[]? maybeDeploying = await cache.GetAsync(cacheKey);
-                if (maybeDeploying is { Length: > 0 })
-                    return Results.Ok();
 
+                if (maybeDeploying is { Length: > 0 })
+                {
+                    Sema.Release();
+                    return Results.Ok();
+                }
+                
                 await cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(new
                     {
                         time = deployTime.ToString("G"),
