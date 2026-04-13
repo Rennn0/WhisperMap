@@ -41,6 +41,7 @@ public static partial class Program
                 {
                     1 => ("xc_realtime", "rennn0/realtime"),
                     2 => ("xc_api", "rennn0/xaticraft"),
+                    3 => ("xc_webhook", "rennn0/webhook"),
                     _ => throw new ArgumentOutOfRangeException(nameof(idx))
                 };
 
