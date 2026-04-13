@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
-using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Metrics;
 using XatiCraft.ApiContracts;
 using XatiCraft.Guards;
@@ -11,16 +10,10 @@ using XatiCraft.Handlers.Impl;
 using XatiCraft.Handlers.Read;
 using XatiCraft.Handlers.Upload;
 using XatiCraft.Settings;
+using XcLib.Data;
 using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
-using XcLib.Data.Mongo;
-using XcLib.Data.Mongo.XatiCraft;
-using XcLib.Data.Mongo.XatiCraft.Context;
-using XcLib.Data.Postgres.XatiCraft.Context;
-using XcLib.Data.SqlServer.Realtime.Context;
 using XcLib.Data.SqlServer.Realtime.Entities;
-using ProductMetadataRepo = XcLib.Data.Postgres.XatiCraft.ProductMetadataRepo;
-using ProductRepo = XcLib.Data.Postgres.XatiCraft.ProductRepo;
 
 namespace XatiCraft;
 
@@ -41,6 +34,8 @@ public static class Program
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
         AppMetrics appMetrics = new AppMetrics();
+        builder.Services.AddSingleton(appMetrics);
+        
         builder.Services.AddOpenTelemetry()
             .WithMetrics(conf =>
             {
@@ -48,7 +43,6 @@ public static class Program
                     .AddAspNetCoreInstrumentation()
                     .AddPrometheusExporter();
             });
-        builder.Services.AddSingleton<AppMetrics>(appMetrics);        
         
         builder.Services.Configure<ClaudflareR2Settings>(
             builder.Configuration.GetSection(nameof(ClaudflareR2Settings)));
@@ -61,11 +55,6 @@ public static class Program
             .AddOptionsWithValidateOnStart<GoogleAuthSettings>()
             .BindConfiguration(nameof(GoogleAuthSettings))
             .ValidateDataAnnotations();
-        builder.Services.Configure<MongoConnectionOptions>(opt =>
-        {
-            opt.ConnectionString = builder.Configuration.GetConnectionString("Mongo");
-            opt.Database = "xc-db";
-        });
 
         builder.Services
             .AddControllers()
@@ -106,8 +95,6 @@ public static class Program
             string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             opt.IncludeXmlComments(xmlPath);
         });
-        builder.Services.AddMemoryCache();
-        builder.Services.AddDistributedMemoryCache();
         builder.Services.AddSession(options =>
         {
             options.Cookie.HttpOnly = true;
@@ -121,20 +108,6 @@ public static class Program
         builder.Services.AddResponseCompression();
         builder.Services.AddHttpContextAccessor();
 
-        builder.Services
-            .AddDbContext<ApplicationContext>(options =>
-            {
-            options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(ApplicationContext)), pgOptions => pgOptions.EnableRetryOnFailure(int.MaxValue));
-            })
-            .AddDbContext<MasterDbContext>(options =>
-            {
-            options.UseSqlServer(builder.Configuration.GetConnectionString(nameof(MasterDbContext)),
-                sqlOpt => { sqlOpt.EnableRetryOnFailure(); });
-            options.EnableSensitiveDataLogging(false);
-            options.EnableDetailedErrors();
-            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-        });
-
         builder.Services.AddExceptionHandler<GeneralExceptionHandler>();
         builder.Services.AddProblemDetails();
         builder.Services.AddHttpClient();
@@ -143,14 +116,6 @@ public static class Program
         builder.Services.AddScoped<UserGuard>();
         builder.Services.AddTransient<Security, AspDataProtector>();
         builder.Services.AddTransient<Security, SimpleBase64Protector>();
-        
-        builder.Services.AddTransient<IProductRepo, ProductRepo>();
-        builder.Services.AddTransient<IProductMetadaRepo, ProductMetadataRepo>();
-
-        builder.Services.AddTransient<IProductRepo, XcLib.Data.Mongo.XatiCraft.ProductRepo>();
-        builder.Services.AddTransient<IProductMetadaRepo, XcLib.Data.Mongo.XatiCraft.ProductMetadataRepo>();
-        builder.Services.AddTransient<IAuthorizationRepo, AuthorizationRepo>();
-        builder.Services.AddTransient<IProductCartRepo, ProductCartRepo>();
         
         builder.Services.AddTransient<IUploader, ClaudflareR2StorageService>();
         builder.Services.AddTransient<IReader, ClaudflareR2StorageService>();
@@ -170,13 +135,8 @@ public static class Program
         builder.Services.AddTransient<IAuthorizationHandler, GoogleAuthHandler>();
         builder.Services.AddTransient<IAuthorizationHandler, GithubAuthHandler>();
 
-        builder.Services.AddTransient<IBootstrap, MongoBootstrap>();
-        builder.Services.AddTransient<IBootstrap, PostgresBootstrap>();
-        builder.Services.AddTransient<IBootstrap, SqlServerBootstrap>();
-
-        builder.Logging.AddEntityFramework<MasterDbContext, XaticraftLog>()
-            .SuppressUntil<MasterDbContext, XaticraftLog>(LogLevel.Warning)
-            .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+        builder.AddSqlLogging<XaticraftLog>();
+        builder.AddXcLibDataModule();
         
 #if USE_CERT
         builder.Services.AddCert();
@@ -192,11 +152,13 @@ public static class Program
         app.UseExceptionHandler();
         app.MapControllers();
         app.UseResponseCaching();
+
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+        
         app.UseOpenTelemetryPrometheusScrapingEndpoint();
         
         await Parallel.ForEachAsync( app.Services.GetRequiredService<IEnumerable<IBootstrap>>(), CancellationToken.None, (bootstrap, _) => bootstrap.RunAsync());

@@ -4,20 +4,20 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <InvariantGlobalization>false</InvariantGlobalization>
+        <PublishAot>true</PublishAot>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <RootNamespace>Webhook</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-        <DependentUpon>Dockerfile</DependentUpon>
-      </Content>
+        <Content Include="..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\XcLib.Data\XcLib.Data.csproj"/>
-        <ProjectReference Include="..\XcLib.Sse\XcLib.Sse.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace XcLib.Data.Mongo;
+namespace XcLib.Data.Abstractions;
 
 public abstract record ConnectionOptions
 {

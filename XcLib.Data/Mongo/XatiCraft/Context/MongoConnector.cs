@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using XcLib.Data.Abstractions;
 
 namespace XcLib.Data.Mongo.XatiCraft.Context;
 
