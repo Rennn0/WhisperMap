@@ -68,6 +68,7 @@ public static partial class Program
         streamGroup.ApiGetStreamCache();
         streamGroup.ApiGetSignal();
         streamGroup.ApiGetStream();
+        
         await app.RunAsync();
     }
 }
