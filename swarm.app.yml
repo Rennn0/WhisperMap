@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  api:
+    image: rennn0/xaticraft:latest
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - CERT_PATH=/app/certs/xc-dp.pfx
+      - CERT_PASS=SAGhJr6c4sVRcIMhrah9Eddp670jXcl2
+      - SERVICE_INSTANCE_ID={{.Task.Slot}}
+    configs:
+      - source: xc_pfx
+        target: /app/certs/xc-dp.pfx
+    secrets:
+      - source: xc_appsettings_prod
+        target: appsettings.Production.json
+    networks:
+      - xc-network
+  
+  realtime:
+    image: rennn0/realtime:latest
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    secrets:
+      - source: rt_appsettings_prod
+        target: appsettings.Production.json
+    networks:
+      - xc-network
+  
+  webhook:
+    image: rennn0/webhook:latest
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+      placement:
+        constraints:
+          - node.role == manager
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    secrets:
+      - source: wh_appsettings_prod
+        target: appsettings.Production.json
+    networks:
+      - xc-network
+      
+networks:
+  xc-network:
+    external: true
+
+volumes:
+  pgdata:
+    external: true
+    name: xc_pgdata
+  mongo-data:
+    external: true
+    name: xc_mongo-data
+  mongo-config:
+    external: true
+    name: xc_mongo-config
+  sql-data:
+    external: true
+    name: xc_sql-data
+
+secrets:
+  xc_appsettings_prod:
+    external: true
+  rt_appsettings_prod:
+    external: true
+  wh_appsettings_prod:
+    external: true
+
+configs:
+  xc_pfx:
+    external: true

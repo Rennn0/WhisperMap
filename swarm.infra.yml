@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - target: 80
+        published: 8070
+        protocol: tcp
+        mode: ingress
+    configs:
+      - source: nginx_conf
+        target: /etc/nginx/nginx.conf
+    networks:
+      - xc-network
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 64M
+  
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=1d"
+    configs:
+      - source: prometheus_yml
+        target: /etc/prometheus/prometheus.yml
+    networks:
+      - xc-network
+    ports:
+      - target: 9090
+        published: 9090
+        protocol: tcp
+        mode: ingress
+    deploy:
+      replicas: 1
+
+networks:
+  xc-network:
+    external: true
+
+#volumes:
+
+# secrets:
+
+configs:
+  nginx_conf:
+    external: true
+  prometheus_yml:
+    external: true

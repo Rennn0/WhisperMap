@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    secrets:
+      - postgres_user
+      - postgres_password
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/postgres_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_DB: xc-db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - xc-network
+    ports:
+      - target: 5432
+        published: 5432
+        protocol: tcp
+        mode: ingress
+    deploy:
+      placement:
+        constraints: [ node.labels.db == true ]
+  
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ""
+    networks:
+      - xc-network
+    volumes:
+      - sql-data:/var/opt/mssql
+    ports:
+      - target: 1433
+        published: 1433
+        protocol: tcp
+        mode: ingress
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [ node.labels.db == true ]
+      resources:
+        reservations:
+          memory: 2G
+        limits:
+          memory: 4G
+  
+  mongo:
+    image: mongodb/mongodb-community-server:8.0-ubi8
+    secrets:
+      - mongo_user
+      - mongo_password
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME_FILE=/run/secrets/mongo_user
+      - MONGODB_INITDB_ROOT_PASSWORD_FILE=/run/secrets/mongo_password
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    networks:
+      - xc-network
+    ports:
+      - target: 27017
+        published: 27017
+        protocol: tcp
+        mode: ingress
+    deploy:
+      placement:
+        constraints: [ node.labels.db == true ]
+
+networks:
+  xc-network:
+    external: true
+
+volumes:
+  pgdata:
+    external: true
+    name: xc_pgdata
+  mongo-data:
+    external: true
+    name: xc_mongo-data
+  mongo-config:
+    external: true
+    name: xc_mongo-config
+  sql-data:
+    external: true
+    name: xc_sql-data
+
+secrets:
+  mongo_password:
+    external: true
+  mongo_user:
+    external: true
+  postgres_password:
+    external: true
+  postgres_user:
+    external: true
+  sql_password:
+    external: true
+
+#configs:
