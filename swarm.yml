@@ -97,6 +97,8 @@ services:
         mode: host
     deploy:
       replicas: 1
+      placement:
+        constraints: [ node.labels.db == true ]
       resources:
         reservations:
           memory: 2G
@@ -180,6 +182,7 @@ volumes:
   sql-data:
     external: true
     name: xc_sql-data
+
 secrets:
   mongo_password:
     external: true

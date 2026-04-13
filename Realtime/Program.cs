@@ -70,5 +70,7 @@ public static partial class Program
         streamGroup.ApiGetStream();
         
         await app.RunAsync();
+        //#TODO sheamowme sesia rato etisheba avtorizebuls
+        //#TODO swarmis stakebad dayofa
     }
 }
