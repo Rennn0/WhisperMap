@@ -49,6 +49,8 @@ networks:
 
 configs:
   nginx_conf:
+    name: xc_nginx_conf
     external: true
   prometheus_yml:
+    name: xc_prometheus_yml
     external: true

@@ -10,10 +10,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
 		nginx.conf = nginx.conf
-		swarm.db.yml = swarm.db.yml
+		stack.db.yml = stack.db.yml
 		AGENTS.md = AGENTS.md
-		swarm.infra.yml = swarm.infra.yml
-		swarm.app.yml = swarm.app.yml
+		stack.infra.yml = stack.infra.yml
+		stack.app.yml = stack.app.yml
 		swarm.old.yml = swarm.old.yml
 	EndProjectSection
 EndProject
