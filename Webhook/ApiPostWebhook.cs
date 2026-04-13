@@ -90,6 +90,7 @@ public static partial class Program
                         }
                     };
                     proc.Start();
+                    
                     logger.LogWarning("started webhook update for idx {Idx}, service {Service}", idx, service);
 
                     return Results.Ok(new
