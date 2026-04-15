@@ -71,6 +71,5 @@ public static partial class Program
         
         await app.RunAsync();
         //#TODO sheamowme sesia rato etisheba avtorizebuls
-        //#TODO swarmis stakebad dayofa
     }
 }

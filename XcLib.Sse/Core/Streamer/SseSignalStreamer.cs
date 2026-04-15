@@ -18,13 +18,13 @@ public class SseSignalStreamer<T> : SseStreamer<T>
         : base(context, signalOptions, formatter, loggerFactory, cancellationToken)
     {
         Logger = loggerFactory.CreateLogger($"XcLib.Streamer.{nameof(SseSignalStreamer<T>)}<{typeof(T).Name}>");
-        LogIntervalA(Logger, PingInterval);
+        Logger.LogIntervalA(PingInterval);
     }
 
     public override async Task StreamAsync(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter)
     {
-        LogStartingSseSignalForAEventB(Logger, Url, eventName);
+        Logger.LogStartingSseSignalForAEventB(Url, eventName);
 
         try
         {
@@ -40,7 +40,7 @@ public class SseSignalStreamer<T> : SseStreamer<T>
                     T data = await signalTask;
                     await SafeWriteAsync(() => WriteEventAsync(eventName, data, formatter));
 
-                    LogEndSignalForRequestpathEventEventname(Logger, Url, eventName);
+                    Logger.LogEndSignalForRequestpathEventEventname(Url, eventName);
                     break;
                 }
 
@@ -49,11 +49,11 @@ public class SseSignalStreamer<T> : SseStreamer<T>
         }
         catch (OperationCanceledException)
         {
-            LogSignalingForRequestpathEventEventnameCancelled(Logger, Url, eventName);
+            Logger.LogSignalingForRequestpathEventEventnameCancelled(Url, eventName);
         }
         catch (Exception e)
         {
-            LogSignalingForRequestpathEventEventnameDestroyedExceptionException(Logger, Url, eventName,
+            Logger.LogSignalingForRequestpathEventEventnameDestroyedExceptionException(Url, eventName,
                 e.Message, e);
         }
     }

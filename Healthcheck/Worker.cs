@@ -2,13 +2,13 @@ namespace Healthcheck;
 
 public class Worker : BackgroundService
 {
-    private readonly HttpClient _client;
+    // private readonly HttpClient _client;
     private readonly ILogger<Worker> _logger;
 
     public Worker(ILogger<Worker> logger, IHttpClientFactory httpClientFactory)
     {
         _logger = logger;
-        _client = httpClientFactory.CreateClient(nameof(Worker));
+        // _client = httpClientFactory.CreateClient(nameof(Worker));
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -16,10 +16,12 @@ public class Worker : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
             try
             {
-                HttpResponseMessage response = await _client.GetAsync(string.Empty, stoppingToken);
-                response.EnsureSuccessStatusCode();
-                string responseBody = await response.Content.ReadAsStringAsync(stoppingToken);
-                _logger.LogInformation("{Message}", responseBody);
+                _logger.LogInformation("huh??");
+
+                // HttpResponseMessage response = await _client.GetAsync(string.Empty, stoppingToken);
+                // response.EnsureSuccessStatusCode();
+                // string responseBody = await response.Content.ReadAsStringAsync(stoppingToken);
+                // _logger.LogInformation("{Message}", responseBody);
             }
             catch (Exception e)
             {
