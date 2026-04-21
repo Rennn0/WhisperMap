@@ -50,7 +50,7 @@ public abstract partial class SseStream<T> : IDisposable, IAsyncDisposable
             SingleWriter = false,
             FullMode = BoundedChannelFullMode.DropOldest,
             AllowSynchronousContinuations = false
-        });
+        }, t => Logger.LogWarning("item droped {t}", t));
 
         subscriber = new StreamSubscriber(id, channel);
         _subscribers[id] = subscriber;
