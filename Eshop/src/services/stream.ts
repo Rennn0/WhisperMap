@@ -8,9 +8,16 @@ export const eventStream = (options: {
 }) => {
     const source = new EventSource(`${host}${options.url}${options.streamId ? `?sid=${options.streamId}` : ''}`);
     source.onmessage = options.callback;
-    if (options.onOpen)
-        source.onopen = options.onOpen;
-    if (options.onError)
-        source.onerror = options.onError;
+
+    source.onerror = (e) => {
+        console.error("[SSE] err", e, source?.readyState)
+        options.onError?.(e);
+    }
+
+    source.onopen = () => {
+        console.log("[SSE] opened", new Date().toISOString())
+        options.onOpen?.();
+    }
+
     return source;
 }
