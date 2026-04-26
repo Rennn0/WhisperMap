@@ -13,15 +13,15 @@ export default {
     }
 }
 
-function handleProxy(request, env) {
+async function handleProxy(request, env) {
     const url = new URL(request.url);
     const backendUrl = env.XC_BACKEND_URL + url.pathname.slice(4) + url.search;
-    const headers = new Headers(request.headers);
 
+    const headers = new Headers(request.headers);
     headers.set("x-api-key", env.XC_API_KEY);
     headers.set("x-public-ip", request.headers.get("cf-connecting-ip") || "unknown");
 
-    return fetch(backendUrl, {
+    const response = await fetch(backendUrl, {
         method: request.method,
         headers,
         body:
@@ -29,6 +29,22 @@ function handleProxy(request, env) {
                 ? request.body
                 : null,
         redirect: "manual"
+    });
+
+    const newHeaders = new Headers(response.headers);
+
+    newHeaders.delete("content-security-policy");
+    newHeaders.delete("content-security-policy-report-only");
+
+    newHeaders.set(
+        "content-security-policy",
+        "default-src 'self'; connect-src 'self' https:;"
+    );
+
+    return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: newHeaders
     });
 }
 
