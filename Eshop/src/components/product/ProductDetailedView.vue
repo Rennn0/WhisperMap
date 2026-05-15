@@ -212,7 +212,7 @@ const editClicked = () => {
                         </template>
 
                         <template v-else>
-                            <video :src="selectedMedia.src" controls class="h-full w-full object-cover" />
+                            <video :src="selectedMedia.src" controls class="h-full w-full object-contain" />
                         </template>
                     </div>
                 </div>
