@@ -41,7 +41,7 @@ internal class UploadProductFileHandler : IUploadProductFileHandler
             await _uploader.UploadFileAsync(context.Stream, context.FileName, cancellationToken);
         await _productMetadaRepos.InsertAsync(
             new ProductMetadata(uploadResult.OriginalFileName, uploadResult.Key, uploadResult.Location,
-                context.Product), cancellationToken);
+                context.Product, context.Order), cancellationToken);
         return new UploadProductFileContract(context);
     }
 
@@ -53,7 +53,7 @@ internal class UploadProductFileHandler : IUploadProductFileHandler
         SignedUrlUploadResult uploadResult = await _uploader.GetSignedUrlAsync(context.FileName, cancellationToken);
         await _productMetadaRepos.InsertAsync(
             new ProductMetadata(uploadResult.OriginalFileName, uploadResult.Key, uploadResult.Location,
-                context.Product), cancellationToken);
+                context.Product, context.Order), cancellationToken);
         return new GetSignedUrlContract(uploadResult.SignedUrl, context);
     }
 }

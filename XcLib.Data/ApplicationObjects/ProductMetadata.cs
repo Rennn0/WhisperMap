@@ -10,7 +10,8 @@ public record ProductMetadata(
     string OriginalFile,
     string FileKey,
     string Location,
-    long ProductId) : ApplicationObject
+    long ProductId,
+    int? Order) : ApplicationObject
 {
     
     /// <summary>

@@ -5,4 +5,4 @@ namespace XatiCraft.ApiContracts;
 /// <param name="Product"></param>
 /// <param name="Stream"></param>
 /// <param name="FileName"></param>
-public record UploadProductFileContext(long Product, Stream Stream, string FileName) : ApiContext;
+public record UploadProductFileContext(long Product, int? Order, Stream Stream, string FileName) : ApiContext;

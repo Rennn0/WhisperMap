@@ -57,6 +57,6 @@ internal class GetProductHandler : IGetProductHandler
                     context.Id) ?? false;
 
         return new GetProductContract(context.Id, product.Title, product.Description,
-            product.Price, inCart, product.ProductMetadata?.Select(pmd => pmd.Location), context);
+            product.Price, inCart, product.ProductMetadata?.OrderBy(x => x.Order).Select(pmd => pmd.Location), context);
     }
 }

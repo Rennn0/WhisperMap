@@ -20,6 +20,7 @@ public class StorageController : ApplicationController
     /// </summary>
     /// <param name="handler"></param>
     /// <param name="productId"></param>
+    /// <param name="order"></param>
     /// <param name="file"></param>
     /// <param name="cancellation"></param>
     /// <returns></returns>
@@ -28,27 +29,29 @@ public class StorageController : ApplicationController
     public async Task<ApiContract> UploadProductFile(
         [FromServices] IUploadProductFileHandler handler,
         [FromRoute] long productId,
+        [FromRoute] int? order,
         IFormFile file,
         CancellationToken cancellation)
     {
         await using Stream stream = file.OpenReadStream();
-        return await handler.HandleAsync(new UploadProductFileContext(productId, stream, file.FileName), cancellation);
+        return await handler.HandleAsync(new UploadProductFileContext(productId, order, stream, file.FileName),
+            cancellation);
     }
 
     /// <summary>
     /// </summary>
     /// <param name="handler"></param>
     /// <param name="productId"></param>
+    /// <param name="order"></param>
     /// <param name="fileName"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet]
     [UserGuard(ApplicationClaims.Upload)]
     public async Task<ApiContract> GetSignedUrl([FromServices] IUploadProductFileHandler handler,
-        [FromRoute] long productId, [FromQuery(Name = "fn")] string fileName, CancellationToken cancellationToken)
-    {
-        return await handler.HandleAsync(new GetSignedUrlContext(productId, fileName), cancellationToken);
-    }
+        [FromRoute] long productId, [FromQuery(Name = "o")] int? order, [FromQuery(Name = "fn")] string fileName,
+        CancellationToken cancellationToken) =>
+        await handler.HandleAsync(new GetSignedUrlContext(productId,order, fileName), cancellationToken);
 
     /// <summary>
     /// </summary>

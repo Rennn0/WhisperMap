@@ -17,9 +17,9 @@ const uploadFiles = async () => {
     uploading.value = true;
 
     try {
-        const uploadPromises = selectedFiles.value.map(async (f) => {
+        const uploadPromises = selectedFiles.value.map(async (f, i) => {
             const buffer = await f.arrayBuffer();
-            const { url } = await getSignedUrl(props.upload.id ?? -1, f.name).request;
+            const { url } = await getSignedUrl(props.upload.id ?? -1, i, f.name).request;
             await putOnUrl(url, buffer);
         });
 
@@ -68,4 +68,4 @@ const uploadFiles = async () => {
             </div>
         </div>
     </section>
-</template> 
+</template>
