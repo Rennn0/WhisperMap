@@ -31,7 +31,7 @@ public class SseChannelStreamer<T> : SseStreamer<T>
     public override async Task StreamAsync(ChannelReader<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter)
     {
-        LogStartStreamingForAEventEventname(Logger, Url, eventName);
+        Logger.LogStartStreamingForAEventEventname(Url, eventName);
 
         try
         {
@@ -45,7 +45,7 @@ public class SseChannelStreamer<T> : SseStreamer<T>
                 {
                     if (!await waitForDataTask)
                     {
-                        LogEndStreamingForRequestpathEventEventname(Logger, Url, eventName);
+                        Logger.LogEndStreamingForRequestpathEventEventname(Url, eventName);
                         break;
                     }
 
@@ -60,11 +60,11 @@ public class SseChannelStreamer<T> : SseStreamer<T>
         }
         catch (OperationCanceledException)
         {
-            LogStreamingForRequestpathEventEventnameCancelled(Logger, Url, eventName);
+            Logger.LogStreamingForRequestpathEventEventnameCancelled(Url, eventName);
         }
         catch (Exception e)
         {
-            LogStreamingForRequestpathEventEventnameDestroyedExceptionException(Logger, Url, eventName,
+            Logger.LogStreamingForRequestpathEventEventnameDestroyedExceptionException(Url, eventName,
                 e.Message, e);
         }
     }

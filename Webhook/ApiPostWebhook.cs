@@ -39,9 +39,9 @@ public static partial class Program
                 
                 (string service, string image) = idx switch
                 {
-                    1 => ("xc_realtime", "rennn0/realtime"),
-                    2 => ("xc_api", "rennn0/xaticraft"),
-                    3 => ("xc_webhook", "rennn0/webhook"),
+                    1 => ("xc-app_realtime", "rennn0/realtime"),
+                    2 => ("xc-app_api", "rennn0/xaticraft"),
+                    3 => ("xc-app_webhook", "rennn0/webhook"),
                     _ => throw new ArgumentOutOfRangeException(nameof(idx))
                 };
 

@@ -18,7 +18,7 @@ public class SseEnumerableStreamer<T> : SseStreamer<T>
         base(context, streamOptions, formatter, loggerFactory, cancellationToken)
     {
         Logger = loggerFactory.CreateLogger($"XcLib.Streamer.{nameof(SseEnumerableStreamer<T>)}<{typeof(T).Name}>");
-        LogIntervalA(Logger, PingInterval);
+        Logger.LogIntervalA(PingInterval);
     }
 
     public override Task StreamAsync(SseSignal<T> source, string eventName, TimeSpan heartbeatInterval,
@@ -27,7 +27,7 @@ public class SseEnumerableStreamer<T> : SseStreamer<T>
     public override async Task StreamAsync(IAsyncEnumerable<T> source, string eventName, TimeSpan heartbeatInterval,
         SseEventFormatter<T> formatter, T initialValue = default!)
     {
-        LogStartStreamingForAEventEventname(Logger, Url, eventName);
+        Logger.LogStartStreamingForAEventEventname(Url, eventName);
 
         IAsyncEnumerator<T>? enumerator = null;
         Task<bool>? moveNextTask = null;
@@ -62,11 +62,11 @@ public class SseEnumerableStreamer<T> : SseStreamer<T>
         }
         catch (OperationCanceledException)
         {
-            LogStreamingForRequestpathEventEventnameCancelled(Logger, Url, eventName);
+            Logger.LogStreamingForRequestpathEventEventnameCancelled(Url, eventName);
         }
         catch (Exception e)
         {
-            LogStreamingForRequestpathEventEventnameDestroyedExceptionException(Logger, Url, eventName,
+            Logger.LogStreamingForRequestpathEventEventnameDestroyedExceptionException(Url, eventName,
                 e.Message, e);
         }
         finally
@@ -91,7 +91,7 @@ public class SseEnumerableStreamer<T> : SseStreamer<T>
                     // ignored
                 }
 
-            LogEndStreamingForRequestpathEventEventname(Logger, Url, eventName);
+            Logger.LogEndStreamingForRequestpathEventEventname(Url, eventName);
         }
     }
 
