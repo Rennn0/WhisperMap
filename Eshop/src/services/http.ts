@@ -133,10 +133,10 @@ export const uploadProduct = (product: UploadableProduct) => makePost<{ product_
 
 export const updateProduct = (id: number | string, product: UploadableProduct) => makePut<ApiMeta>(`p/${id}`, product, { headers: noAudit() });
 
-export const getSignedUrl = (productId: number,order:number, fileName: string) =>
+export const getSignedUrl = (productId: number, order: number, fileName: string) =>
     makeGet<{ url: string } & ApiMeta>(`p/${productId}/s?fn=${encodeURIComponent(fileName)}&o=${order}`, { headers: noAudit() })
 
-export const putOnUrl = (url: string, buffer: ArrayBuffer) => ky(url, { method: "put", body: buffer });
+export const putOnUrl = (url: string, buffer: ArrayBuffer) => ky(url, { method: "put", body: buffer, timeout: false });
 
 export const deleteProduct = (id: number | string) => makeDelete<void>(`p/${id}/s`, { headers: noAudit() });
 
