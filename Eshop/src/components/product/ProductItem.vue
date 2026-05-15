@@ -10,7 +10,7 @@ const props = defineProps<{ product: Product }>();
 
 <template>
     <article role="button" tabindex="0" :aria-label="`Open ${props.product.title}`"
-        class="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-subtle bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        class="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-subtle bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md md:min-h-80"
         @click="emits('select', props.product)" @keydown.enter="emits('select', props.product)"
         @keydown.space.prevent="emits('select', props.product)">
         <div class="relative aspect-[4/3] overflow-hidden bg-subtle">

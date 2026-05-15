@@ -30,7 +30,7 @@ const httpClint = ky.create({
                 if (!res.ok) {
                     const data = await res.text();
                     console.error(`api err ${data}`);
-                } ``
+                }
             },
             async (req, _, res,) => {
                 const reqClone = req.clone();
