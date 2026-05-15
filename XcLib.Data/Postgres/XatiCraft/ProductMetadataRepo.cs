@@ -26,7 +26,8 @@ public class ProductMetadataRepo : IProductMetadaRepo
             FileKey = productMetadata.FileKey,
             Location = productMetadata.Location,
             OriginalFile = productMetadata.OriginalFile,
-            ProductId = productMetadata.ProductId
+            ProductId = productMetadata.ProductId,
+            Order = productMetadata.Order
         };
 
         await _context.ProductMetadata.AddAsync(mpt, cancellationToken);

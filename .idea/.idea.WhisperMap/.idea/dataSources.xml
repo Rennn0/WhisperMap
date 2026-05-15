@@ -1,37 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="master@192.168.56.101" uuid="def1dfd9-efe9-4258-bd54-33e41f4e0902">
-      <driver-ref>sqlserver.jb</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>com.jetbrains.jdbc.sqlserver.SqlServerDriver</jdbc-driver>
-      <jdbc-url>Server=192.168.56.101\sE4qBogpyv1Xa8CuGgEpEBOGn4CupY,1433;Database=master;Trusted_Connection=False;Persist Security Info=False;Encrypt=False</jdbc-url>
-      <jdbc-additional-properties>
-        <property name="com.intellij.clouds.kubernetes.db.host.port" />
-        <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
-        <property name="com.intellij.clouds.kubernetes.db.container.port" />
-      </jdbc-additional-properties>
-      <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
-    <data-source source="LOCAL" name="xc-db@localhost" uuid="9aa1ae5f-ca46-4d72-85c9-590e4f53d3e2">
+    <data-source source="LOCAL" name="xc-db@100.115.91.34" uuid="c3426cc7-ce9d-4932-8797-72be0ede6fdb">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <configured-by-url>true</configured-by-url>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5442/xc-db?password=testTest123&amp;user=test</jdbc-url>
+      <jdbc-url>jdbc:postgresql://100.115.91.34:5432/xc-db?password=Xju4eqzdFKANB09dar4dgUv3iGezTiVv&amp;user=luka</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="@localhost" uuid="4774d157-231e-4989-a998-1cd9f839316d">
+    <data-source source="LOCAL" name="@100.115.91.34" uuid="bd2b6732-b35f-4e60-8662-6e5e6423e5b8">
       <driver-ref>mongo.4</driver-ref>
       <synchronize>true</synchronize>
       <configured-by-url>true</configured-by-url>
       <jdbc-driver>com.dbschema.MongoJdbcDriver</jdbc-driver>
-      <jdbc-url>mongodb://localhost:27017</jdbc-url>
-      <jdbc-additional-properties>
-        <property name="com.intellij.clouds.kubernetes.db.host.port" />
-        <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
-        <property name="com.intellij.clouds.kubernetes.db.container.port" />
-      </jdbc-additional-properties>
+      <jdbc-url>mongodb://luka:0vEPEJKxdIqd@100.115.91.34:27017</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

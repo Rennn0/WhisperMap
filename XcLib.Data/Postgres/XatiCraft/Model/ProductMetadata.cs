@@ -34,6 +34,7 @@ public sealed class ProductMetadata
     /// </summary>
     public DateTime? Timestamp { get; init; }
 
+    public int? Order { get; init; }
     /// <summary>
     /// </summary>
     public Product Product { get; init; } = null!;

@@ -64,6 +64,7 @@ public partial class ApplicationContext : DbContext, IDataProtectionKeyContext
                 .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("timestamp");
+            entity.Property(e => e.Order).HasColumnName("order");
 
             entity.HasOne(d => d.Product).WithMany(p => p.ProductMetadata)
                 .HasForeignKey(d => d.ProductId)

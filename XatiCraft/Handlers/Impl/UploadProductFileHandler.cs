@@ -11,7 +11,7 @@ namespace XatiCraft.Handlers.Impl;
 internal class UploadProductFileHandler : IUploadProductFileHandler
 {
     // private const long MaxFileSize = 5 * 1024 * 1024; //#NOTE ~ 5mb
-    private readonly IProductMetadaRepo _productMetadaRepos;
+    private readonly IProductMetadaRepo _productMetadaRepo;
     private readonly IProductRepo _productRepos;
     private readonly IUploader _uploader;
 
@@ -25,7 +25,7 @@ internal class UploadProductFileHandler : IUploadProductFileHandler
         IEnumerable<IProductRepo> productRepos)
     {
         _uploader = uploader;
-        _productMetadaRepos = productMetadaRepos.First(pm => pm is ProductMetadataRepo);
+        _productMetadaRepo = productMetadaRepos.First(pm => pm is ProductMetadataRepo);
         _productRepos = productRepos.First(p => p is ProductRepo);
     }
 
@@ -39,7 +39,7 @@ internal class UploadProductFileHandler : IUploadProductFileHandler
             return new Error(ErrorCode.ArgumentMissmatchInDatabase, Hint: nameof(context.Product));
         UploadResult uploadResult =
             await _uploader.UploadFileAsync(context.Stream, context.FileName, cancellationToken);
-        await _productMetadaRepos.InsertAsync(
+        await _productMetadaRepo.InsertAsync(
             new ProductMetadata(uploadResult.OriginalFileName, uploadResult.Key, uploadResult.Location,
                 context.Product, context.Order), cancellationToken);
         return new UploadProductFileContract(context);
@@ -51,7 +51,7 @@ internal class UploadProductFileHandler : IUploadProductFileHandler
         if (!await _productRepos.ExistsAsync(context.Product, cancellationToken))
             return new Error(ErrorCode.ArgumentMissmatchInDatabase, Hint: nameof(context.Product));
         SignedUrlUploadResult uploadResult = await _uploader.GetSignedUrlAsync(context.FileName, cancellationToken);
-        await _productMetadaRepos.InsertAsync(
+        await _productMetadaRepo.InsertAsync(
             new ProductMetadata(uploadResult.OriginalFileName, uploadResult.Key, uploadResult.Location,
                 context.Product, context.Order), cancellationToken);
         return new GetSignedUrlContract(uploadResult.SignedUrl, context);

@@ -71,7 +71,8 @@ SELECT
                 'original_file', pm.original_file,
                 'file_key', pm.file_key,
                 'location', pm.location,
-                'timestamp', pm.""timestamp""
+                'timestamp', pm.timestamp,
+                'order', pm.order
             )
         ) FILTER (WHERE pm.id IS NOT NULL),
         '[]'::jsonb
