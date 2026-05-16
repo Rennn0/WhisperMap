@@ -5,7 +5,7 @@ export const errorCode = {
 } as const;
 
 export enum CurrentViewSelection {
-    Product, Cart, Setting
+    Product, Cart, Setting, Timer
 }
 
 export interface Product {

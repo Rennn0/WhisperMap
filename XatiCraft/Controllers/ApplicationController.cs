@@ -14,9 +14,10 @@ public class ApplicationController : ControllerBase
 
     private readonly CookieOptions _defaultCookieOptions = new CookieOptions
     {
-        HttpOnly = true, Secure = true,
+        HttpOnly = true,
+        Secure = true,
         SameSite = SameSiteMode.Strict,
-        Expires = DateTimeOffset.Now.AddDays(1)
+        Expires = DateTimeOffset.Now.AddDays(1),
     };
 
     /// <summary>
@@ -44,24 +45,39 @@ public class ApplicationController : ControllerBase
     /// </summary>
     /// <param name="func"></param>
     /// <param name="caller"></param>
-    protected async Task RunWithMeasurementAsync(Func<Task> func, [CallerMemberName] string caller = "")
+    protected async Task RunWithMeasurementAsync(
+        Func<Task> func,
+        [CallerMemberName] string caller = ""
+    )
     {
         Stopwatch stopwatch = Stopwatch.StartNew();
-        KeyValuePair<string, object?> funcTag = new KeyValuePair<string, object?>("func", func.Method.Name);
-        KeyValuePair<string, object?> callerTag = new KeyValuePair<string, object?>("caller", caller);
+        KeyValuePair<string, object?> funcTag = new KeyValuePair<string, object?>(
+            "func",
+            func.Method.Name
+        );
+        KeyValuePair<string, object?> callerTag = new KeyValuePair<string, object?>(
+            "caller",
+            caller
+        );
         try
         {
             await func();
         }
         catch (Exception e)
         {
-            AppMetrics.UnhandledExceptionMetric.Add(1,
-                new KeyValuePair<string, object?>(e.GetType().Name, caller));
+            AppMetrics.UnhandledExceptionMetric.Add(
+                1,
+                new KeyValuePair<string, object?>(e.GetType().Name, caller)
+            );
         }
         finally
         {
             stopwatch.Stop();
-            AppMetrics.FuncExecutionMetric.Record((float)stopwatch.Elapsed.TotalMilliseconds, funcTag, callerTag);
+            AppMetrics.FuncExecutionMetric.Record(
+                (float)stopwatch.Elapsed.TotalMilliseconds,
+                funcTag,
+                callerTag
+            );
         }
     }
 }

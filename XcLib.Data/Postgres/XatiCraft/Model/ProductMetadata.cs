@@ -12,7 +12,6 @@ public sealed class ProductMetadata
 
     /// <summary>
     /// </summary>
-
     [MaxLength(512)]
     public string OriginalFile { get; init; } = null!;
 
@@ -35,6 +34,7 @@ public sealed class ProductMetadata
     public DateTime? Timestamp { get; init; }
 
     public int? Order { get; init; }
+
     /// <summary>
     /// </summary>
     public Product Product { get; init; } = null!;

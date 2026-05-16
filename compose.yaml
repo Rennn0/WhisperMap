@@ -1,6 +1,4 @@
-﻿version: "3.8"
-
-services:
+﻿services:
   #  realtime:
   #    build:
   #      context: .
@@ -63,7 +61,7 @@ services:
         
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: sqlserver
+    container_name: xc-sqlserver
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "Test123test"

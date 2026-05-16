@@ -28,11 +28,18 @@ public class ProductController : ApplicationController
     /// <returns></returns>
     [HttpPost]
     [IpAddressGuard]
-    public async Task<ApiContract> CreateProduct([FromServices] IProductManager manager,
+    public async Task<ApiContract> CreateProduct(
+        [FromServices] IProductManager manager,
         [FromBody] Product product,
-        CancellationToken cancellationToken) =>
-        await manager.HandleAsync(new CreateProductContext(product.Title, product.Description, product.Price)
-            { UserId = UserIdC }, cancellationToken);
+        CancellationToken cancellationToken
+    ) =>
+        await manager.HandleAsync(
+            new CreateProductContext(product.Title, product.Description, product.Price)
+            {
+                UserId = UserIdC,
+            },
+            cancellationToken
+        );
 
     /// <summary>
     /// </summary>
@@ -45,13 +52,18 @@ public class ProductController : ApplicationController
     [IpAddressGuard]
     public async Task<ApiContract> UpdateProduct(
         [FromRoute] long id,
-        [FromServices] IProductManager manager, 
+        [FromServices] IProductManager manager,
         [FromBody] Product product,
-        CancellationToken cancellationToken) =>
-            await manager.HandleAsync(new UpdateProductContext(id,product.Title, product.Description, product.Price)
-                { UserId = UserIdC }, cancellationToken);
-    
-    
+        CancellationToken cancellationToken
+    ) =>
+        await manager.HandleAsync(
+            new UpdateProductContext(id, product.Title, product.Description, product.Price)
+            {
+                UserId = UserIdC,
+            },
+            cancellationToken
+        );
+
     /// <summary>
     /// </summary>
     /// <param name="handlers"></param>
@@ -74,7 +86,8 @@ public class ProductController : ApplicationController
         [FromQuery(Name = "ct")] string? continuationToken = null,
         [FromQuery(Name = "fcs")] bool? fromCookies = false,
         [FromQuery(Name = "fct")] bool? fromCart = false,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         bool isGuest = string.IsNullOrEmpty(UserIdC);
         IHandler<ApiContract, GetProductsContext> handler = (fromCookies, fromCart, isGuest) switch
@@ -83,12 +96,15 @@ public class ProductController : ApplicationController
             (true, false, false) => handlers.First(h => h is GetProductCartCookieHandler),
             (_, true, false) => handlers.First(h => h is GetProductsCartHandler),
             (_, true, true) => handlers.First(h => h is GetProductCartCookieHandler),
-            _ => throw new ArgumentOutOfRangeException(nameof(handlers))
+            _ => throw new ArgumentOutOfRangeException(nameof(handlers)),
         };
         return await handler.HandleAsync(
             new GetProductsContext(query, continuationToken, batch, OrderBy: orderBy)
-                { UserId = UserIdC },
-            cancellationToken);
+            {
+                UserId = UserIdC,
+            },
+            cancellationToken
+        );
     }
 
     /// <summary>
@@ -98,9 +114,15 @@ public class ProductController : ApplicationController
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("{id}")]
-    public async Task<ApiContract> GetProduct([FromServices] IGetProductHandler handler, [FromRoute] string id,
-        CancellationToken cancellationToken) =>
-        await handler.HandleAsync(new GetProductContext(id) { UserId = UserIdC }, cancellationToken);
+    public async Task<ApiContract> GetProduct(
+        [FromServices] IGetProductHandler handler,
+        [FromRoute] string id,
+        CancellationToken cancellationToken
+    ) =>
+        await handler.HandleAsync(
+            new GetProductContext(id) { UserId = UserIdC },
+            cancellationToken
+        );
 
     /// <summary>
     /// </summary>
@@ -112,14 +134,16 @@ public class ProductController : ApplicationController
     public async Task<ApiContract> AddProductInCart(
         [FromRoute] long productId,
         [FromServices] IEnumerable<IHandler<ApiContract, AddProductInCartContext>> handlers,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         AddProductInCartContext context = new AddProductInCartContext(productId)
-            { UserId = UserIdC };
+        {
+            UserId = UserIdC,
+        };
         foreach (IHandler<ApiContract, AddProductInCartContext> handler in handlers)
         {
-            ApiContract contract = await handler.HandleAsync(
-                context, cancellationToken);
+            ApiContract contract = await handler.HandleAsync(context, cancellationToken);
             if (contract is AddProductInCartContract { AsCookie: true } cartContract)
                 AppendC(cartContract.CookieKey, cartContract.ProtectedCookie);
         }
@@ -136,14 +160,17 @@ public class ProductController : ApplicationController
     [HttpDelete("{productId:long}/cart")]
     public async Task<ApiContract> RemoveProductFromCart(
         [FromServices] IEnumerable<IHandler<ApiContract, RemoveProductFromCartContext>> handlers,
-        [FromRoute] long productId, CancellationToken cancellationToken)
+        [FromRoute] long productId,
+        CancellationToken cancellationToken
+    )
     {
-        ApiContext context = new RemoveProductFromCartContext(productId)
-            { UserId = UserIdC };
+        ApiContext context = new RemoveProductFromCartContext(productId) { UserId = UserIdC };
         foreach (IHandler<ApiContract, RemoveProductFromCartContext> handler in handlers)
         {
             ApiContract contract = await handler.HandleAsync(
-                (RemoveProductFromCartContext)context, cancellationToken);
+                (RemoveProductFromCartContext)context,
+                cancellationToken
+            );
             if (contract is AddProductInCartContract { AsCookie: true } cartContract)
                 AppendC(cartContract.CookieKey, cartContract.ProtectedCookie);
         }

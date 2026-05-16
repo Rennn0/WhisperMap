@@ -31,11 +31,14 @@ public class StorageController : ApplicationController
         [FromRoute] long productId,
         [FromRoute] int? order,
         IFormFile file,
-        CancellationToken cancellation)
+        CancellationToken cancellation
+    )
     {
         await using Stream stream = file.OpenReadStream();
-        return await handler.HandleAsync(new UploadProductFileContext(productId, order, stream, file.FileName),
-            cancellation);
+        return await handler.HandleAsync(
+            new UploadProductFileContext(productId, order, stream, file.FileName),
+            cancellation
+        );
     }
 
     /// <summary>
@@ -48,10 +51,17 @@ public class StorageController : ApplicationController
     /// <returns></returns>
     [HttpGet]
     [UserGuard(ApplicationClaims.Upload)]
-    public async Task<ApiContract> GetSignedUrl([FromServices] IUploadProductFileHandler handler,
-        [FromRoute] long productId, [FromQuery(Name = "o")] int? order, [FromQuery(Name = "fn")] string fileName,
-        CancellationToken cancellationToken) =>
-        await handler.HandleAsync(new GetSignedUrlContext(productId,order, fileName), cancellationToken);
+    public async Task<ApiContract> GetSignedUrl(
+        [FromServices] IUploadProductFileHandler handler,
+        [FromRoute] long productId,
+        [FromQuery(Name = "o")] int? order,
+        [FromQuery(Name = "fn")] string fileName,
+        CancellationToken cancellationToken
+    ) =>
+        await handler.HandleAsync(
+            new GetSignedUrlContext(productId, order, fileName),
+            cancellationToken
+        );
 
     /// <summary>
     /// </summary>
@@ -61,8 +71,11 @@ public class StorageController : ApplicationController
     /// <returns></returns>
     [HttpDelete]
     [UserGuard(ApplicationClaims.Delete)]
-    public async Task<ApiContract> DeleteProduct([FromServices] IDeleteProductHandler handler,
-        [FromRoute] long productId, CancellationToken cancellationToken)
+    public async Task<ApiContract> DeleteProduct(
+        [FromServices] IDeleteProductHandler handler,
+        [FromRoute] long productId,
+        CancellationToken cancellationToken
+    )
     {
         return await handler.HandleAsync(new DeleteProductContext(productId), cancellationToken);
     }

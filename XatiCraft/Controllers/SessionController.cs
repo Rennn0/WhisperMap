@@ -33,7 +33,7 @@ public class SessionController : ApplicationController
             Secure = true,
             SameSite = SameSiteMode.Lax,
             Expires = DateTimeOffset.Now.AddDays(7),
-            IsEssential = true
+            IsEssential = true,
         };
     }
 
@@ -43,13 +43,19 @@ public class SessionController : ApplicationController
     [HttpGet]
     public IActionResult InitSession()
     {
-        if (!HttpContext.Request.Headers.TryGetValue(AuthGuard.InitHeader, out StringValues forwardHeader))
+        if (
+            !HttpContext.Request.Headers.TryGetValue(
+                AuthGuard.InitHeader,
+                out StringValues forwardHeader
+            )
+        )
             return Unauthorized();
 
         string ip = forwardHeader.ToString().Split(',')[0].Trim();
         _logger.LogInformation("public ip {ip}", ip);
-        string protectedData =
-            _aspProtector.Pack(JsonSerializer.Serialize(new SessionData(ip, Guid.NewGuid().ToString("N"))));
+        string protectedData = _aspProtector.Pack(
+            JsonSerializer.Serialize(new SessionData(ip, Guid.NewGuid().ToString("N")))
+        );
         AppendC(AuthGuard.SessionCookie, protectedData, _cookieOptions);
         return NoContent();
     }
@@ -58,14 +64,21 @@ public class SessionController : ApplicationController
     /// </summary>
     /// <returns></returns>
     [HttpGet("me")]
-    public async Task<IActionResult> Me([FromServices] UserGuard userGuard,
-        [FromServices] IEnumerable<IAuthorizationHandler> handlers, CancellationToken cancellationToken)
+    public async Task<IActionResult> Me(
+        [FromServices] UserGuard userGuard,
+        [FromServices] IEnumerable<IAuthorizationHandler> handlers,
+        CancellationToken cancellationToken
+    )
     {
-        if (!userGuard.TryGetUserInfo(out UserInfo? userInfo)) return Unauthorized();
-        if (userInfo is not { Uid.Length: > 0 }) return Ok(userInfo);
+        if (!userGuard.TryGetUserInfo(out UserInfo? userInfo))
+            return Unauthorized();
+        if (userInfo is not { Uid.Length: > 0 })
+            return Ok(userInfo);
 
-        AuthorizationContract contract = (AuthorizationContract)await handlers.First(h => h is GoogleAuthHandler)
-            .HandleAsync(new UserInfoContext(userInfo.Uid), cancellationToken);
+        AuthorizationContract contract = (AuthorizationContract)
+            await handlers
+                .First(h => h is GoogleAuthHandler)
+                .HandleAsync(new UserInfoContext(userInfo.Uid), cancellationToken);
         userInfo.Username = contract.Username;
         userInfo.Picture = contract.ProfilePicture;
 
@@ -83,15 +96,25 @@ public class SessionController : ApplicationController
     public async Task<IActionResult> VerifyGoogleToken(
         [FromRoute] ApplicationAuthProvider provider,
         [FromQuery(Name = "t")] string token,
-        [FromServices] IEnumerable<IAuthorizationHandler> handlers, CancellationToken cancellationToken)
+        [FromServices] IEnumerable<IAuthorizationHandler> handlers,
+        CancellationToken cancellationToken
+    )
     {
-        AuthorizationContract contract = (AuthorizationContract)await handlers.First(h => provider switch
-            {
-                ApplicationAuthProvider.Google => h is GoogleAuthHandler,
-                ApplicationAuthProvider.Github => h is GithubAuthHandler,
-                _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null)
-            })
-            .HandleAsync(new AuthorizationContext(token, provider), cancellationToken);
+        AuthorizationContract contract = (AuthorizationContract)
+            await handlers
+                .First(h =>
+                    provider switch
+                    {
+                        ApplicationAuthProvider.Google => h is GoogleAuthHandler,
+                        ApplicationAuthProvider.Github => h is GithubAuthHandler,
+                        _ => throw new ArgumentOutOfRangeException(
+                            nameof(provider),
+                            provider,
+                            null
+                        ),
+                    }
+                )
+                .HandleAsync(new AuthorizationContext(token, provider), cancellationToken);
         AppendC(AuthGuard.UserIdCookie, contract.Uid, _cookieOptions);
         return NoContent();
     }

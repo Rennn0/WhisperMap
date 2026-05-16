@@ -29,13 +29,9 @@ public class HealthController : ApplicationController
     public IActionResult Get()
     {
         RunWithMeasurementAsync(MeasureTask).Wait();
-        
+
         _logger.LogDebug("ok");
-        return Ok(new
-        {
-            _healthMonitor.Start,
-            _healthMonitor.Uptime
-        });
+        return Ok(new { _healthMonitor.Start, _healthMonitor.Uptime });
     }
 
     private Task MeasureTask() => Task.Delay(TimeSpan.FromSeconds(Random.Shared.Next(0, 3)));

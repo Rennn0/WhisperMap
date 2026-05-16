@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { CurrentViewSelection, type SidebarOptions } from '../../types';
-import { onActivated, onUpdated, onMounted, onUnmounted } from 'vue';
+import { CurrentViewSelection, type SidebarOptions, type UserInfo } from '../../types';
+import { onActivated, onUpdated, onMounted, onUnmounted, inject, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import GiftIcon from '../freestyle/TablerGiftIcon.vue';
 import ShoppingBagIcon from '../freestyle/TablerShoppingBagIcon.vue';
 import TablerSettingsIcon from '../freestyle/TablerSettingsIcon.vue';
 import IconParkCloseIcon from '../freestyle/IconParkCloseIcon.vue';
 import LanguageComponent from './LanguageComponent.vue';
+import { userInfoInjectionKey } from '../../injectionKeys';
 
 const props = defineProps<{ open: boolean }>();
 
@@ -24,6 +25,7 @@ const options: SidebarOptions[] = [
 ];
 
 const selectOption = (key: CurrentViewSelection) => emit('select', key);
+const userInfo = inject<Readonly<Ref<UserInfo>>>(userInfoInjectionKey);
 
 //#region lifecycle hooks
 onActivated(() => { });
@@ -32,6 +34,8 @@ onUpdated(() => { });
 onMounted(() => {
     const savedLang = localStorage.getItem('lang');
     if (savedLang) locale.value = savedLang;
+
+    if (userInfo?.value.uid) options.push({ title: 'sidebar.timer', key: CurrentViewSelection.Timer, icon: TablerSettingsIcon })
 });
 
 onUnmounted(() => { });

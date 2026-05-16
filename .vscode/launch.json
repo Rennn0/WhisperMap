@@ -1,0 +1,21 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "XatiCraft",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "xc_build",
+            "program": "${workspaceFolder}/XatiCraft/bin/Debug/net8.0/XatiCraft.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/XatiCraft",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+        }
+    ]
+}

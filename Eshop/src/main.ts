@@ -17,6 +17,7 @@ import eng from "./lang/eng.json"
 import ka from "./lang/ka.json"
 import rus from "./lang/rus.json"
 import AuthView from './components/auth/AuthView.vue'
+import TimerComponent from './components/timer/TimerComponent.vue'
 
 const router = createRouter({
     history: createWebHistory(),
@@ -52,6 +53,11 @@ const router = createRouter({
                     path: "/upload",
                     name: "upload",
                     component: UploadView,
+                },
+                {
+                    path: "/timer",
+                    name: "timer",
+                    component: TimerComponent
                 }
             ]
         },

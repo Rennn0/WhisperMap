@@ -42,6 +42,10 @@ const onOptionSelect = (key: CurrentViewSelection) => {
         case CurrentViewSelection.Setting:
             router.push({ name: "settings" })
             break;
+        
+        case CurrentViewSelection.Timer:
+            router.push({ name: "timer" })
+            break;
     }
 }
 
