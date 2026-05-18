@@ -12,11 +12,6 @@ namespace XcLib.Data.Postgres.XatiCraft.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "Order",
-                table: "product_metadata",
-                newName: "order");
-
             migrationBuilder.CreateTable(
                 name: "page_visitors",
                 columns: table => new
