@@ -11,10 +11,9 @@ public class UserStatsProvider : ISseDataProvider<UserStats>
 
     public ValueTask<UserStats> GetAsync(
         SseStreamRegistry<UserStats>.StreamHandle streamHandle,
-        CancellationToken cancellationToken = default) =>
-        ValueTask.FromResult(new UserStats
-        {
-            Online = streamHandle.SubscribersCount,
-            Offline = -1
-        });
+        CancellationToken cancellationToken = default
+    ) =>
+        new ValueTask<UserStats>(
+            new UserStats { Online = streamHandle.SubscribersCount, Offline = -1 }
+        );
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Realtime.Background;
 using XcLib.Data;
 using XcLib.Data.SqlServer.Realtime.Entities;
@@ -64,10 +65,13 @@ public static partial class Program
 
         RouteGroupBuilder mainGroup = app.MapGroup("/realtime");
         RouteGroupBuilder streamGroup = mainGroup.MapGroup("/stream");
+
+        int counter = 0;
+        IProgress<int> counterProgress = new Progress<int>(c => { Trace.WriteLine($"[PROGRESS] {++counter}"); });
         
         streamGroup.ApiGetStreamCache();
         streamGroup.ApiGetSignal();
-        streamGroup.ApiGetStream();
+        streamGroup.ApiGetStream(counterProgress);
         
         await app.RunAsync();
         //#TODO sheamowme sesia rato etisheba avtorizebuls

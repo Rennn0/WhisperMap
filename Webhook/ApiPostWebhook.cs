@@ -10,18 +10,18 @@ public static partial class Program
 {
     private static readonly SemaphoreSlim Sema = new SemaphoreSlim(1, 1);
 
-    internal readonly record struct WebhookLogEntry
+    internal readonly struct WebhookLogEntry
     {
         public string? Tag { get; init; }
         public string? Time { get; init; }
     }
 
-    internal readonly record struct DockerWebhookRequest
+    internal readonly struct DockerWebhookRequest
     {
         [JsonPropertyName("push_data")] public PushData? Push { get; init; }
     }
 
-    internal readonly record struct PushData
+    internal readonly struct PushData
     {
         [JsonPropertyName("tag")] public string? Tag { get; init; }
     }

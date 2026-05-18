@@ -6,13 +6,16 @@ namespace XatiCraft.Handlers;
 
 internal class GeneralExceptionHandler : IExceptionHandler
 {
-    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception,
-        CancellationToken cancellationToken)
+    public async ValueTask<bool> TryHandleAsync(
+        HttpContext httpContext,
+        Exception exception,
+        CancellationToken cancellationToken
+    )
     {
         ProblemDetails problem = new ProblemDetails
         {
             Status = (int)ErrorCode.UnhandledException,
-            Detail =  exception.Message,
+            Detail = exception.Message,
         };
         httpContext.Response.StatusCode = StatusCodes.Status409Conflict;
         await httpContext.Response.WriteAsJsonAsync(problem, cancellationToken);

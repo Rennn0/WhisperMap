@@ -38,7 +38,8 @@ namespace XatiCraft.Migrations
                     file_key = table.Column<string>(type: "text", nullable: false),
                     location = table.Column<string>(type: "text", nullable: false),
                     product_id = table.Column<long>(type: "bigint", nullable: false),
-                    timestamp = table.Column<DateTime>(type: "timestamp without time zone", nullable: true, defaultValueSql: "now()")
+                    timestamp = table.Column<DateTime>(type: "timestamp without time zone", nullable: true, defaultValueSql: "now()"),
+                    order = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {

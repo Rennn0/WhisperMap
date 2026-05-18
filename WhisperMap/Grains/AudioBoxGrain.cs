@@ -7,7 +7,9 @@ public class AudioBoxGrain : Grain, IAudioBoxGrain
 {
     private readonly IPersistentState<AudioBoxState> _blackBoxState;
 
-    public AudioBoxGrain([PersistentState(nameof(AudioBoxState))] IPersistentState<AudioBoxState> blackBoxState)
+    public AudioBoxGrain(
+        [PersistentState(nameof(AudioBoxState))] IPersistentState<AudioBoxState> blackBoxState
+    )
     {
         _blackBoxState = blackBoxState;
     }
@@ -18,7 +20,7 @@ public class AudioBoxGrain : Grain, IAudioBoxGrain
         {
             BoxOwner = pedestrian,
             Audio = audio,
-            PinId = pin
+            PinId = pin,
         };
 
         return ValueTask.CompletedTask;

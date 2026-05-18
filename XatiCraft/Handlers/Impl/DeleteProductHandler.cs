@@ -24,13 +24,21 @@ internal class DeleteProductHandler : IDeleteProductHandler
     }
 
     /// <inheritdoc />
-    public async ValueTask<ApiContract> HandleAsync(DeleteProductContext context, CancellationToken cancellationToken)
+    public async ValueTask<ApiContract> HandleAsync(
+        DeleteProductContext context,
+        CancellationToken cancellationToken
+    )
     {
-        Product product = await _productRepo.SelectAsync(context.ProductId, cancellationToken) ??
-                          throw new Exception();
+        Product product =
+            await _productRepo.SelectAsync(context.ProductId, cancellationToken)
+            ?? throw new Exception();
 
-        List<Task> tasks = product.ProductMetadata
-            ?.Select(pm => _uploader.DeleteObjectAsync(pm.FileKey, cancellationToken)).ToList() ?? [];
+        List<Task> tasks =
+            product
+                .ProductMetadata?.Select(pm =>
+                    _uploader.DeleteObjectAsync(pm.FileKey, cancellationToken)
+                )
+                .ToList() ?? [];
         tasks.Add(_productRepo.DeleteAsync(context.ProductId, cancellationToken));
         await Task.WhenAll(tasks);
         return new ApiContract(context);

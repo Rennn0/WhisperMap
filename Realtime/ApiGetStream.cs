@@ -8,7 +8,7 @@ namespace Realtime;
 
 public static partial class Program
 {
-    private static void ApiGetStream(this RouteGroupBuilder streamGroup) =>
+    private static void ApiGetStream(this RouteGroupBuilder streamGroup, IProgress<int> progress) =>
         streamGroup.MapGet("/u",
             async (HttpContext context,
                 [FromQuery(Name = "sid")] string? streamId,
@@ -17,6 +17,7 @@ public static partial class Program
                 SseStreamer<UserStats> streamer,
                 [FromServices] ISseDataProvider<UserStats> sseDataProvider) =>
             {
+                progress.Report(0);
                 CancellationToken cancellationToken = context.RequestAborted;
                 SseStreamRegistry<UserStats>.StreamHandle handle =
                     sseStreamRegistry.GetStream("users", cancellationToken);

@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using System.Threading.Tasks.Sources;
 using OpenTelemetry.Metrics;
 using XatiCraft.ApiContracts;
 using XatiCraft.Guards;
@@ -25,67 +26,86 @@ public static class Program
     /// </summary>
     /// <param name="args"></param>
     public static async Task Main(string[] args)
-    {   
+    {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.Configuration.AddEnvironmentVariables();
-        
+
         const string swarmAppSettingsPath = "/run/secrets/appsettings.Production.json";
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
         AppMetrics appMetrics = new AppMetrics();
         builder.Services.AddSingleton(appMetrics);
-        
-        builder.Services.AddOpenTelemetry()
+
+        builder
+            .Services.AddOpenTelemetry()
             .WithMetrics(conf =>
             {
                 conf.AddMeter(appMetrics.Name)
                     .AddAspNetCoreInstrumentation()
                     .AddPrometheusExporter();
             });
-        
+
         builder.Services.Configure<ClaudflareR2Settings>(
-            builder.Configuration.GetSection(nameof(ClaudflareR2Settings)));
+            builder.Configuration.GetSection(nameof(ClaudflareR2Settings))
+        );
         builder.Services.Configure<IpRestrictionSettings>(
-            builder.Configuration.GetSection(nameof(IpRestrictionSettings)));
-        builder.Services.Configure<ApiKeySettings>(builder.Configuration.GetSection(nameof(ApiKeySettings)));
-        builder.Services.Configure<GithubAuthSettings>(builder.Configuration.GetSection(nameof(GithubAuthSettings)));
-        builder.Services.Configure<GoogleAuthSettings>(builder.Configuration.GetSection(nameof(GoogleAuthSettings)));
-        builder.Services
-            .AddOptionsWithValidateOnStart<GoogleAuthSettings>()
+            builder.Configuration.GetSection(nameof(IpRestrictionSettings))
+        );
+        builder.Services.Configure<ApiKeySettings>(
+            builder.Configuration.GetSection(nameof(ApiKeySettings))
+        );
+        builder.Services.Configure<GithubAuthSettings>(
+            builder.Configuration.GetSection(nameof(GithubAuthSettings))
+        );
+        builder.Services.Configure<GoogleAuthSettings>(
+            builder.Configuration.GetSection(nameof(GoogleAuthSettings))
+        );
+        builder
+            .Services.AddOptionsWithValidateOnStart<GoogleAuthSettings>()
             .BindConfiguration(nameof(GoogleAuthSettings))
             .ValidateDataAnnotations();
 
-        builder.Services
-            .AddControllers()
-            .ConfigureApiBehaviorOptions(options => { options.SuppressMapClientErrors = true; })
+        builder
+            .Services.AddControllers()
+            .ConfigureApiBehaviorOptions(options =>
+            {
+                options.SuppressMapClientErrors = true;
+            })
             .AddJsonOptions(opt =>
             {
                 opt.JsonSerializerOptions.PropertyNamingPolicy = new SnakeCaseSerializer();
                 opt.JsonSerializerOptions.WriteIndented = true;
-                opt.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                opt.JsonSerializerOptions.DefaultIgnoreCondition =
+                    JsonIgnoreCondition.WhenWritingNull;
             });
-        
+
         builder.Services.AddRateLimiter(opt =>
         {
-            opt.AddPolicy(AuthGuard.SessionPolicy, context =>
-            {
-                string session = context.Request.Cookies[AuthGuard.SessionCookie] ?? "";
-
-                return RateLimitPartition.GetFixedWindowLimiter(session, _ => new FixedWindowRateLimiterOptions
+            opt.AddPolicy(
+                AuthGuard.SessionPolicy,
+                context =>
                 {
-                    PermitLimit = 60,
-                    Window = TimeSpan.FromMinutes(1),
-                    QueueLimit = 0,
-                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst
-                });
-            });
+                    string session = context.Request.Cookies[AuthGuard.SessionCookie] ?? "";
+
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        session,
+                        _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 60,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueLimit = 0,
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        }
+                    );
+                }
+            );
 
             opt.OnRejected = (context, token) =>
             {
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
                 context.HttpContext.Response.WriteAsync("rate_limit_exc", token);
-                return ValueTask.CompletedTask;
+                return default;
             };
         });
         builder.Services.AddEndpointsApiExplorer();
@@ -116,7 +136,7 @@ public static class Program
         builder.Services.AddScoped<UserGuard>();
         builder.Services.AddTransient<Security, AspDataProtector>();
         builder.Services.AddTransient<Security, SimpleBase64Protector>();
-        
+
         builder.Services.AddTransient<IUploader, ClaudflareR2StorageService>();
         builder.Services.AddTransient<IReader, ClaudflareR2StorageService>();
         builder.Services.AddTransient<IProductManager, ProductManager>();
@@ -124,20 +144,41 @@ public static class Program
         builder.Services.AddTransient<IGetProductHandler, GetProductHandler>();
         builder.Services.AddTransient<IGetProductsHandler, GetProductsGeneralHandler>();
         builder.Services.AddTransient<IProductCartHandler, GetProductCartCookieHandler>();
-        builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, GetProductsCartHandler>();
-        builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, GetProductsGeneralHandler>();
-        builder.Services.AddTransient<IHandler<ApiContract, GetProductsContext>, GetProductCartCookieHandler>();
-        builder.Services.AddTransient<IHandler<ApiContract, AddProductInCartContext>, GetProductCartCookieHandler>();
-        builder.Services.AddTransient<IHandler<ApiContract, RemoveProductFromCartContext>, GetProductCartCookieHandler>();
-        builder.Services.AddTransient<IHandler<ApiContract, RemoveProductFromCartContext>, ProductCartHandlerMongo>();
-        builder.Services.AddTransient<IHandler<ApiContract, AddProductInCartContext>, ProductCartHandlerMongo>();
+        builder.Services.AddTransient<
+            IHandler<ApiContract, GetProductsContext>,
+            GetProductsCartHandler
+        >();
+        builder.Services.AddTransient<
+            IHandler<ApiContract, GetProductsContext>,
+            GetProductsGeneralHandler
+        >();
+        builder.Services.AddTransient<
+            IHandler<ApiContract, GetProductsContext>,
+            GetProductCartCookieHandler
+        >();
+        builder.Services.AddTransient<
+            IHandler<ApiContract, AddProductInCartContext>,
+            GetProductCartCookieHandler
+        >();
+        builder.Services.AddTransient<
+            IHandler<ApiContract, RemoveProductFromCartContext>,
+            GetProductCartCookieHandler
+        >();
+        builder.Services.AddTransient<
+            IHandler<ApiContract, RemoveProductFromCartContext>,
+            ProductCartHandlerMongo
+        >();
+        builder.Services.AddTransient<
+            IHandler<ApiContract, AddProductInCartContext>,
+            ProductCartHandlerMongo
+        >();
         builder.Services.AddTransient<IDeleteProductHandler, DeleteProductHandler>();
         builder.Services.AddTransient<IAuthorizationHandler, GoogleAuthHandler>();
         builder.Services.AddTransient<IAuthorizationHandler, GithubAuthHandler>();
 
         builder.AddSqlLogging<XaticraftLog>();
         builder.AddXcLibDataModule();
-        
+
 #if USE_CERT
         builder.Services.AddCert();
 #endif
@@ -158,10 +199,14 @@ public static class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        
+
         app.UseOpenTelemetryPrometheusScrapingEndpoint();
-        
-        await Parallel.ForEachAsync( app.Services.GetRequiredService<IEnumerable<IBootstrap>>(), CancellationToken.None, (bootstrap, _) => bootstrap.RunAsync());
+
+        await Parallel.ForEachAsync(
+            app.Services.GetRequiredService<IEnumerable<IBootstrap>>(),
+            CancellationToken.None,
+            (bootstrap, _) => bootstrap.RunAsync()
+        );
 
         await app.RunAsync();
     }
