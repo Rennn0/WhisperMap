@@ -28,6 +28,10 @@ public partial class ApplicationContext : DbContext, IDataProtectionKeyContext
 
     /// <summary>
     /// </summary>
+    public virtual DbSet<PageVisitors> PageVisitors { get; set; }
+
+    /// <summary>
+    /// </summary>
     /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -91,6 +95,20 @@ public partial class ApplicationContext : DbContext, IDataProtectionKeyContext
             entity.Property(e => e.Title).HasColumnName("title");
         });
 
+        modelBuilder.Entity<PageVisitors>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("page_visitors_pkey");
+            entity.ToTable("page_visitors");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Page).IsRequired().HasColumnName("page");
+            entity.Property(e => e.IpAddress).HasColumnName("ip_address");
+            entity.Property(e => e.Uid).HasColumnName("uid");
+            entity.Property(e => e.Browser).HasColumnName("browser");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at")
+                .HasColumnType("timestamp  with time zone")
+                .HasDefaultValueSql("now()");
+        });
+        
         OnModelCreatingPartial(modelBuilder);
     }
 
