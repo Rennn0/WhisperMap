@@ -146,7 +146,7 @@ public static class ServiceExtensions
             SqlServerConnectionOptions connectionOptions =
                 provider.GetRequiredService<IOptions<SqlServerConnectionOptions>>().Value;
             opt.UseSqlServer(connectionOptions.ConnectionString, sqlOpt => sqlOpt.EnableRetryOnFailure());
-            opt.EnableSensitiveDataLogging(false);
+            opt.EnableSensitiveDataLogging(false);  
             opt.EnableDetailedErrors(false);
             opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         }
@@ -154,7 +154,7 @@ public static class ServiceExtensions
 
     private static IServiceCollection AddPostgre(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContextPool<ApplicationContext>(OptionsAction);
+        services.AddPooledDbContextFactory<ApplicationContext>(OptionsAction);
 
         services.AddTransient<IBootstrap, PostgresBootstrap>();
 

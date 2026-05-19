@@ -8,17 +8,13 @@ namespace XcLib.Data.Postgres.XatiCraft;
 
 public class PageVisitorRepo : IPageVisitorRepo
 {
-    private readonly DbSet<PageVisitor> _pageVisitors;
-    private readonly ApplicationContext _context;
+    private readonly IDbContextFactory<ApplicationContext> _dbContextFactory;
 
-    public PageVisitorRepo(ApplicationContext context)
-    {
-        _context = context;
-        _pageVisitors = context.PageVisitors;
-    }
+    public PageVisitorRepo(IDbContextFactory<ApplicationContext> dbContextFactory) => _dbContextFactory = dbContextFactory;
 
     public async Task<PageVisitor> AddAsync(ApplicationObjects.PageVisitor obj, CancellationToken token = default)
     {
+        await using ApplicationContext context = await _dbContextFactory.CreateDbContextAsync(token);
         PageVisitor pv = new PageVisitor
         {
             IpAddress = obj.IpAddress,
@@ -26,19 +22,20 @@ public class PageVisitorRepo : IPageVisitorRepo
             Page = obj.Page,
             Uid = obj.Uid
         };
-        await _pageVisitors.AddAsync(pv, token);
-        await _context.SaveChangesAsync(token);
+        await context.PageVisitors.AddAsync(pv, token);
+        await context.SaveChangesAsync(token);
         return pv;
     }
 
-    public Task<PageVisitor?> GetAsync(ApplicationObjects.PageVisitor obj, ushort searchFlag = 0,
+    public async Task<PageVisitor?> GetAsync(ApplicationObjects.PageVisitor obj, ushort searchFlag = 0,
         CancellationToken token = default)
     {
+        await using ApplicationContext context = await _dbContextFactory.CreateDbContextAsync(token);
         Expression<Func<PageVisitor, bool>> predicate = searchFlag switch
         {
             _ => pv => pv.Id == obj.Id
         };
-        return _pageVisitors.AsNoTracking().FirstOrDefaultAsync(predicate, token);
+        return await context.PageVisitors.AsNoTracking().FirstOrDefaultAsync(predicate, token);
     }
 
     public Task<PageVisitor?> UpdateAsync(ApplicationObjects.PageVisitor obj, CancellationToken token = default) =>

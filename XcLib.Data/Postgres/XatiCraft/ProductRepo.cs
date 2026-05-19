@@ -11,16 +11,15 @@ namespace XcLib.Data.Postgres.XatiCraft;
 /// <inheritdoc />
 public class ProductRepo : IProductRepo
 {
-    private readonly ApplicationContext _context;
     private readonly JsonSerializerOptions _serializerOptions;
+    private readonly ApplicationContext _context;
 
     /// <summary>
     ///     implementation using Npgsql.EntityFrameworkCore.PostgreSQL Version=8.0.0
     /// </summary>
-    /// <param name="context"></param>
-    public ProductRepo(ApplicationContext context)
+    public ProductRepo(IDbContextFactory<ApplicationContext> dbContextFactory)
     {
-        _context = context;
+        _context = dbContextFactory.CreateDbContext();
         _serializerOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
