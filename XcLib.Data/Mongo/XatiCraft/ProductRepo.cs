@@ -43,8 +43,19 @@ public class ProductRepo : MongoBase<Product>, IProductRepo
         return product with { ObjId = pDoc.Id };
     }
 
-    public Task<ApplicationObjects.Product> UpdateAsync(ApplicationObjects.Product product,
+    public Task<ApplicationObjects.Product>
+        AddAsync(ApplicationObjects.Product obj, CancellationToken token = default) =>
+        throw new NotImplementedException();
+
+    public Task<ApplicationObjects.Product?> GetByIdAsync(long id, CancellationToken token = default) => throw new NotImplementedException();
+
+    public Task<List<ApplicationObjects.Product>> GetAsync(ApplicationObjects.Product obj, ushort searchFlag = 0, CancellationToken token = default) => throw new NotImplementedException();
+
+    public Task<ApplicationObjects.Product?> UpdateAsync(ApplicationObjects.Product product,
         CancellationToken cancellationToken) =>
+        throw new NotImplementedException();
+
+    public Task DeleteAsync(ApplicationObjects.Product obj, CancellationToken token = default) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />

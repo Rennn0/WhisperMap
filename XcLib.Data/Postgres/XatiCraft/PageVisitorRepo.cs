@@ -1,46 +1,65 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using XcLib.Data.Abstractions;
+using XcLib.Data.ApplicationObjects;
 using XcLib.Data.Postgres.XatiCraft.Context;
-using XcLib.Data.Postgres.XatiCraft.Model;
 
 namespace XcLib.Data.Postgres.XatiCraft;
 
-public class PageVisitorRepo : IPageVisitorRepo
+public class PageVisitorRepo : RootRepo, IPageVisitorRepo
 {
-    private readonly IDbContextFactory<ApplicationContext> _dbContextFactory;
-
-    public PageVisitorRepo(IDbContextFactory<ApplicationContext> dbContextFactory) => _dbContextFactory = dbContextFactory;
-
-    public async Task<PageVisitor> AddAsync(ApplicationObjects.PageVisitor obj, CancellationToken token = default)
+    /// <inheritdoc />
+    public PageVisitorRepo(IDbContextFactory<ApplicationContext> dbContextFactory) : base(dbContextFactory)
     {
-        await using ApplicationContext context = await _dbContextFactory.CreateDbContextAsync(token);
-        PageVisitor pv = new PageVisitor
-        {
-            IpAddress = obj.IpAddress,
-            Browser = obj.Browser,
-            Page = obj.Page,
-            Uid = obj.Uid
-        };
-        await context.PageVisitors.AddAsync(pv, token);
-        await context.SaveChangesAsync(token);
-        return pv;
     }
 
-    public async Task<PageVisitor?> GetAsync(ApplicationObjects.PageVisitor obj, ushort searchFlag = 0,
-        CancellationToken token = default)
-    {
-        await using ApplicationContext context = await _dbContextFactory.CreateDbContextAsync(token);
-        Expression<Func<PageVisitor, bool>> predicate = searchFlag switch
+    public async Task<PageVisitor> AddAsync(PageVisitor obj,
+        CancellationToken token = default) =>
+        await ExecuteAsync(async (context, cancellationToken) =>
         {
-            _ => pv => pv.Id == obj.Id
-        };
-        return await context.PageVisitors.AsNoTracking().FirstOrDefaultAsync(predicate, token);
-    }
+            Model.PageVisitor pv = new Model.PageVisitor
+            {
+                IpAddress = obj.IpAddress,
+                Browser = obj.Browser,
+                Page = obj.Page,
+                Uid = obj.Uid
+            };
+            await context.PageVisitors.AddAsync(pv, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
+            obj.Id = pv.Id;
+            return obj;
+        }, token);
 
-    public Task<PageVisitor?> UpdateAsync(ApplicationObjects.PageVisitor obj, CancellationToken token = default) =>
+    public async Task<PageVisitor?> GetByIdAsync(long id, CancellationToken token = default) =>
+        await ExecuteAsync(async (context, cancellationToken) =>
+        {
+            Model.PageVisitor? pv =
+                await context.PageVisitors.AsNoTracking().FirstOrDefaultAsync(pv => pv.Id == id, cancellationToken);
+            return null == pv ? null : PageVisitor.From(pv);
+        }, token);
+
+    public async Task<List<PageVisitor>> GetAsync(PageVisitor obj, ushort searchFlag = 0,
+        CancellationToken token = default) =>
+        await ExecuteAsync(async (context, cancellationToken) =>
+        {
+            Expression<Func<Model.PageVisitor, bool>> predicate = searchFlag switch
+            {
+                1 => p => p.IpAddress == obj.IpAddress,
+                2 => p => p.Page == obj.Page,
+                3 => p => p.Browser == obj.Browser,
+                _ => pv => pv.Id == obj.Id
+            };
+
+            List<Model.PageVisitor> entities = await context.PageVisitors.Where(predicate)
+                .ToListAsync(cancellationToken);
+            return entities.Select(PageVisitor.From).ToList();
+        }, token);
+
+
+    public Task<PageVisitor?> UpdateAsync(PageVisitor obj,
+        CancellationToken token = default) =>
         throw new NotImplementedException();
 
-    public Task DeleteAsync(ApplicationObjects.PageVisitor obj, CancellationToken token = default) =>
+    public Task DeleteAsync(PageVisitor obj, CancellationToken token = default) =>
         throw new NotImplementedException();
 }

@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="EFCore.BulkExtensions.PostgreSql" Version="8.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="8.0.0"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0"/>

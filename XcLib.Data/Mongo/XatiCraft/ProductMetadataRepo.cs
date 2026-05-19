@@ -12,10 +12,16 @@ public class ProductMetadataRepo : MongoBase<ProductMetadata>, IProductMetadaRep
     {
     }
 
-    /// <inheritdoc />
-    public Task<ApplicationObjects.ProductMetadata> InsertAsync(ApplicationObjects.ProductMetadata productMetadata,
-        CancellationToken cancellationToken)
-    {
+    public Task<ApplicationObjects.ProductMetadata> AddAsync(ApplicationObjects.ProductMetadata obj,
+        CancellationToken token = default) => throw new NotImplementedException();
+
+    public Task<ApplicationObjects.ProductMetadata?> GetByIdAsync(long id, CancellationToken token = default) => throw new NotImplementedException();
+
+    public Task<List<ApplicationObjects.ProductMetadata>> GetAsync(ApplicationObjects.ProductMetadata obj, ushort searchFlag = 0, CancellationToken token = default) => throw new NotImplementedException();
+    
+    public Task<ApplicationObjects.ProductMetadata?> UpdateAsync(ApplicationObjects.ProductMetadata obj,
+        CancellationToken token = default) => throw new NotImplementedException();
+
+    public Task DeleteAsync(ApplicationObjects.ProductMetadata obj, CancellationToken token = default) =>
         throw new NotImplementedException();
-    }
 }

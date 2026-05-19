@@ -5,36 +5,40 @@ using XcLib.Data.Postgres.XatiCraft.Context;
 
 namespace XcLib.Data.Postgres.XatiCraft;
 
-/// <inheritdoc />
-public class ProductMetadataRepo : IProductMetadaRepo
+public class ProductMetadataRepo : RootRepo, IProductMetadaRepo
 {
-    private readonly IDbContextFactory<ApplicationContext> _dbContextFactory;
-
-    /// <summary>
-    ///     implementation using Npgsql.EntityFrameworkCore.PostgreSQL Version=8.0.0
-    /// </summary>
-    public ProductMetadataRepo(IDbContextFactory<ApplicationContext> dbContextFactory)
-    {
-        _dbContextFactory = dbContextFactory;
-    }
-
     /// <inheritdoc />
-    public async Task<ProductMetadata> InsertAsync(ProductMetadata productMetadata, CancellationToken cancellationToken)
+    public ProductMetadataRepo(IDbContextFactory<ApplicationContext> dbContextFactory) : base(dbContextFactory)
     {
-        await using ApplicationContext context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        Model.ProductMetadata mpt = new Model.ProductMetadata
-        {
-            FileKey = productMetadata.FileKey,
-            Location = productMetadata.Location,
-            OriginalFile = productMetadata.OriginalFile,
-            ProductId = productMetadata.ProductId,
-            Order = productMetadata.Order
-        };
-
-        await context.ProductMetadata.AddAsync(mpt, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
-        productMetadata.Id = mpt.Id;
-        productMetadata.Timestamp = mpt.Timestamp;
-        return productMetadata;
     }
+
+    public async Task<ProductMetadata> AddAsync(ProductMetadata obj, CancellationToken token = default)
+        => await ExecuteAsync(async (context, cancellationToken) =>
+        {
+            Model.ProductMetadata mpt = new Model.ProductMetadata
+            {
+                FileKey = obj.FileKey,
+                Location = obj.Location,
+                OriginalFile = obj.OriginalFile,
+                ProductId = obj.ProductId,
+                Order = obj.Order
+            };
+
+            await context.ProductMetadata.AddAsync(mpt, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
+            obj.Id = mpt.Id;
+            return obj;
+        }, token);
+
+    public Task<ProductMetadata?> GetByIdAsync(long id, CancellationToken token = default) =>
+        throw new NotImplementedException();
+
+    public Task<List<ProductMetadata>> GetAsync(ProductMetadata obj, ushort searchFlag = 0,
+        CancellationToken token = default) => throw new NotImplementedException();
+
+    public Task<ProductMetadata?> UpdateAsync(ProductMetadata obj, CancellationToken token = default) =>
+        throw new NotImplementedException();
+
+    public Task DeleteAsync(ProductMetadata obj, CancellationToken token = default) =>
+        throw new NotImplementedException();
 }

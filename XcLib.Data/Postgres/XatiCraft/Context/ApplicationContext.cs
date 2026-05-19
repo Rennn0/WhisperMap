@@ -84,7 +84,7 @@ public partial class ApplicationContext : DbContext, IDataProtectionKeyContext
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Metadata)
-                // .HasColumnType("json")
+                .HasColumnType("jsonb")
                 .HasColumnName("metadata");
             entity.Property(e => e.Price)
                 .HasPrecision(10, 3)

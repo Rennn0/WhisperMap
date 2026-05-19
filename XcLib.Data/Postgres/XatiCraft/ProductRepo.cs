@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using XcLib.Data.Abstractions;
@@ -8,18 +9,13 @@ using ProductMetadata = XcLib.Data.ApplicationObjects.ProductMetadata;
 
 namespace XcLib.Data.Postgres.XatiCraft;
 
-/// <inheritdoc />
-public class ProductRepo : IProductRepo
+public class ProductRepo : RootRepo, IProductRepo
 {
     private readonly JsonSerializerOptions _serializerOptions;
-    private readonly ApplicationContext _context;
 
-    /// <summary>
-    ///     implementation using Npgsql.EntityFrameworkCore.PostgreSQL Version=8.0.0
-    /// </summary>
-    public ProductRepo(IDbContextFactory<ApplicationContext> dbContextFactory)
+    /// <inheritdoc />
+    public ProductRepo(IDbContextFactory<ApplicationContext> dbContextFactory) : base(dbContextFactory)
     {
-        _context = dbContextFactory.CreateDbContext();
         _serializerOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
@@ -33,36 +29,56 @@ public class ProductRepo : IProductRepo
         OrderBy? orderBy = null,
         string? query = null,
         SearchCursor? cursor = null,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(cursor);
-        
-        OrderBy order = orderBy ?? OrderBy.NewestFirst;
-        IQueryable<VProduct> dbQuery = _context.VProducts.AsNoTracking();
-
-        if (ids is not null)
+        CancellationToken cancellationToken = default) =>
+        await ExecuteAsync(async (context, token) =>
         {
-            List<long> pIds = ids.Distinct().ToList();
-            dbQuery = dbQuery.Where(x => pIds.Contains(x.Id ?? -1));
-        }
+            ArgumentNullException.ThrowIfNull(cursor);
 
-        if (!string.IsNullOrWhiteSpace(query))
+            OrderBy order = orderBy ?? OrderBy.NewestFirst;
+            IQueryable<VProduct> dbQuery = context.VProducts.AsNoTracking();
+
+            if (ids is not null)
+            {
+                List<long> pIds = ids.Distinct().ToList();
+                dbQuery = dbQuery.Where(x => pIds.Contains(x.Id ?? -1));
+            }
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                string q = query.Trim();
+                bool queryPrice = decimal.TryParse(q, out _);
+                dbQuery = dbQuery.Where(x =>
+                    (x.Title != null && EF.Functions.ILike(x.Title, $"%{q}%")) ||
+                    (x.Description != null && EF.Functions.ILike(x.Description, $"%{q}%")) ||
+                    (x.Price.HasValue && queryPrice && Math.Abs(x.Price.Value - decimal.Parse(q)) <= 5));
+            }
+
+            dbQuery = ApplyCursor(dbQuery, order, cursor);
+            dbQuery = ApplyOrdering(dbQuery, order);
+
+            List<Product> result = await dbQuery
+                .Take((int)cursor.BatchSize)
+                .Select(v =>
+                    new Product(v.Title ?? "", v.Description ?? "", v.Price ?? 0m)
+                    {
+                        Id = v.Id,
+                        Timestamp = v.Timestamp,
+                        ProductMetadata = v.Metadata == null
+                            ? null
+                            : v.Metadata.Deserialize<ICollection<ProductMetadata>>(_serializerOptions)
+                    })
+                .ToListAsync(token);
+
+            return result;
+        }, cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<Product?> SelectAsync(long id, CancellationToken cancellationToken) =>
+        await ExecuteAsync(async (context, token) =>
         {
-            string q = query.Trim();
-            bool queryPrice = decimal.TryParse(q, out _);
-            dbQuery = dbQuery.Where(x =>
-                (x.Title != null && EF.Functions.ILike(x.Title, $"%{q}%")) ||
-                (x.Description != null && EF.Functions.ILike(x.Description, $"%{q}%")) ||
-                (x.Price.HasValue && queryPrice && Math.Abs(x.Price.Value - decimal.Parse(q)) <= 5));
-        }
-
-        dbQuery = ApplyCursor(dbQuery, order, cursor);
-        dbQuery = ApplyOrdering(dbQuery, order);
-
-        List<Product> result = await dbQuery
-            .Take((int)cursor.BatchSize)
-            .Select(v =>
-                new Product(v.Title ?? "", v.Description ?? "", v.Price ?? 0m)
+            Product? result = await context.VProducts.AsNoTracking()
+                .Where(vp => vp.Id == id)
+                .Select(v => new Product(v.Title ?? "", v.Description ?? "", v.Price ?? 0m)
                 {
                     Id = v.Id,
                     Timestamp = v.Timestamp,
@@ -70,75 +86,75 @@ public class ProductRepo : IProductRepo
                         ? null
                         : v.Metadata.Deserialize<ICollection<ProductMetadata>>(_serializerOptions)
                 })
-            .ToListAsync(cancellationToken);
+                .FirstOrDefaultAsync(token);
 
-        return result;
-    }
-    
-    /// <inheritdoc />
-    public async Task<Product?> SelectAsync(long id, CancellationToken cancellationToken)
-    {
-        Product? result = await _context.VProducts.AsNoTracking()
-            .Where(vp => vp.Id == id)
-            .Select(v => new Product(v.Title ?? "", v.Description ?? "", v.Price ?? 0m)
-            {
-                Id = v.Id,
-                Timestamp = v.Timestamp,
-                ProductMetadata = v.Metadata == null
-                    ? null
-                    : v.Metadata.Deserialize<ICollection<ProductMetadata>>(_serializerOptions)
-            })
-            .FirstOrDefaultAsync(cancellationToken);
-
-        return result;
-    }
+            return result;
+        }, cancellationToken);
 
     public Task<Product?> SelectAsync(string objId, CancellationToken cancellationToken) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public async Task<Product> InsertAsync(Product product, CancellationToken cancellationToken)
-    {
-        Model.Product mp = new Model.Product
+    public async Task<Product> InsertAsync(Product product, CancellationToken cancellationToken) =>
+        await ExecuteAsync(async (context, token) =>
         {
-            Description = product.Description,
-            Title = product.Title,
-            Price = product.Price
-        };
-        await _context.Products.AddAsync(mp, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-        product.Id = mp.Id;
-        product.Timestamp = mp.Timestamp;
-        return product;
-    }
+            Model.Product mp = new Model.Product
+            {
+                Description = product.Description,
+                Title = product.Title,
+                Price = product.Price
+            };
+            await context.Products.AddAsync(mp, token);
+            await context.SaveChangesAsync(token);
+            product.Id = mp.Id;
+            product.Timestamp = mp.Timestamp;
+            return product;
+        }, cancellationToken);
 
-    public async Task<Product> UpdateAsync(Product product, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(product.Id);
+    public Task<Product> AddAsync(Product obj, CancellationToken token = default) =>
+        throw new NotImplementedException();
 
-        int affected = await _context.Products
-            .Where(p=>p.Id == product.Id)
-            .ExecuteUpdateAsync(calls => calls
-                .SetProperty(p=>p.Description,product.Description)
-                .SetProperty(p=>p.Title,product.Title)
-                .SetProperty(p=>p.Price,product.Price), cancellationToken);
+    public Task<Product?> GetByIdAsync(long id, CancellationToken token = default) =>
+        throw new NotImplementedException();
 
-        return product;
-    }
+    public Task<List<Product>> GetAsync(Product obj, ushort searchFlag = 0, CancellationToken token = default) =>
+        throw new NotImplementedException();
+
+    public async Task<Product?> UpdateAsync(Product product, CancellationToken cancellationToken) =>
+        await ExecuteAsync(async (context, token) =>
+        {
+            ArgumentNullException.ThrowIfNull(product.Id);
+
+            int affected = await context.Products
+                .Where(p => p.Id == product.Id)
+                .ExecuteUpdateAsync(calls => calls
+                    .SetProperty(p => p.Description, product.Description)
+                    .SetProperty(p => p.Title, product.Title)
+                    .SetProperty(p => p.Price, product.Price), token);
+            Trace.Assert(affected > 0);
+
+            return product;
+        }, cancellationToken);
+
+    public Task DeleteAsync(Product obj, CancellationToken token = default) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public async Task<bool> ExistsAsync(long id, CancellationToken cancellationToken) => await _context.Products.AsNoTracking().AnyAsync(p => p.Id == id, cancellationToken);
+    public async Task<bool> ExistsAsync(long id, CancellationToken cancellationToken) =>
+        await ExecuteAsync((context, token) =>
+                context.Products.AsNoTracking().AnyAsync(p => p.Id == id, token)
+            , cancellationToken);
 
     public Task<bool> ExistsAsync(string objId, CancellationToken cancellationToken) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
-    {
-        Model.Product entity = new Model.Product { Id = id };
-        _context.Products.Attach(entity);
-        _context.Products.Remove(entity);
-        int affected = await _context.SaveChangesAsync(cancellationToken);
-        return affected > 0;
-    }
+    public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken) =>
+        await ExecuteAsync(async (context, token) =>
+        {
+            Model.Product entity = new Model.Product { Id = id };
+            context.Products.Attach(entity);
+            context.Products.Remove(entity);
+            int affected = await context.SaveChangesAsync(token);
+            return affected > 0;
+        }, cancellationToken);
 
     public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken) => throw new NotImplementedException();
 

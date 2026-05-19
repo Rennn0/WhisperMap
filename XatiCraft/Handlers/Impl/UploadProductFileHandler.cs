@@ -39,7 +39,7 @@ internal class UploadProductFileHandler : IUploadProductFileHandler
             return new Error(ErrorCode.ArgumentMissmatchInDatabase, Hint: nameof(context.Product));
         UploadResult uploadResult =
             await _uploader.UploadFileAsync(context.Stream, context.FileName, cancellationToken);
-        await _productMetadaRepo.InsertAsync(
+        await _productMetadaRepo.AddAsync(
             new ProductMetadata(uploadResult.OriginalFileName, uploadResult.Key, uploadResult.Location,
                 context.Product, context.Order), cancellationToken);
         return new UploadProductFileContract(context);
@@ -51,7 +51,7 @@ internal class UploadProductFileHandler : IUploadProductFileHandler
         if (!await _productRepos.ExistsAsync(context.Product, cancellationToken))
             return new Error(ErrorCode.ArgumentMissmatchInDatabase, Hint: nameof(context.Product));
         SignedUrlUploadResult uploadResult = await _uploader.GetSignedUrlAsync(context.FileName, cancellationToken);
-        await _productMetadaRepo.InsertAsync(
+        await _productMetadaRepo.AddAsync(
             new ProductMetadata(uploadResult.OriginalFileName, uploadResult.Key, uploadResult.Location,
                 context.Product, context.Order), cancellationToken);
         return new GetSignedUrlContract(uploadResult.SignedUrl, context);

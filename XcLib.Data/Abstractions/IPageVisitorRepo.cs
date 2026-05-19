@@ -1,7 +1,8 @@
-using PageVisitor = XcLib.Data.Postgres.XatiCraft.Model.PageVisitor;
+
+using XcLib.Data.ApplicationObjects;
 
 namespace XcLib.Data.Abstractions;
 
-public interface IPageVisitorRepo : IBasicRepo<PageVisitor, ApplicationObjects.PageVisitor>
+public interface IPageVisitorRepo : IBasicRepo<PageVisitor>
 {
 }
