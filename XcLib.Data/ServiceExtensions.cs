@@ -155,6 +155,7 @@ public static class ServiceExtensions
     private static IServiceCollection AddPostgre(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddPooledDbContextFactory<ApplicationContext>(OptionsAction);
+        services.AddDbContext<ApplicationContext>(OptionsAction);
 
         services.AddTransient<IBootstrap, PostgresBootstrap>();
 
