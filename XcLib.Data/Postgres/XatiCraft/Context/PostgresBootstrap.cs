@@ -15,7 +15,7 @@ public class PostgresBootstrap : IBootstrap
     {
         using IServiceScope scope = _scopeFactory.CreateScope();
         ILogger<PostgresBootstrap> logger = scope.ServiceProvider.GetRequiredService<ILogger<PostgresBootstrap>>();
-        ApplicationContext db = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+        ApplicationContext db = await scope.ServiceProvider.GetRequiredService<IDbContextFactory<ApplicationContext>>().CreateDbContextAsync();
         await db.Database.MigrateAsync();
         logger.LogInformation("migration applied");
     }
