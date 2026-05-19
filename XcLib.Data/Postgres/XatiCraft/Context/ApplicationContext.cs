@@ -28,7 +28,7 @@ public partial class ApplicationContext : DbContext, IDataProtectionKeyContext
 
     /// <summary>
     /// </summary>
-    public virtual DbSet<PageVisitors> PageVisitors { get; set; }
+    public virtual DbSet<PageVisitor> PageVisitors { get; set; }
 
     /// <summary>
     /// </summary>
@@ -95,7 +95,7 @@ public partial class ApplicationContext : DbContext, IDataProtectionKeyContext
             entity.Property(e => e.Title).HasColumnName("title");
         });
 
-        modelBuilder.Entity<PageVisitors>(entity =>
+        modelBuilder.Entity<PageVisitor>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("page_visitors_pkey");
             entity.ToTable("page_visitors");

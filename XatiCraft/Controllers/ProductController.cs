@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using XatiCraft.ApiContracts;
+using XatiCraft.Controllers.Attributes;
 using XatiCraft.Guards;
 using XatiCraft.Handlers.Api;
 using XatiCraft.Handlers.Impl;
@@ -114,6 +115,7 @@ public class ProductController : ApplicationController
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("{id}")]
+    [PageVisitor]
     public async Task<ApiContract> GetProduct(
         [FromServices] IGetProductHandler handler,
         [FromRoute] string id,

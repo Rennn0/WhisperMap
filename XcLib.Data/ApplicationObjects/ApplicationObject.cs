@@ -11,4 +11,6 @@ public abstract record ApplicationObject
     /// <summary>
     /// </summary>
     public string? ObjId { get; init; }
+
+    public DateTimeOffset? CreatedAt { get; init; }
 }

@@ -10,6 +10,7 @@ using XcLib.Data.Mongo;
 using XcLib.Data.Mongo.XatiCraft;
 using XcLib.Data.Mongo.XatiCraft.Context;
 using XcLib.Data.Postgres;
+using XcLib.Data.Postgres.XatiCraft;
 using XcLib.Data.Postgres.XatiCraft.Context;
 using XcLib.Data.SqlServer;
 using XcLib.Data.SqlServer.Realtime.Context;
@@ -159,6 +160,7 @@ public static class ServiceExtensions
 
         services.AddTransient<IProductRepo, ProductRepo>();
         services.AddTransient<IProductMetadaRepo, ProductMetadataRepo>();
+        services.AddTransient<IPageVisitorRepo, PageVisitorRepo>();
 
         return services;
 

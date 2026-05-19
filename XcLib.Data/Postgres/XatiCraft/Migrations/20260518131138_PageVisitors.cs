@@ -35,11 +35,6 @@ namespace XcLib.Data.Postgres.XatiCraft.Migrations
         {
             migrationBuilder.DropTable(
                 name: "page_visitors");
-
-            migrationBuilder.RenameColumn(
-                name: "order",
-                table: "product_metadata",
-                newName: "Order");
         }
     }
 }
