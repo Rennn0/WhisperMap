@@ -16,7 +16,7 @@ internal class LogVisitorFilter : IAsyncActionFilter
         HttpContext http = context.HttpContext;
         PageVisitor pv = new PageVisitor(http.Request.Path, http.Connection.RemoteIpAddress?.ToString(),
             http.Request.Cookies[AuthGuard.UserIdCookie], http.Request.Headers.UserAgent);
-        _ = _pageVisitorRepo.AddAsync(pv, context.HttpContext.RequestAborted).ConfigureAwait(false);
+        await _pageVisitorRepo.AddAsync(pv, context.HttpContext.RequestAborted).ConfigureAwait(false);
 
         await next();
     }
