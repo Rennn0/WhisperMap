@@ -45,7 +45,7 @@ public class SessionController : ApplicationController
     {
         if (
             !HttpContext.Request.Headers.TryGetValue(
-                AuthGuard.InitHeader,
+                AuthGuard.IpHeader,
                 out StringValues forwardHeader
             )
         )

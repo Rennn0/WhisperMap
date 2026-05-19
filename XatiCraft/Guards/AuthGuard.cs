@@ -28,7 +28,7 @@ public abstract class AuthGuard : Attribute, IAuthorizationFilter
     /// <summary>
     ///     must header for initializing session cookie
     /// </summary>
-    public const string InitHeader = "x-public-ip";
+    public const string IpHeader = "x-public-ip";
 
     private ILogger<AuthGuard>? _logger;
 

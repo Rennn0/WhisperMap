@@ -8,6 +8,6 @@ public sealed class PageVisitor
     [MaxLength(128)] public string Page { get; init; } = null!;
     [MaxLength(64)] public string? IpAddress { get; init; }
     [MaxLength(128)] public string? Uid { get; init; }
-    [MaxLength(128)] public string? Browser { get; init; }
+    [MaxLength(256)] public string? Browser { get; init; }
     public DateTimeOffset CreatedAt { get; init; }
 }

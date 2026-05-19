@@ -21,7 +21,7 @@ namespace XcLib.Data.Postgres.XatiCraft.Migrations
                     page = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     ip_address = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     uid = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
-                    browser = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
+                    browser = table.Column<string>(type: "character varying(256)", maxLength: 128, nullable: true),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp  with time zone", nullable: false, defaultValueSql: "now()")
                 },
                 constraints: table =>
