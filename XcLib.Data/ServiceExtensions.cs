@@ -135,7 +135,7 @@ public static class ServiceExtensions
 
     private static IServiceCollection AddSqlServer(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<MasterDbContext>(OptionsAction);
+        services.AddDbContextPool<MasterDbContext>(OptionsAction);
 
         services.AddTransient<IBootstrap, SqlServerBootstrap>();
 
@@ -154,7 +154,7 @@ public static class ServiceExtensions
 
     private static IServiceCollection AddPostgre(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationContext>(OptionsAction);
+        services.AddDbContextPool<ApplicationContext>(OptionsAction);
 
         services.AddTransient<IBootstrap, PostgresBootstrap>();
 
