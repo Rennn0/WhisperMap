@@ -12,19 +12,15 @@ internal class DeleteProductHandler : IDeleteProductHandler
 {
     private readonly IProductRepo _productRepo;
     private readonly IUploader _uploader;
-    private readonly bool _isDev;
 
     /// <summary>
     /// </summary>
     /// <param name="productRepos"></param>
     /// <param name="uploader"></param>
-    /// <param name="webHostEnvironment"></param>
-    public DeleteProductHandler(IEnumerable<IProductRepo> productRepos, IUploader uploader,
-        IWebHostEnvironment webHostEnvironment)
+    public DeleteProductHandler(IEnumerable<IProductRepo> productRepos, IUploader uploader)
     {
         _productRepo = productRepos.First(p => p is ProductRepo);
         _uploader = uploader;
-        _isDev = webHostEnvironment.IsDevelopment();
     }
 
     /// <inheritdoc />
@@ -42,7 +38,9 @@ internal class DeleteProductHandler : IDeleteProductHandler
                     _uploader.DeleteObjectAsync(pm.FileKey, cancellationToken)
                 )
                 .ToList() ?? [];
-        if (_isDev) tasks.Clear();
+#if DEBUG
+        tasks.Clear();
+#endif
 
         tasks.Add(_productRepo.DeleteAsync(new Product { Id = context.ProductId }, token: cancellationToken));
         await Task.WhenAll(tasks);

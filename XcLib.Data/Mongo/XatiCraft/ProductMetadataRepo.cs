@@ -16,11 +16,15 @@ public class ProductMetadataRepo : MongoBase<ProductMetadata>, IProductMetadaRep
 
     public Task<ApplicationObjects.ProductMetadata> AddAsync(ApplicationObjects.ProductMetadata obj, CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<List<ApplicationObjects.ProductMetadata>> GetAsync(ApplicationObjects.ProductMetadata obj, ushort searchFlag = 0, CancellationToken token = default) => throw new NotImplementedException();
+    public Task<List<ApplicationObjects.ProductMetadata>> GetAsync(ApplicationObjects.ProductMetadata obj,
+        sbyte searchFlag = 0, CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<ApplicationObjects.ProductMetadata?> UpdateAsync(ApplicationObjects.ProductMetadata obj, ushort searchFlag = 0, CancellationToken token = default) => throw new NotImplementedException();
+    public Task<ApplicationObjects.ProductMetadata?> UpdateAsync(ApplicationObjects.ProductMetadata obj,
+        sbyte searchFlag = 0, CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<int> DeleteAsync(ApplicationObjects.ProductMetadata obj, ushort searchFlag = 0, CancellationToken token = default) => throw new NotImplementedException();
+    public Task<int> DeleteAsync(ApplicationObjects.ProductMetadata obj, sbyte searchFlag = 0,
+        CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<bool> ExistsAsync(ApplicationObjects.ProductMetadata obj, ushort searchFlag = 0, CancellationToken token = default) => throw new NotImplementedException();
+    public Task<bool> ExistsAsync(ApplicationObjects.ProductMetadata obj, sbyte searchFlag = 0,
+        CancellationToken token = default) => throw new NotImplementedException();
 }

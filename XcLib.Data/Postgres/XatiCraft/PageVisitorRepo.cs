@@ -37,7 +37,7 @@ public class PageVisitorRepo : RootRepo<PageVisitor>, IPageVisitorRepo
                 .SingleAsync(pv => pv.Id == id, cancellationToken)), token);
 
     public async Task<List<ApplicationObjects.PageVisitor>> GetAsync(ApplicationObjects.PageVisitor obj,
-        ushort searchFlag = 0,
+        sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteAsync(async (pageVisitors, cancellationToken) =>
         {
@@ -48,7 +48,7 @@ public class PageVisitorRepo : RootRepo<PageVisitor>, IPageVisitorRepo
 
 
     public async Task<ApplicationObjects.PageVisitor?> UpdateAsync(ApplicationObjects.PageVisitor obj,
-        ushort searchFlag = 0,
+        sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteTransactionAsync(async (context, cancellationToken) =>
         {
@@ -64,7 +64,7 @@ public class PageVisitorRepo : RootRepo<PageVisitor>, IPageVisitorRepo
             return obj;
         }, token: token);
 
-    public async Task<int> DeleteAsync(ApplicationObjects.PageVisitor obj, ushort searchFlag = 0,
+    public async Task<int> DeleteAsync(ApplicationObjects.PageVisitor obj, sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteTransactionAsync(
             (context, cancellationToken) => context.PageVisitors
@@ -72,17 +72,16 @@ public class PageVisitorRepo : RootRepo<PageVisitor>, IPageVisitorRepo
                 .ExecuteDeleteAsync(cancellationToken),
             token: token);
 
-    public async Task<bool> ExistsAsync(ApplicationObjects.PageVisitor obj, ushort searchFlag = 0,
+    public async Task<bool> ExistsAsync(ApplicationObjects.PageVisitor obj, sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteAsync(
             (pageVisitors, cancellationToken) => pageVisitors.AsNoTracking()
                 .AnyAsync(ToSearchPredicate(obj, searchFlag), cancellationToken), token);
 
     protected override Expression<Func<PageVisitor, bool>> ToSearchPredicate(ApplicationObject obj,
-        ushort searchFlag)
+        sbyte searchFlag)
     {
         if (obj is not ApplicationObjects.PageVisitor pvObj) throw new ArgumentOutOfRangeException(nameof(obj));
-
         return searchFlag switch
         {
             1 => p => p.IpAddress == pvObj.IpAddress,

@@ -40,15 +40,16 @@ public class ProductRepo : MongoBase<Product>, IProductRepo
     public Task<ApplicationObjects.Product> GetByIdAsync(long id, CancellationToken token = default) =>
         throw new NotImplementedException();
 
-    public Task<List<ApplicationObjects.Product>> GetAsync(ApplicationObjects.Product obj, ushort searchFlag = 0, CancellationToken token = default) => throw new NotImplementedException();
-
-    public Task<ApplicationObjects.Product?> UpdateAsync(ApplicationObjects.Product obj, ushort searchFlag = 0,
+    public Task<List<ApplicationObjects.Product>> GetAsync(ApplicationObjects.Product obj, sbyte searchFlag = 0,
         CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<int> DeleteAsync(ApplicationObjects.Product obj, ushort searchFlag = 0,
+    public Task<ApplicationObjects.Product?> UpdateAsync(ApplicationObjects.Product obj, sbyte searchFlag = 0,
         CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<bool> ExistsAsync(ApplicationObjects.Product obj, ushort searchFlag = 0,
+    public Task<int> DeleteAsync(ApplicationObjects.Product obj, sbyte searchFlag = 0,
+        CancellationToken token = default) => throw new NotImplementedException();
+
+    public Task<bool> ExistsAsync(ApplicationObjects.Product obj, sbyte searchFlag = 0,
         CancellationToken token = default) => throw new NotImplementedException();
 
     public Task<List<ApplicationObjects.Product>> GetAsync(IEnumerable<long>? ids = null, OrderBy? orderBy = null,

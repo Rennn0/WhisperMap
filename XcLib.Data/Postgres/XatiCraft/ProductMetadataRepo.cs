@@ -39,7 +39,7 @@ public class ProductMetadataRepo : RootRepo<ProductMetadata>, IProductMetadaRepo
                     await productMetadata.SingleAsync(pm => pm.Id == id, cancellationToken)), token);
 
     public async Task<List<ApplicationObjects.ProductMetadata>> GetAsync(ApplicationObjects.ProductMetadata obj,
-        ushort searchFlag = 0,
+        sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteAsync(async (productMetadata, cancellationToken) =>
         {
@@ -49,7 +49,7 @@ public class ProductMetadataRepo : RootRepo<ProductMetadata>, IProductMetadaRepo
         }, token);
 
     public async Task<ApplicationObjects.ProductMetadata?> UpdateAsync(ApplicationObjects.ProductMetadata obj,
-        ushort searchFlag = 0,
+        sbyte searchFlag = 0,
         CancellationToken token = default)
     {
         await ExecuteTransactionAsync((context, cancellationToken) => context.ProductMetadata
@@ -66,7 +66,7 @@ public class ProductMetadataRepo : RootRepo<ProductMetadata>, IProductMetadaRepo
         return obj;
     }
 
-    public async Task<int> DeleteAsync(ApplicationObjects.ProductMetadata obj, ushort searchFlag = 0,
+    public async Task<int> DeleteAsync(ApplicationObjects.ProductMetadata obj, sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteTransactionAsync(
             (context, cancellationToken) => context.ProductMetadata
@@ -74,14 +74,14 @@ public class ProductMetadataRepo : RootRepo<ProductMetadata>, IProductMetadaRepo
                 .ExecuteDeleteAsync(cancellationToken),
             token: token);
 
-    public async Task<bool> ExistsAsync(ApplicationObjects.ProductMetadata obj, ushort searchFlag = 0,
+    public async Task<bool> ExistsAsync(ApplicationObjects.ProductMetadata obj, sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteAsync(
             (productMetadata, cancellationToken) => productMetadata.AsNoTracking()
                 .AnyAsync(ToSearchPredicate(obj, searchFlag), cancellationToken), token);
 
     protected override Expression<Func<ProductMetadata, bool>> ToSearchPredicate(ApplicationObject obj,
-        ushort searchFlag)
+        sbyte searchFlag)
     {
         if (obj is not ApplicationObjects.ProductMetadata pmObj) throw new ArgumentOutOfRangeException(nameof(obj));
 

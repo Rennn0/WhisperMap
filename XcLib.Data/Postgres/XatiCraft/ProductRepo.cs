@@ -100,10 +100,10 @@ public class ProductRepo : RootRepo<Model.Product>, IProductRepo
             };
         }, token: token);
 
-    public Task<List<Product>> GetAsync(Product obj, ushort searchFlag = 0, CancellationToken token = default) =>
+    public Task<List<Product>> GetAsync(Product obj, sbyte searchFlag = 0, CancellationToken token = default) =>
         throw new NotImplementedException();
 
-    public async Task<Product?> UpdateAsync(Product obj, ushort searchFlag = 0, CancellationToken token = default) =>
+    public async Task<Product?> UpdateAsync(Product obj, sbyte searchFlag = 0, CancellationToken token = default) =>
         await ExecuteTransactionAsync(async (context, cancellationToken) =>
         {
             await context.Products
@@ -112,17 +112,16 @@ public class ProductRepo : RootRepo<Model.Product>, IProductRepo
                     .SetProperty(p => p.Description, obj.Description)
                     .SetProperty(p => p.Title, obj.Title)
                     .SetProperty(p => p.Price, obj.Price), cancellationToken);
-
             return obj;
         }, token: token);
 
-    public async Task<int> DeleteAsync(Product obj, ushort searchFlag = 0, CancellationToken token = default) =>
+    public async Task<int> DeleteAsync(Product obj, sbyte searchFlag = 0, CancellationToken token = default) =>
         await ExecuteAsync(
             async (products, cancellationToken) =>
                 await products.Where(ToSearchPredicate(obj, searchFlag)).ExecuteDeleteAsync(cancellationToken),
             token);
 
-    public async Task<bool> ExistsAsync(Product obj, ushort searchFlag = 0, CancellationToken token = default) =>
+    public async Task<bool> ExistsAsync(Product obj, sbyte searchFlag = 0, CancellationToken token = default) =>
         await ExecuteAsync((products, cancellationToken) =>
                 products.AsNoTracking().AnyAsync(ToSearchPredicate(obj, searchFlag), cancellationToken)
             , token);
@@ -166,7 +165,7 @@ public class ProductRepo : RootRepo<Model.Product>, IProductRepo
         };
     }
 
-    protected override Expression<Func<Model.Product, bool>> ToSearchPredicate(ApplicationObject obj, ushort searchFlag)
+    protected override Expression<Func<Model.Product, bool>> ToSearchPredicate(ApplicationObject obj, sbyte searchFlag)
     {
         if (obj is not Product pObj) throw new ArgumentOutOfRangeException(nameof(obj));
         return searchFlag switch

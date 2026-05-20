@@ -9,6 +9,9 @@ namespace XcLib.Data.Postgres.XatiCraft;
 
 public abstract class RootRepo<TModel> where TModel : class
 {
+    /*
+     *      #NOTE BULK operations can be added
+     */
     private readonly IDbContextFactory<ApplicationContext> _dbContextFactory;
 
     /// <summary>
@@ -33,7 +36,6 @@ public abstract class RootRepo<TModel> where TModel : class
     {
         await using ApplicationContext context =
             await _dbContextFactory.CreateDbContextAsync(token);
-
         IExecutionStrategy strategy = context.Database.CreateExecutionStrategy();
 
         return await strategy.ExecuteAsync(
@@ -59,5 +61,5 @@ public abstract class RootRepo<TModel> where TModel : class
             token);
     }
 
-    protected abstract Expression<Func<TModel, bool>> ToSearchPredicate(ApplicationObject obj, ushort searchFlag); 
+    protected abstract Expression<Func<TModel, bool>> ToSearchPredicate(ApplicationObject obj, sbyte searchFlag); 
 }

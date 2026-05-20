@@ -82,7 +82,6 @@ FROM products p
 LEFT JOIN product_metadata pm ON pm.product_id = p.id
 GROUP BY p.id;
 ");
-            
         }
 
         /// <inheritdoc />

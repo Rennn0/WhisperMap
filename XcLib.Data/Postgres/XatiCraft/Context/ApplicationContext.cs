@@ -107,6 +107,8 @@ public partial class ApplicationContext : DbContext, IDataProtectionKeyContext
             entity.Property(e => e.CreatedAt).HasColumnName("created_at")
                 .HasColumnType("timestamp  with time zone")
                 .HasDefaultValueSql("now()");
+
+            entity.HasIndex(e => new { e.Page, e.IpAddress });
         });
         
         OnModelCreatingPartial(modelBuilder);
