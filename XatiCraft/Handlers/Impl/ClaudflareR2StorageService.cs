@@ -22,11 +22,14 @@ public class ClaudflareR2StorageService : IUploader, IReader
     public ClaudflareR2StorageService(IOptionsSnapshot<ClaudflareR2Settings> settings)
     {
         _settings = settings.Value;
+        _s3Client = null!;
+#if RELEASE
         _s3Client = new AmazonS3Client(_settings.AccessKey, _settings.SecretKey, new AmazonS3Config
         {
             ServiceURL = _settings.ServiceUrl,
             ForcePathStyle = true
         });
+#endif
     }
 
     /// <summary>

@@ -90,6 +90,7 @@ public class SessionController : ApplicationController
     /// <param name="token"></param>
     /// <param name="provider"></param>
     /// <param name="handlers"></param>
+    /// <param name="hostEnvironment"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("gt/{provider}")]
@@ -97,9 +98,11 @@ public class SessionController : ApplicationController
         [FromRoute] ApplicationAuthProvider provider,
         [FromQuery(Name = "t")] string token,
         [FromServices] IEnumerable<IAuthorizationHandler> handlers,
+        [FromServices] IWebHostEnvironment hostEnvironment,
         CancellationToken cancellationToken
     )
     {
+        if (hostEnvironment.IsDevelopment()) return NoContent();
         AuthorizationContract contract = (AuthorizationContract)
             await handlers
                 .First(h =>

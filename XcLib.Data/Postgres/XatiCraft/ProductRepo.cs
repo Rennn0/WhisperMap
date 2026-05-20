@@ -1,7 +1,8 @@
-using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using XcLib.Data.Abstractions;
+using XcLib.Data.ApplicationObjects;
 using XcLib.Data.Postgres.XatiCraft.Context;
 using XcLib.Data.Postgres.XatiCraft.Model;
 using Product = XcLib.Data.ApplicationObjects.Product;
@@ -9,7 +10,7 @@ using ProductMetadata = XcLib.Data.ApplicationObjects.ProductMetadata;
 
 namespace XcLib.Data.Postgres.XatiCraft;
 
-public class ProductRepo : RootRepo, IProductRepo
+public class ProductRepo : RootRepo<Model.Product>, IProductRepo
 {
     private readonly JsonSerializerOptions _serializerOptions;
 
@@ -24,13 +25,13 @@ public class ProductRepo : RootRepo, IProductRepo
     }
 
     /// <inheritdoc />
-    public async Task<List<Product>> SelectAsync(
+    public async Task<List<Product>> GetAsync(
         IEnumerable<long>? ids = null,
         OrderBy? orderBy = null,
         string? query = null,
         SearchCursor? cursor = null,
         CancellationToken cancellationToken = default) =>
-        await ExecuteAsync(async (context, token) =>
+        await ExecuteTransactionAsync(async (context, token) =>
         {
             ArgumentNullException.ThrowIfNull(cursor);
 
@@ -70,94 +71,70 @@ public class ProductRepo : RootRepo, IProductRepo
                 .ToListAsync(token);
 
             return result;
-        }, cancellationToken);
+        }, token: cancellationToken);
 
-    /// <inheritdoc />
-    public async Task<Product?> SelectAsync(long id, CancellationToken cancellationToken) =>
-        await ExecuteAsync(async (context, token) =>
-        {
-            Product? result = await context.VProducts.AsNoTracking()
-                .Where(vp => vp.Id == id)
-                .Select(v => new Product(v.Title ?? "", v.Description ?? "", v.Price ?? 0m)
-                {
-                    Id = v.Id,
-                    Timestamp = v.Timestamp,
-                    ProductMetadata = v.Metadata == null
-                        ? null
-                        : v.Metadata.Deserialize<ICollection<ProductMetadata>>(_serializerOptions)
-                })
-                .FirstOrDefaultAsync(token);
-
-            return result;
-        }, cancellationToken);
-
-    public Task<Product?> SelectAsync(string objId, CancellationToken cancellationToken) => throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public async Task<Product> InsertAsync(Product product, CancellationToken cancellationToken) =>
-        await ExecuteAsync(async (context, token) =>
+    public async Task<Product> AddAsync(Product obj, CancellationToken token = default) =>
+        Product.From(await ExecuteAsync(async (products, cancellationToken) =>
         {
             Model.Product mp = new Model.Product
             {
-                Description = product.Description,
-                Title = product.Title,
-                Price = product.Price
+                Description = obj.Description,
+                Title = obj.Title,
+                Price = obj.Price
             };
-            await context.Products.AddAsync(mp, token);
-            await context.SaveChangesAsync(token);
-            product.Id = mp.Id;
-            product.Timestamp = mp.Timestamp;
-            return product;
-        }, cancellationToken);
+            await products.AddAsync(mp, cancellationToken);
+            return mp;
+        }, token));
 
-    public Task<Product> AddAsync(Product obj, CancellationToken token = default) =>
-        throw new NotImplementedException();
+    public async Task<Product> GetByIdAsync(long id, CancellationToken token = default) =>
+        await ExecuteTransactionAsync(async (context, cancellationToken) =>
+        {
+            VProduct v = await context.VProducts.AsNoTracking()
+                .SingleAsync(vp => vp.Id == id, cancellationToken);
 
-    public Task<Product?> GetByIdAsync(long id, CancellationToken token = default) =>
-        throw new NotImplementedException();
+            return new Product(v.Title ?? "", v.Description ?? "", v.Price ?? 0m)
+            {
+                Id = v.Id,
+                Timestamp = v.Timestamp,
+                ProductMetadata = v.Metadata?.Deserialize<ICollection<ProductMetadata>>(_serializerOptions)
+            };
+        }, token: token);
 
     public Task<List<Product>> GetAsync(Product obj, ushort searchFlag = 0, CancellationToken token = default) =>
         throw new NotImplementedException();
 
-    public async Task<Product?> UpdateAsync(Product product, CancellationToken cancellationToken) =>
-        await ExecuteAsync(async (context, token) =>
+    public async Task<Product?> UpdateAsync(Product obj, ushort searchFlag = 0, CancellationToken token = default) =>
+        await ExecuteTransactionAsync(async (context, cancellationToken) =>
         {
-            ArgumentNullException.ThrowIfNull(product.Id);
-
-            int affected = await context.Products
-                .Where(p => p.Id == product.Id)
+            await context.Products
+                .Where(ToSearchPredicate(obj, searchFlag))
                 .ExecuteUpdateAsync(calls => calls
-                    .SetProperty(p => p.Description, product.Description)
-                    .SetProperty(p => p.Title, product.Title)
-                    .SetProperty(p => p.Price, product.Price), token);
-            Trace.Assert(affected > 0);
+                    .SetProperty(p => p.Description, obj.Description)
+                    .SetProperty(p => p.Title, obj.Title)
+                    .SetProperty(p => p.Price, obj.Price), cancellationToken);
 
-            return product;
-        }, cancellationToken);
+            return obj;
+        }, token: token);
 
-    public Task DeleteAsync(Product obj, CancellationToken token = default) => throw new NotImplementedException();
+    public async Task<int> DeleteAsync(Product obj, ushort searchFlag = 0, CancellationToken token = default) =>
+        await ExecuteAsync(
+            async (products, cancellationToken) =>
+                await products.Where(ToSearchPredicate(obj, searchFlag)).ExecuteDeleteAsync(cancellationToken),
+            token);
 
-    /// <inheritdoc />
-    public async Task<bool> ExistsAsync(long id, CancellationToken cancellationToken) =>
-        await ExecuteAsync((context, token) =>
-                context.Products.AsNoTracking().AnyAsync(p => p.Id == id, token)
-            , cancellationToken);
+    public async Task<bool> ExistsAsync(Product obj, ushort searchFlag = 0, CancellationToken token = default) =>
+        await ExecuteAsync((products, cancellationToken) =>
+                products.AsNoTracking().AnyAsync(ToSearchPredicate(obj, searchFlag), cancellationToken)
+            , token);
 
-    public Task<bool> ExistsAsync(string objId, CancellationToken cancellationToken) => throw new NotImplementedException();
+    public Task<bool> ExistsAsync(string objId, CancellationToken cancellationToken) =>
+        throw new NotImplementedException();
 
-    /// <inheritdoc />
-    public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken) =>
-        await ExecuteAsync(async (context, token) =>
-        {
-            Model.Product entity = new Model.Product { Id = id };
-            context.Products.Attach(entity);
-            context.Products.Remove(entity);
-            int affected = await context.SaveChangesAsync(token);
-            return affected > 0;
-        }, cancellationToken);
+    public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken) =>
+        throw new NotImplementedException();
 
-    public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken) => throw new NotImplementedException();
-
+    public Task<Product> GetByIdAsync(string objId, CancellationToken cancellationToken) =>
+        throw new NotImplementedException();
     private static IQueryable<VProduct> ApplyOrdering(IQueryable<VProduct> queryable, OrderBy? orderBy) =>
         orderBy switch
         {
@@ -186,6 +163,15 @@ public class ProductRepo : RootRepo, IProductRepo
             OrderBy.PriceDecreasing => queryable.Where(x =>
                 x.Price  < searchCursor.Price || (x.Price  == searchCursor.Price && x.Id  < searchCursor.Id )),
             _ => throw new ArgumentOutOfRangeException(nameof(orderBy), orderBy, null)
+        };
+    }
+
+    protected override Expression<Func<Model.Product, bool>> ToSearchPredicate(ApplicationObject obj, ushort searchFlag)
+    {
+        if (obj is not Product pObj) throw new ArgumentOutOfRangeException(nameof(obj));
+        return searchFlag switch
+        {
+            _ => p => p.Id == pObj.Id
         };
     }
 }

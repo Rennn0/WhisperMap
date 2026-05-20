@@ -13,6 +13,9 @@ public record ProductMetadata(
     long ProductId,
     int? Order) : ApplicationObject
 {
+    public ProductMetadata() : this("", "", "", 0, null)
+    {
+    }
     
     /// <summary>
     /// </summary>
@@ -21,4 +24,12 @@ public record ProductMetadata(
     /// <summary>
     /// </summary>
     public Product? Product { get; set; }
+
+    public static ProductMetadata From(Postgres.XatiCraft.Model.ProductMetadata model)
+        => new ProductMetadata(model.OriginalFile, model.FileKey, model.Location, model.ProductId, model.Order)
+        {
+            Id =  model.Id,
+            Timestamp = model.Timestamp,
+            Product = Product.From(model.Product)
+        };
 }

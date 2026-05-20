@@ -47,12 +47,10 @@ internal class GetProductHandler : IGetProductHandler
         Product? product;
 
         if (long.TryParse(context.Id, out long id))
-            product = await _productRepos.SelectAsync(id, cancellationToken);
+            product = await _productRepos.GetByIdAsync(id, cancellationToken);
         else
-            product = await _productObjRepos.SelectAsync(context.Id, cancellationToken); //#NOTE usually this data mustnt be in nosql storage but anyway
-
-        if (product is null)
-            return new Error(ErrorCode.ArgumentMissmatchInDatabase);
+            product = await _productObjRepos.GetByIdAsync(context.Id,
+                cancellationToken); //#NOTE usually this data mustnt be in nosql storage but anyway
 
         bool inCart;
         if (string.IsNullOrEmpty(context.UserId))

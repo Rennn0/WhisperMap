@@ -13,58 +13,46 @@ public class ProductRepo : MongoBase<Product>, IProductRepo
     {
     }
 
-    /// <inheritdoc />
-    public Task<List<ApplicationObjects.Product>> SelectAsync(IEnumerable<long>? ids = null, OrderBy? orderBy = null,
-        string? query = null,
-        SearchCursor? cursor = null,
-        CancellationToken cancellationToken = default) =>
-        throw new NotImplementedException();
 
-    /// <inheritdoc />
-    public Task<ApplicationObjects.Product?> SelectAsync(long id, CancellationToken cancellationToken) =>
-        throw new NotImplementedException();
-
-    public async Task<ApplicationObjects.Product?> SelectAsync(string objId, CancellationToken cancellationToken)
+    public async Task<ApplicationObjects.Product> GetByIdAsync(string objId, CancellationToken cancellationToken)
     {
-        Product? pDoc = await Collection.Find(p => p.Id == objId, new FindOptions { BatchSize = 1 })
-            .FirstOrDefaultAsync(cancellationToken);
-        return pDoc is null
-            ? null
-            : new ApplicationObjects.Product(pDoc.Title, pDoc.Description, pDoc.Price) { ObjId = pDoc.Id };
+        Product pDoc = await Collection.Find(p => p.Id == objId, new FindOptions { BatchSize = 1 })
+            .SingleAsync(cancellationToken);
+        return new ApplicationObjects.Product(pDoc.Title, pDoc.Description, pDoc.Price) { ObjId = pDoc.Id };
     }
 
-    /// <inheritdoc />
-    public async Task<ApplicationObjects.Product> InsertAsync(ApplicationObjects.Product product,
-        CancellationToken cancellationToken)
+    public async Task<ApplicationObjects.Product>
+        AddAsync(ApplicationObjects.Product obj, CancellationToken token = default) 
+
     {
-        Product pDoc = new Product(product.Title, product.Description, product.Price);
+        Product pDoc = new Product(obj.Title, obj.Description, obj.Price);
         await Collection.InsertOneAsync(pDoc,
-            new InsertOneOptions { BypassDocumentValidation = false }, cancellationToken);
-        return product with { ObjId = pDoc.Id };
+            new InsertOneOptions { BypassDocumentValidation = true }, token);
+        return obj with { ObjId = pDoc.Id };
     }
 
-    public Task<ApplicationObjects.Product>
-        AddAsync(ApplicationObjects.Product obj, CancellationToken token = default) =>
+    public Task<bool> ExistsAsync(string objId, CancellationToken cancellationToken) =>
         throw new NotImplementedException();
 
-    public Task<ApplicationObjects.Product?> GetByIdAsync(long id, CancellationToken token = default) => throw new NotImplementedException();
+    public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken) =>
+        throw new NotImplementedException();
+
+    public Task<ApplicationObjects.Product> GetByIdAsync(long id, CancellationToken token = default) =>
+        throw new NotImplementedException();
 
     public Task<List<ApplicationObjects.Product>> GetAsync(ApplicationObjects.Product obj, ushort searchFlag = 0, CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<ApplicationObjects.Product?> UpdateAsync(ApplicationObjects.Product product,
-        CancellationToken cancellationToken) =>
+    public Task<ApplicationObjects.Product?> UpdateAsync(ApplicationObjects.Product obj, ushort searchFlag = 0,
+        CancellationToken token = default) => throw new NotImplementedException();
+
+    public Task<int> DeleteAsync(ApplicationObjects.Product obj, ushort searchFlag = 0,
+        CancellationToken token = default) => throw new NotImplementedException();
+
+    public Task<bool> ExistsAsync(ApplicationObjects.Product obj, ushort searchFlag = 0,
+        CancellationToken token = default) => throw new NotImplementedException();
+
+    public Task<List<ApplicationObjects.Product>> GetAsync(IEnumerable<long>? ids = null, OrderBy? orderBy = null,
+        string? query = null, SearchCursor? cursor = null,
+        CancellationToken cancellationToken = default) =>
         throw new NotImplementedException();
-
-    public Task DeleteAsync(ApplicationObjects.Product obj, CancellationToken token = default) =>
-        throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public Task<bool> ExistsAsync(long id, CancellationToken cancellationToken) => throw new NotImplementedException();
-
-    public Task<bool> ExistsAsync(string objId, CancellationToken cancellationToken) => throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public Task<bool> DeleteAsync(long id, CancellationToken cancellationToken) => throw new NotImplementedException();
-
-    public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken) => throw new NotImplementedException();
 }

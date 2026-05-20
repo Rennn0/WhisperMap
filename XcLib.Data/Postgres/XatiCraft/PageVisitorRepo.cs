@@ -3,63 +3,95 @@ using Microsoft.EntityFrameworkCore;
 using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
 using XcLib.Data.Postgres.XatiCraft.Context;
+using PageVisitor = XcLib.Data.Postgres.XatiCraft.Model.PageVisitor;
 
 namespace XcLib.Data.Postgres.XatiCraft;
 
-public class PageVisitorRepo : RootRepo, IPageVisitorRepo
+public class PageVisitorRepo : RootRepo<PageVisitor>, IPageVisitorRepo
 {
     /// <inheritdoc />
     public PageVisitorRepo(IDbContextFactory<ApplicationContext> dbContextFactory) : base(dbContextFactory)
     {
     }
 
-    public async Task<PageVisitor> AddAsync(PageVisitor obj,
+    public async Task<ApplicationObjects.PageVisitor> AddAsync(ApplicationObjects.PageVisitor obj,
         CancellationToken token = default) =>
-        await ExecuteAsync(async (context, cancellationToken) =>
+        await ExecuteAsync(async (pageVisitors, cancellationToken) =>
         {
-            Model.PageVisitor pv = new Model.PageVisitor
+            PageVisitor pv = new PageVisitor
             {
                 IpAddress = obj.IpAddress,
                 Browser = obj.Browser,
                 Page = obj.Page,
                 Uid = obj.Uid
             };
-            await context.PageVisitors.AddAsync(pv, cancellationToken);
-            await context.SaveChangesAsync(cancellationToken);
+            await pageVisitors.AddAsync(pv, cancellationToken);
             obj.Id = pv.Id;
             return obj;
         }, token);
 
-    public async Task<PageVisitor?> GetByIdAsync(long id, CancellationToken token = default) =>
-        await ExecuteAsync(async (context, cancellationToken) =>
-        {
-            Model.PageVisitor? pv =
-                await context.PageVisitors.AsNoTracking().FirstOrDefaultAsync(pv => pv.Id == id, cancellationToken);
-            return null == pv ? null : PageVisitor.From(pv);
-        }, token);
+    public async Task<ApplicationObjects.PageVisitor> GetByIdAsync(long id, CancellationToken token = default) =>
+        await ExecuteAsync(
+            async (pageVisitors, cancellationToken) => ApplicationObjects.PageVisitor.From(await pageVisitors
+                .AsNoTracking()
+                .SingleAsync(pv => pv.Id == id, cancellationToken)), token);
 
-    public async Task<List<PageVisitor>> GetAsync(PageVisitor obj, ushort searchFlag = 0,
+    public async Task<List<ApplicationObjects.PageVisitor>> GetAsync(ApplicationObjects.PageVisitor obj,
+        ushort searchFlag = 0,
         CancellationToken token = default) =>
-        await ExecuteAsync(async (context, cancellationToken) =>
+        await ExecuteAsync(async (pageVisitors, cancellationToken) =>
         {
-            Expression<Func<Model.PageVisitor, bool>> predicate = searchFlag switch
-            {
-                1 => p => p.IpAddress == obj.IpAddress,
-                2 => p => p.Page == obj.Page,
-                3 => p => p.Browser == obj.Browser,
-                _ => pv => pv.Id == obj.Id
-            };
-
-            List<Model.PageVisitor> entities = await context.PageVisitors.Where(predicate)
+            List<PageVisitor> entities = await pageVisitors.Where(ToSearchPredicate(obj, searchFlag))
                 .ToListAsync(cancellationToken);
-            return entities.Select(PageVisitor.From).ToList();
+            return entities.Select(ApplicationObjects.PageVisitor.From).ToList();
         }, token);
 
 
-    public Task<PageVisitor?> UpdateAsync(PageVisitor obj,
+    public async Task<ApplicationObjects.PageVisitor?> UpdateAsync(ApplicationObjects.PageVisitor obj,
+        ushort searchFlag = 0,
         CancellationToken token = default) =>
-        throw new NotImplementedException();
+        await ExecuteTransactionAsync(async (context, cancellationToken) =>
+        {
+            await context.PageVisitors
+                .Where(ToSearchPredicate(obj, searchFlag))
+                .ExecuteUpdateAsync(calls =>
+                        calls
+                            .SetProperty(p => p.Page, obj.Page)
+                            .SetProperty(p => p.Uid, obj.Uid)
+                            .SetProperty(p => p.Browser, obj.Browser)
+                            .SetProperty(p => p.IpAddress, obj.IpAddress)
+                    , cancellationToken);
+            return obj;
+        }, token: token);
 
-    public Task DeleteAsync(PageVisitor obj, CancellationToken token = default) =>
-        throw new NotImplementedException();
+    public async Task<int> DeleteAsync(ApplicationObjects.PageVisitor obj, ushort searchFlag = 0,
+        CancellationToken token = default) =>
+        await ExecuteTransactionAsync(
+            (context, cancellationToken) => context.PageVisitors
+                .Where(ToSearchPredicate(obj, searchFlag))
+                .ExecuteDeleteAsync(cancellationToken),
+            token: token);
+
+    public async Task<bool> ExistsAsync(ApplicationObjects.PageVisitor obj, ushort searchFlag = 0,
+        CancellationToken token = default) =>
+        await ExecuteAsync(
+            (pageVisitors, cancellationToken) => pageVisitors.AsNoTracking()
+                .AnyAsync(ToSearchPredicate(obj, searchFlag), cancellationToken), token);
+
+    protected override Expression<Func<PageVisitor, bool>> ToSearchPredicate(ApplicationObject obj,
+        ushort searchFlag)
+    {
+        if (obj is not ApplicationObjects.PageVisitor pvObj) throw new ArgumentOutOfRangeException(nameof(obj));
+
+        return searchFlag switch
+        {
+            1 => p => p.IpAddress == pvObj.IpAddress,
+            2 => p => p.Page == pvObj.Page,
+            3 => p => p.Browser == pvObj.Browser,
+            4 => p => p.Uid == pvObj.Uid,
+            5 => p => p.Page == pvObj.Page && p.IpAddress == pvObj.IpAddress,
+            6 => p => p.Page == pvObj.Page || p.IpAddress == pvObj.IpAddress,
+            _ => p => p.Id == pvObj.Id
+        };
+    }
 }

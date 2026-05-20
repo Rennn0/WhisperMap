@@ -34,7 +34,7 @@ internal class GetProductsCartHandler : IGetProductsHandler
         if (cart is null)
             return new ApiContract(context);
 
-        List<Product> products = await _productRepo.SelectAsync(
+        List<Product> products = await _productRepo.GetAsync(
             cart.ProductIds.Select(long.Parse),
             cursor: new GetProductsGeneralHandler.Cursor
             {

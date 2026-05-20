@@ -12,15 +12,19 @@ internal class DeleteProductHandler : IDeleteProductHandler
 {
     private readonly IProductRepo _productRepo;
     private readonly IUploader _uploader;
+    private readonly bool _isDev;
 
     /// <summary>
     /// </summary>
     /// <param name="productRepos"></param>
     /// <param name="uploader"></param>
-    public DeleteProductHandler(IEnumerable<IProductRepo> productRepos, IUploader uploader)
+    /// <param name="webHostEnvironment"></param>
+    public DeleteProductHandler(IEnumerable<IProductRepo> productRepos, IUploader uploader,
+        IWebHostEnvironment webHostEnvironment)
     {
         _productRepo = productRepos.First(p => p is ProductRepo);
         _uploader = uploader;
+        _isDev = webHostEnvironment.IsDevelopment();
     }
 
     /// <inheritdoc />
@@ -30,8 +34,7 @@ internal class DeleteProductHandler : IDeleteProductHandler
     )
     {
         Product product =
-            await _productRepo.SelectAsync(context.ProductId, cancellationToken)
-            ?? throw new Exception();
+            await _productRepo.GetByIdAsync(context.ProductId, cancellationToken);
 
         List<Task> tasks =
             product
@@ -39,7 +42,9 @@ internal class DeleteProductHandler : IDeleteProductHandler
                     _uploader.DeleteObjectAsync(pm.FileKey, cancellationToken)
                 )
                 .ToList() ?? [];
-        tasks.Add(_productRepo.DeleteAsync(context.ProductId, cancellationToken));
+        if (_isDev) tasks.Clear();
+
+        tasks.Add(_productRepo.DeleteAsync(new Product { Id = context.ProductId }, token: cancellationToken));
         await Task.WhenAll(tasks);
         return new ApiContract(context);
     }

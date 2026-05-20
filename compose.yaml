@@ -11,71 +11,54 @@
 
   postgres:
     image: docker.io/library/postgres:16
-    container_name: xc-pg
-    mem_reservation: 512m
     environment:
       POSTGRES_USER: "test"
       POSTGRES_PASSWORD: "testTest123"
       POSTGRES_DB: xc-db
     ports:
-      - "5442:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - xc-network
+      - "9990:5432"
+  #    volumes:
+  #      - pgdata:/var/lib/postgresql/data
 
   mongo:
     image: docker.io/mongodb/mongodb-community-server:8.0-ubi8
-    container_name: xc-mongo
-    mem_reservation: 512m
     ports:
-      - "27017:27017"
+      - "9991:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: "test"
       MONGO_INITDB_ROOT_PASSWORD: "testTest123"
-    volumes:
-      - mongo-data:/data/db
-      - mongo-config:/data/configdb
-    networks:
-      - xc-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: xc-prometheus
-    ports:
-      - "9090:9090"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - ./prometheus.local.yml:/etc/prometheus/prometheus.yml:ro
-    networks:
-      - xc-network
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.retention.time=1d"
+        #    volumes:
+        #      - mongo-data:/data/db
+        #      - mongo-config:/data/configdb
+        
+        #  prometheus:
+        #    image: prom/prometheus:latest
+        #    container_name: xc-prometheus
+        #    ports:
+        #      - "9090:9090"
+        #    extra_hosts:
+        #      - "host.docker.internal:host-gateway"
+        #    volumes:
+        #      - ./prometheus.local.yml:/etc/prometheus/prometheus.yml:ro
+        #    networks:
+        #      - xc-network
+        #    command:
+        #      - "--config.file=/etc/prometheus/prometheus.yml"
+        #      - "--storage.tsdb.retention.time=1d"
         
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: xc-sqlserver
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "Test123test"
+      MSSQL_SA_PASSWORD: "testTest123"
     ports:
-      - "1433:1433"
-    volumes:
-      - sqldata:/var/opt/mssql
-        
-networks:
-  xc-network:
-    driver: bridge
+      - "9992:1433"
+#    volumes:
+#      - sqldata:/var/opt/mssql
 
-volumes:
-  pgdata:
-  mongo-data:
-  mongo-config:
-  sqldata:
+
+#volumes:
+#  pgdata:
+#  mongo-data:
+#  mongo-config:
+#  sqldata:

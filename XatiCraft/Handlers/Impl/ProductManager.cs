@@ -31,10 +31,10 @@ internal class ProductManager : IProductManager
     public async ValueTask<ApiContract> HandleAsync(CreateProductContext context,
         CancellationToken cancellationToken)
     {
-        Product product = await _productRepo.InsertAsync(
+        Product product = await _productRepo.AddAsync(
             new Product(context.Title, context.Description, Normalize(context.Price, 10, 3)),
             cancellationToken);
-        product = await _productRepoMongo.InsertAsync(product, cancellationToken);
+        product = await _productRepoMongo.AddAsync(product, cancellationToken);
         ArgumentNullException.ThrowIfNull(product.Id);
         return new CreateProductContract(product.Id.Value, context) { ObjId = product.ObjId };
     }
@@ -42,7 +42,7 @@ internal class ProductManager : IProductManager
     public async ValueTask<ApiContract> HandleAsync(UpdateProductContext context, CancellationToken cancellationToken)
     {
         await _productRepo.UpdateAsync(new Product(context.Title, context.Description, Normalize(context.Price, 10, 3) ){ Id = context.Id},
-            cancellationToken);
+            0, cancellationToken);
         return new CreateProductContract(context.Id, context);
     }
     
@@ -53,7 +53,7 @@ internal class ProductManager : IProductManager
     /// <param name="precision"></param>
     /// <param name="scale"></param>
     /// <returns></returns>
-    protected virtual decimal Normalize(decimal value, int precision, int scale)
+    protected static decimal Normalize(decimal value, int precision, int scale)
     {
         decimal maxValue = (decimal)Math.Pow(10, precision - scale) - (decimal)Math.Pow(10, -scale);
         decimal minValue = -maxValue;

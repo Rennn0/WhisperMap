@@ -15,7 +15,6 @@ internal class UploadProductFileHandler : IUploadProductFileHandler
     private readonly IProductRepo _productRepos;
     private readonly IUploader _uploader;
 
-
     /// <summary>
     /// </summary>
     /// <param name="uploader"></param>
@@ -35,7 +34,7 @@ internal class UploadProductFileHandler : IUploadProductFileHandler
         CancellationToken cancellationToken)
     {
         // if (context.Stream.Length > MaxFileSize) return new Error(ErrorCode.FileTooLarge);
-        if (!await _productRepos.ExistsAsync(context.Product, cancellationToken))
+        if (!await _productRepos.ExistsAsync(new Product { Id = context.Product }, token: cancellationToken))
             return new Error(ErrorCode.ArgumentMissmatchInDatabase, Hint: nameof(context.Product));
         UploadResult uploadResult =
             await _uploader.UploadFileAsync(context.Stream, context.FileName, cancellationToken);
@@ -48,7 +47,7 @@ internal class UploadProductFileHandler : IUploadProductFileHandler
     /// <inheritdoc />
     public async ValueTask<ApiContract> HandleAsync(GetSignedUrlContext context, CancellationToken cancellationToken)
     {
-        if (!await _productRepos.ExistsAsync(context.Product, cancellationToken))
+        if (!await _productRepos.ExistsAsync(new Product { Id = context.Product }, token: cancellationToken))
             return new Error(ErrorCode.ArgumentMissmatchInDatabase, Hint: nameof(context.Product));
         SignedUrlUploadResult uploadResult = await _uploader.GetSignedUrlAsync(context.FileName, cancellationToken);
         await _productMetadaRepo.AddAsync(

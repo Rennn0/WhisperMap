@@ -48,7 +48,7 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
         if (context.Batch.HasValue) cursor.BatchSize = context.Batch.Value;
         
         List<Product> products =
-            await _productRepos.SelectAsync(context.Ids, context.OrderBy, context.Query, cursor,
+            await _productRepos.GetAsync(context.Ids, context.OrderBy, context.Query, cursor,
                 cancellationToken);
 
         string? continuationToken = null;
@@ -93,7 +93,7 @@ internal class GetProductsGeneralHandler : IGetProductsHandler
         if (string.IsNullOrEmpty(str) || str.Length <= maxLen) return str;
 
         StringBuilder builder = new StringBuilder();
-        builder.Append(str[..MaxLenDesc]);
+        builder.Append(str[..maxLen]);
         builder.Append("...");
 
         return builder.ToString();
