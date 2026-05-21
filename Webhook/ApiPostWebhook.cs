@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -10,32 +10,23 @@ public static partial class Program
 {
     private static readonly SemaphoreSlim Sema = new SemaphoreSlim(1, 1);
 
-    internal readonly struct WebhookLogEntry
-    {
-        public string? Tag { get; init; }
-        public string? Time { get; init; }
-    }
-
-    internal readonly struct DockerWebhookRequest
-    {
-        [JsonPropertyName("push_data")] public PushData? Push { get; init; }
-    }
-
-    internal readonly struct PushData
-    {
-        [JsonPropertyName("tag")] public string? Tag { get; init; }
-    }
-
-
+    private static readonly BufferBlock<DockerWebhookRequest> WebhookBuffer = new BufferBlock<DockerWebhookRequest>(
+        new DataflowBlockOptions { });
+    
     private static void ApiPostWebhook(this RouteGroupBuilder builder)
     {
+        // WebhookBuffer.LinkTo();
         builder.MapPost("{idx:int}",
             async ([FromRoute] int idx, [FromBody] DockerWebhookRequest request,
                 [FromServices] ILoggerFactory loggerFactory, [FromServices] IDistributedCache cache) =>
             {
+                if (request is not { Push.Tag: "latest" }) return Results.BadRequest();
+
+                await WebhookBuffer.SendAsync(request);
+                
                 ILogger logger = loggerFactory.CreateLogger("webhook");
                 logger.LogInformation("webhook {a}", request);
-                if (request is not { Push.Tag: "latest" }) return Results.BadRequest();
+                
                 
                 (string service, string image) = idx switch
                 {
