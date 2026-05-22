@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using Webhook.Meshes;
+using Webhook.Objects;
 using XcLib.Data;
 using XcLib.Data.SqlServer.Realtime.Entities;
 
@@ -19,7 +21,8 @@ public static partial class Program
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
-        builder.AddSqlLogging<MasterLog>();
+        builder.Services.AddSingleton<WebhookMesh>();
+        builder.AddSqlLogging<MasterLog>(LogLevel.Information);
         builder.AddSqlServer();
 
         WebApplication app = builder.Build();

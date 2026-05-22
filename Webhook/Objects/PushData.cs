@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Webhook;
+namespace Webhook.Objects;
 
 internal readonly struct PushData
 {

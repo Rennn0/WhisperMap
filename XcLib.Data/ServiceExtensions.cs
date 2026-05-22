@@ -39,7 +39,7 @@ public static class ServiceExtensions
         builder.Logging
             .AddEntityFramework<MasterDbContext, TLogTable>()
             .SuppressUntil<MasterDbContext, TLogTable>(level)
-            .AddFilter("Microsoft.EntityFrameworkCore", level);
+            .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
 
         return builder;
     }

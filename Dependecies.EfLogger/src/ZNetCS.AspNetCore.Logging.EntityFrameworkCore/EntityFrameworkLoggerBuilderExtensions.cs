@@ -32,8 +32,8 @@ public static class EntityFrameworkLoggerBuilderExtensions
         builder.AddFilter<EntityFrameworkLoggerProvider<TContext, TLog>>(null, level);
 
         //#NOTE rorame aq daamate rac daaignoros
-        // builder.AddFilter<EntityFrameworkLoggerProvider<TContext>>("Microsoft", LogLevel.Critical);
-        // builder.AddFilter<EntityFrameworkLoggerProvider<TContext>>("System", LogLevel.Critical);
+        builder.AddFilter<EntityFrameworkLoggerProvider<TContext,TLog>>("Microsoft", LogLevel.Critical);
+        builder.AddFilter<EntityFrameworkLoggerProvider<TContext,TLog>>("System", LogLevel.Critical);
 
         return builder;
     }
