@@ -207,7 +207,7 @@ const editClicked = () => {
                                 :aria-label="`Open image preview for ${product.title}`"
                                 @click="openSelectedImageViewer">
                                 <img :src="selectedMedia.src" :alt="selectedMedia.alt ?? product.title"
-                                    class="h-full w-full object-cover" />
+                                    class="h-full w-full object-cover" decoding="async" fetchpriority="high" />
                             </button>
                         </template>
 
@@ -222,7 +222,8 @@ const editClicked = () => {
                         class="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border bg-subtle transition-all sm:h-28 sm:w-28"
                         :class="selectedIndex === i ? 'border-primary ring-2 ring-primary/30' : 'border-subtle hover:opacity-85'"
                         @click="selectMedia(i)">
-                        <img v-if="m.type === 'image'" :src="m.src" :alt="m.alt" class="h-full w-full object-cover" />
+                        <img v-if="m.type === 'image'" :src="m.src" :alt="m.alt" class="h-full w-full object-cover"
+                            loading="lazy" decoding="async" width="160" height="160" />
 
                         <div v-else class="flex h-full w-full items-center justify-center bg-subtle">
                             <svg class="h-6 w-6 text-text" fill="currentColor" viewBox="0 0 24 24">
