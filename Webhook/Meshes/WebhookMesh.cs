@@ -6,120 +6,195 @@ using Webhook.Objects;
 
 namespace Webhook.Meshes;
 
-internal class WebhookMesh : IAsyncDisposable
+/************************ TOPOLOGY ******************************
+ *
+ *                     _broadcastBlock
+ *                |                        |
+ *       _reqTransformerBlock         _loggerBlock
+ *                 |
+ *          _processorBlock
+ *                 |
+ *       _postProcessorBroadcastBlock
+ *        |           |           |
+ *   _loggerBlock
+ ***************************************************************/
+internal sealed class WebhookMesh : IAsyncDisposable
 {
     private readonly IDistributedCache _cache;
     private readonly ILogger<WebhookMesh> _logger;
-    private readonly BufferBlock<DockerWebhookRequest> _sourceBlock;
     private readonly BroadcastBlock<DockerWebhookRequest> _broadcastBlock;
-    private readonly TransformBlock<DockerWebhookRequest,(string service, string image)> _reqTransformerBlock;
-    private readonly ActionBlock<(string service, string image)> _processorBlock;
-    private readonly ActionBlock<DockerWebhookRequest> _loggerBlock;
+    private readonly DistributedCacheEntryOptions _cacheEntryOptions;
     private const string ScriptTemplate =
         """
         #!/bin/sh
         set -eu
         docker service update [{service}] --image [{image}]:latest --force
         """;
+
     public WebhookMesh(IDistributedCache cache,ILogger<WebhookMesh> logger)
     {
         _cache = cache;
         _logger = logger;
+        _cacheEntryOptions = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1)
+        };
         ExecutionDataflowBlockOptions executionDataflowBlockOptions = new ExecutionDataflowBlockOptions()
         {
             MaxDegreeOfParallelism = 3,
-            EnsureOrdered =  true,
-            BoundedCapacity = 9
+            BoundedCapacity = 100
         };
         DataflowLinkOptions dataflowLinkOptions = new DataflowLinkOptions()
         {
-            PropagateCompletion = true,
             Append = true,
-            MaxMessages = 9
+            PropagateCompletion = true
         };
         DataflowBlockOptions dataflowBlockOptions = new DataflowBlockOptions()
         {
             EnsureOrdered = true,
-            BoundedCapacity = 9,
+            BoundedCapacity = 100
         };
-        
-        _sourceBlock = new BufferBlock<DockerWebhookRequest>( dataflowBlockOptions );
-        _broadcastBlock = new BroadcastBlock<DockerWebhookRequest>(r=>r,dataflowBlockOptions);
-        _reqTransformerBlock = new TransformBlock<DockerWebhookRequest, (string service, string image)>(WebhookToTargretServiceTransformer,executionDataflowBlockOptions);
-        _processorBlock = new ActionBlock<(string service, string image)>(WebhookTargetServiceProcessCreator,executionDataflowBlockOptions);
-        _loggerBlock = new ActionBlock<DockerWebhookRequest>(WebhookTargetServiceExecutionLogger,executionDataflowBlockOptions);
 
-        _sourceBlock.LinkTo(_broadcastBlock,dataflowLinkOptions);
-        _broadcastBlock.LinkTo(_reqTransformerBlock,dataflowLinkOptions);
-        _broadcastBlock.LinkTo(_loggerBlock,dataflowLinkOptions);
-        _reqTransformerBlock.LinkTo(_processorBlock,dataflowLinkOptions,ProcessorBlockFilter);
+        _broadcastBlock = new BroadcastBlock<DockerWebhookRequest>(null, dataflowBlockOptions);
+        BroadcastBlock<DockerWebhookRequest> postProcessorBroadcastBlock =
+            new BroadcastBlock<DockerWebhookRequest>(null, dataflowBlockOptions);
+
+        TransformBlock<DockerWebhookRequest, DockerWebhookRequest> reqTransformerBlock =
+            new TransformBlock<DockerWebhookRequest, DockerWebhookRequest>(WebhookToTargretServiceTransformer,
+                executionDataflowBlockOptions);
+        TransformBlock<DockerWebhookRequest, DockerWebhookRequest> processorBlock =
+            new TransformBlock<DockerWebhookRequest, DockerWebhookRequest>(WebhookTargetServiceProcessCreator,
+                executionDataflowBlockOptions);
+        ActionBlock<DockerWebhookRequest> loggerBlock =
+            new ActionBlock<DockerWebhookRequest>(WebhookTargetServiceExecutionLogger, executionDataflowBlockOptions);
+
+        _broadcastBlock.LinkTo(reqTransformerBlock, dataflowLinkOptions);
+        _broadcastBlock.LinkTo(loggerBlock, dataflowLinkOptions);
+
+        reqTransformerBlock.LinkTo(processorBlock, dataflowLinkOptions, ProcessorFilterBlock);
+        reqTransformerBlock.LinkTo(DataflowBlock.NullTarget<DockerWebhookRequest>());
+
+        processorBlock.LinkTo(postProcessorBroadcastBlock, dataflowLinkOptions);
+        postProcessorBroadcastBlock.LinkTo(loggerBlock, dataflowLinkOptions);
     }
 
-    public async Task PublishAsync(DockerWebhookRequest request,CancellationToken token)
-        => await _sourceBlock.SendAsync(request, token);
+    public void Publish(DockerWebhookRequest request) => _broadcastBlock.Post(request);
 
-    private bool ProcessorBlockFilter((string service, string image) obj)
+    private bool ProcessorFilterBlock(DockerWebhookRequest obj)
     {
-        DateTimeOffset deployTime = DateTimeOffset.Now;
-        string cacheKey = $"wh.redeploy.{obj.service}";
-        byte[]? maybeDeploying = _cache.Get(cacheKey);
+        try
+        {
+            if (string.IsNullOrEmpty(obj.Img) || string.IsNullOrEmpty(obj.Service))
+                return false;
 
-        _cache.SetString(cacheKey, 
-            JsonSerializer.Serialize(
-                new WebhookLogEntry
-                {
-                    Time = deployTime.ToString("G"),
-                    Image = obj.image
-                }, Program.AppJsonContext.Default.WebhookLogEntry),
-            new DistributedCacheEntryOptions
+            DateTimeOffset deployTime = DateTimeOffset.Now;
+            string cacheKey = $"wh.redeploy.{obj.Service}";
+            byte[]? maybeDeploying = _cache.Get(cacheKey);
+
+            _cache.SetString(cacheKey,
+                JsonSerializer.Serialize(
+                    new WebhookLogEntry
+                    {
+                        Time = deployTime.ToString("G"),
+                        Image = obj.Img
+                    }, Program.AppJsonContext.Default.WebhookLogEntry),
+                _cacheEntryOptions);
+            return maybeDeploying is not
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(3)
-            });
-        return maybeDeploying is not {Length:>0};
+                Length: > 0
+            };
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, e.Message);
+            return false;
+        }
     }
-    private Task WebhookTargetServiceExecutionLogger(DockerWebhookRequest request)
+
+    private void WebhookTargetServiceExecutionLogger(DockerWebhookRequest request)
     {
         _logger.LogInformation("received webhook at {time}, {request}",DateTimeOffset.Now.ToString("G"),request);
-        return Task.CompletedTask;
     }
 
-    private Task WebhookTargetServiceProcessCreator((string service, string image) obj)
+    private async Task<DockerWebhookRequest> WebhookTargetServiceProcessCreator(DockerWebhookRequest obj)
     {
-        _logger.LogInformation("processed webhook for service {service}, image {image}",obj.service, obj.image);
-        string script = ScriptTemplate
-            .Replace("[{service}]", obj.service)
-            .Replace("[{image}]", obj.image);
-        
-        Process proc = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "/bin/sh",
-                ArgumentList = { "-c", $"{script} > /tmp/webhook-{DateTimeOffset.Now.ToUnixTimeMilliseconds()}.log 2>&1 &" },
-                RedirectStandardOutput = false,
-                RedirectStandardError = false,
-                UseShellExecute = false
-            }
-        };
-        proc.Start();
+        _logger.LogInformation(
+            "processed webhook for service {service}, image {image}",
+            obj.Service,
+            obj.Img);
 
-        return Task.CompletedTask;
+        string script = ScriptTemplate
+            .Replace("[{service}]", obj.Service)
+            .Replace("[{image}]", obj.Img);
+
+        using Process proc = new Process();
+        proc.StartInfo = new ProcessStartInfo
+        {
+            FileName = "/bin/sh",
+            ArgumentList = { "-c", script },
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
+        };
+
+        string stdout = "";
+        string stderr = "";
+        int exitCode;
+
+        try
+        {
+            proc.Start();
+
+            stdout = await proc.StandardOutput.ReadToEndAsync();
+            stderr = await proc.StandardError.ReadToEndAsync();
+
+            await proc.WaitForExitAsync();
+            exitCode = proc.ExitCode;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "process execution failed for {service}", obj.Service);
+
+            return obj with
+            {
+                ExecutionState = 11,
+                StdErr = stderr,
+                StdOut = stdout
+            };
+        }
+
+        return obj with
+        {
+            ExecutionState = (sbyte)exitCode,
+            StdOut = stdout,
+            StdErr = stderr
+        };
     }
 
-    private Task<(string service, string image)> WebhookToTargretServiceTransformer(DockerWebhookRequest request) =>
-        Task.FromResult( request.Index switch
+    private static DockerWebhookRequest WebhookToTargretServiceTransformer(DockerWebhookRequest request) =>
+        request.Index switch
         {
-            1 => ("xc-app_realtime", "rennn0/realtime"),
-            2 => ("xc-app_api", "rennn0/xaticraft"),
-            3 => ("xc-app_webhook", "rennn0/webhook"),
-            _ => default
-        });
+            1 => request with
+            {
+                Service = "xc-app_realtime",
+                Img = "rennn0/realtime"
+            },
+            2 => request with
+            {
+                Service = "xc-app_api",
+                Img = "rennn0/xaticraft"
+            },
+            3 => request with
+            {
+                Service = "xc-app_webhook",
+                Img = "rennn0/webhook"
+            },
+            _ => request
+        };
 
     public async ValueTask DisposeAsync()
     {
-        _sourceBlock.Complete();
         _broadcastBlock.Complete();
-        await Task.WhenAll(_reqTransformerBlock.Completion, _processorBlock.Completion, _loggerBlock.Completion);
-        GC.SuppressFinalize(this);
+        await _broadcastBlock.Completion;
     }
 }

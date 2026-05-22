@@ -17,5 +17,13 @@
       <jdbc-url>mongodb://luka:0vEPEJKxdIqd@100.115.91.34:27017</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="master@localhost" uuid="a3695d48-1d40-490e-ace9-1cc7abad4f78">
+      <driver-ref>sqlserver.jb</driver-ref>
+      <synchronize>true</synchronize>
+      <configured-by-url>true</configured-by-url>
+      <jdbc-driver>com.jetbrains.jdbc.sqlserver.SqlServerDriver</jdbc-driver>
+      <jdbc-url>Server=localhost,9992;Database=master;User Id=sa;Password=testTest123;Trusted_Connection=False;Persist Security Info=False;Encrypt=False</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
