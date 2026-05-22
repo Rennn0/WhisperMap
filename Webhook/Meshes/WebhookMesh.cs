@@ -112,7 +112,7 @@ internal class WebhookMesh : IAsyncDisposable
             1 => ("xc-app_realtime", "rennn0/realtime"),
             2 => ("xc-app_api", "rennn0/xaticraft"),
             3 => ("xc-app_webhook", "rennn0/webhook"),
-            _ => throw new ArgumentOutOfRangeException(nameof(request))
+            _ => default
         });
 
     public async ValueTask DisposeAsync()
