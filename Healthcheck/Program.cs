@@ -12,26 +12,29 @@ builder.Logging.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerPro
 IHost host = builder.Build();
 host.Run();
 
-internal class SomeLogger(string categoryName) : ILogger
+namespace Healthcheck
 {
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
-        Func<TState, Exception?, string> formatter)
+    internal class SomeLogger(string categoryName) : ILogger
     {
-        Console.WriteLine($"HOLAA {state}_ {categoryName}_  {formatter(state, exception)}");
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+            Console.WriteLine($"HOLAA {state}_ {categoryName}_  {formatter(state, exception)}");
+        }
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => default!;
     }
 
-    public bool IsEnabled(LogLevel logLevel) => true;
-
-    public IDisposable? BeginScope<TState>(TState state) where TState : notnull => default!;
-}
-
-[ProviderAlias("SomeSome")]
-internal class SomeLoggerProvider : ILoggerProvider
-{
-    public ILogger CreateLogger(string categoryName) => new SomeLogger(categoryName);
-
-    public void Dispose()
+    [ProviderAlias("SomeSome")]
+    internal class SomeLoggerProvider : ILoggerProvider
     {
-        //
+        public ILogger CreateLogger(string categoryName) => new SomeLogger(categoryName);
+
+        public void Dispose()
+        {
+            //
+        }
     }
 }

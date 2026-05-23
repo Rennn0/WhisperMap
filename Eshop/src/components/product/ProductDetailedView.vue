@@ -251,7 +251,7 @@ const editClicked = () => {
 
                             <div class="flex flex-col gap-3">
                                 <button v-if="showAddButton" type="button"
-                                    class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-medium text-surface transition-opacity hover:opacity-90"
+                                    class="inline-flex w-full items-center justify-center gap-2 rounded-xl  bg-primary px-5 py-3 font-medium text-surface transition-opacity hover:opacity-90"
                                     @click="addClicked">
                                     <TablerAddToCartIcon class="h-5 w-5" />
                                     <span>{{ $t('product.add') }}</span>
