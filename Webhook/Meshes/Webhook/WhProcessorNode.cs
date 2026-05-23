@@ -2,12 +2,13 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Caching.Distributed;
-using Webhook.Meshes.Abstraction;
 using Webhook.Objects;
+using XcLib.Shared.Dataflow;
+using XcLib.Shared.Dataflow.Interfaces;
 
 namespace Webhook.Meshes.Webhook;
 
-internal class WhProcessorNode : IDataFlowNode<DockerWebhookRequest>
+internal class WhProcessorNode : IDataflowNode<DockerWebhookRequest>
 {
     private readonly IDistributedCache _distributedCache;
     private readonly ILogger<WhProcessorNode> _logger;
@@ -22,7 +23,7 @@ internal class WhProcessorNode : IDataFlowNode<DockerWebhookRequest>
         """;
 
     public WhProcessorNode(IDistributedCache distributedCache, ILogger<WhProcessorNode> logger,
-        IDataFlowNodeFactory<DockerWebhookRequest> nodeFactory)
+        IDataflowNodeFactory<DockerWebhookRequest> nodeFactory)
     {
         _distributedCache = distributedCache;
         _logger = logger;
@@ -32,15 +33,17 @@ internal class WhProcessorNode : IDataFlowNode<DockerWebhookRequest>
         };
         _bufferBlock = new BufferBlock<DockerWebhookRequest>();
 
+        MeshOptions meshOptions = new MeshOptions();
         TransformBlock<DockerWebhookRequest, DockerWebhookRequest> transformer =
-            new TransformBlock<DockerWebhookRequest, DockerWebhookRequest>(WebhookToTargretServiceTransformer);
+            new TransformBlock<DockerWebhookRequest, DockerWebhookRequest>(WebhookToTargretServiceTransformer,
+                meshOptions.ExecutionDataflowBlockOptions);
         TransformBlock<DockerWebhookRequest, DockerWebhookRequest> processCreator =
-            new TransformBlock<DockerWebhookRequest, DockerWebhookRequest>(WebhookTargetServiceProcessCreator);
-
-        _bufferBlock.LinkTo(transformer);
-        transformer.LinkTo(processCreator, ProcessorFilterBlock);
-        transformer.LinkTo(DataflowBlock.NullTarget<DockerWebhookRequest>());
-        processCreator.LinkTo(nodeFactory.Create<WhLoggerNode>().Propagator);
+            new TransformBlock<DockerWebhookRequest, DockerWebhookRequest>(WebhookTargetServiceProcessCreator,
+                meshOptions.ExecutionDataflowBlockOptions);
+        _bufferBlock.LinkTo(transformer, meshOptions.DataflowLinkOptions);
+        transformer.LinkTo(processCreator, meshOptions.DataflowLinkOptions, ProcessorFilterBlock);
+        transformer.LinkTo(DataflowBlock.NullTarget<DockerWebhookRequest>(),meshOptions.DataflowLinkOptions);
+        processCreator.LinkTo(nodeFactory.Create<WhLoggerNode>().Propagator, meshOptions.DataflowLinkOptions);
     }
 
     public IPropagatorBlock<DockerWebhookRequest, DockerWebhookRequest> Propagator =>

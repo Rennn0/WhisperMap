@@ -1,11 +1,12 @@
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Caching.Distributed;
-using Webhook.Meshes.Abstraction;
 using Webhook.Objects;
+using XcLib.Shared.Dataflow;
+using XcLib.Shared.Dataflow.Interfaces;
 
 namespace Webhook.Meshes.Webhook;
 
-internal class WhLoggerNode : IDataFlowNode<DockerWebhookRequest>
+internal class WhLoggerNode : IDataflowNode<DockerWebhookRequest>
 {
     private readonly ILogger<WhLoggerNode> _logger;
     private readonly BufferBlock<DockerWebhookRequest> _bufferBlock;
@@ -14,7 +15,9 @@ internal class WhLoggerNode : IDataFlowNode<DockerWebhookRequest>
     {
         _logger = logger;
         _bufferBlock = new BufferBlock<DockerWebhookRequest>();
-        _bufferBlock.LinkTo(new ActionBlock<DockerWebhookRequest>(Action));
+        MeshOptions meshOptions = new MeshOptions();
+        _bufferBlock.LinkTo(new ActionBlock<DockerWebhookRequest>(Action, meshOptions.ExecutionDataflowBlockOptions),
+            meshOptions.DataflowLinkOptions);
     }
 
     private void Action(DockerWebhookRequest obj)

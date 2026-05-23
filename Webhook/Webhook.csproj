@@ -15,12 +15,10 @@
         </Content>
     </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="System.Reactive" Version="6.1.0"/>
-    </ItemGroup>
-
+    
     <ItemGroup>
         <ProjectReference Include="..\XcLib.Data\XcLib.Data.csproj"/>
+        <ProjectReference Include="..\XcLib.Shared\XcLib.Shared.csproj"/>
     </ItemGroup>
 
 </Project>

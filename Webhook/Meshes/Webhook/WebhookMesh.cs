@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks.Dataflow;
-using Webhook.Meshes.Abstraction;
 using Webhook.Objects;
+using XcLib.Shared.Dataflow;
+using XcLib.Shared.Dataflow.Interfaces;
 
 namespace Webhook.Meshes.Webhook;
 
@@ -8,22 +9,12 @@ internal sealed class WebhookMesh : IAsyncDisposable
 {
     private readonly BroadcastBlock<DockerWebhookRequest> _broadcastBlock;
 
-    public WebhookMesh(IDataFlowNodeFactory<DockerWebhookRequest> nodeFactory)
+    public WebhookMesh(IDataflowNodeFactory<DockerWebhookRequest> nodeFactory)
     {
-        DataflowLinkOptions dataflowLinkOptions = new DataflowLinkOptions()
-        {
-            Append = true,
-            PropagateCompletion = true
-        };
-        DataflowBlockOptions dataflowBlockOptions = new DataflowBlockOptions()
-        {
-            EnsureOrdered = true,
-            BoundedCapacity = 100
-        };
-
-        _broadcastBlock = new BroadcastBlock<DockerWebhookRequest>(null, dataflowBlockOptions);
-        _broadcastBlock.LinkTo(nodeFactory.Create<WhLoggerNode>().Propagator, dataflowLinkOptions);
-        _broadcastBlock.LinkTo(nodeFactory.Create<WhProcessorNode>().Propagator, dataflowLinkOptions);
+        MeshOptions meshOptions = new MeshOptions();
+        _broadcastBlock = new BroadcastBlock<DockerWebhookRequest>(null, meshOptions.DataflowBlockOptions);
+        _broadcastBlock.LinkTo(nodeFactory.Create<WhLoggerNode>().Propagator, meshOptions.DataflowLinkOptions);
+        _broadcastBlock.LinkTo(nodeFactory.Create<WhProcessorNode>().Propagator, meshOptions.DataflowLinkOptions);
     }
 
     public bool Publish(DockerWebhookRequest request) => _broadcastBlock.Post(request);

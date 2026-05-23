@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
-using Webhook.Meshes.Abstraction;
 using Webhook.Meshes.Webhook;
 using Webhook.Objects;
 using XcLib.Data;
 using XcLib.Data.SqlServer.Realtime.Entities;
+using XcLib.Shared;
 
 namespace Webhook;
 
@@ -23,7 +23,7 @@ public static partial class Program
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
         builder.Services.AddSingleton<WebhookMesh>();
-        builder.Services.AddTransient<IDataFlowNodeFactory<DockerWebhookRequest>, WhNodeFactory>();
+        builder.Services.AddDataflowNodeFactory<DockerWebhookRequest>();
         builder.AddSqlLogging<MasterLog>(LogLevel.Information);
         builder.AddSqlServer();
 

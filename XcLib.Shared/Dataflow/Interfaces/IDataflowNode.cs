@@ -1,8 +1,8 @@
 using System.Threading.Tasks.Dataflow;
 
-namespace Webhook.Meshes.Abstraction;
+namespace XcLib.Shared.Dataflow.Interfaces;
 
-internal interface IDataFlowNode<T>
+public interface IDataflowNode<T>
 {
     public IPropagatorBlock<T, T> Propagator { get; }
     public bool Publish(T value);
