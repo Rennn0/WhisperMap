@@ -8,6 +8,7 @@ import { deleteProduct, getProducts, includeProduct } from '../../services/http'
 import BaseDropdown from '../dropdown/BaseDropdown.vue';
 import { userInfoInjectionKey } from '../../injectionKeys';
 import ConfirmationModal from '../modals/ConfirmationModal.vue';
+import { useSeoMeta } from '../../composables/useSeoMeta';
 
 enum OrderBy {
     NewestFirst = 0,
@@ -44,6 +45,7 @@ type ContextAction = {
 };
 
 const router = useRouter();
+const { setHomeSeoMeta } = useSeoMeta();
 const emit = defineEmits<{
     (e: 'select', product: Product): void;
     (e: 'selected-ids-change', ids: number[]): void;
@@ -349,6 +351,8 @@ onMounted(async () => {
     restorePreferences();
     initialized.value = true;
     await loadProducts();
+    // Set SEO meta for homepage
+    setHomeSeoMeta(products.value.length);
 });
 </script>
 
