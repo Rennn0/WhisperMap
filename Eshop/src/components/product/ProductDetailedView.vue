@@ -14,10 +14,12 @@ import InformationalModal from '../modals/InformationalModal.vue';
 import { userInfoInjectionKey } from '../../injectionKeys';
 import ExpandableText from '../shared/ExpandableText.vue';
 import { api as viewerApi } from 'v-viewer';
+import { useSeoMeta } from '../../composables/useSeoMeta';
 import 'viewerjs/dist/viewer.css';
 
 const router = useRouter();
 const props = defineProps<{ id: number | string }>();
+const { setProductSeoMeta } = useSeoMeta();
 
 const productRef = ref<Product | null>(null);
 const showContactModal = ref(false);
@@ -43,9 +45,15 @@ watchEffect(() => {
     productRef.value = null;
 
     getProduct(props.id).request.then(p => {
-        productRef.value = p?.id ? p : null;
-        showAddButton.value = !p?.in_cart;
-        selectedIndex.value = 0;
+        if (p?.id) {
+            productRef.value = p;
+            showAddButton.value = !p?.in_cart;
+            selectedIndex.value = 0;
+            // Set SEO meta for this product
+            setProductSeoMeta(p);
+        } else {
+            productRef.value = null;
+        }
     });
 });
 
