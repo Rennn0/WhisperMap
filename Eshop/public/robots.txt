@@ -1,42 +1,21 @@
-# Robots.txt for xati.org
-# Allow search engines to crawl public content
-
+# Allow all crawlers to index the site
 User-agent: *
 Allow: /
-Allow: /cart
-Allow: /settings
-Allow: /*.js
-Allow: /*.css
-Allow: /appicon.svg
-Disallow: /admin/
-Disallow: /api/
-Disallow: /auth/
-Disallow: /private/
-Disallow: /_nuxt/
-Disallow: /.well-known/
 
-# Specific rules for major search engines
+# Allow Google to crawl images
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 1
+Allow: *.jpg$
+Allow: *.jpeg$
+Allow: *.png$
+Allow: *.gif$
+Allow: *.webp$
+Allow: *.svg$
 
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 2
+# Disallow unnecessary paths
+Disallow: /api/
+Disallow: /.env
+Disallow: /node_modules/
 
-User-agent: Slurp
-Allow: /
-Crawl-delay: 1
-
-# Block bad bots
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: SemrushBot
-Disallow: /
-
-User-agent: DotBot
-Disallow: /
-
-# Sitemap location
+# Sitemap location (when added)
 Sitemap: https://xati.org/sitemap.xml

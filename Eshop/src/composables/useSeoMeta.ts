@@ -30,6 +30,8 @@ export function useSeoMeta() {
     updateMetaTag('property', 'og:title', title)
     updateMetaTag('property', 'og:description', description)
     updateMetaTag('property', 'og:image', image)
+    updateMetaTag('property', 'og:image:width', '1200')
+    updateMetaTag('property', 'og:image:height', '630')
     updateMetaTag('property', 'og:url', url)
     updateMetaTag('property', 'og:type', type)
     updateMetaTag('name', 'twitter:title', title)
@@ -99,12 +101,17 @@ export function useSeoMeta() {
     const productUrl = `${window.location.origin}/${product.id}`
     const productImage = product.resources?.[0] || `${window.location.origin}/appicon.svg`
 
+    // Create image array with all product images for rich snippets
+    const images = product.resources && product.resources.length > 0
+      ? product.resources
+      : [`${window.location.origin}/appicon.svg`]
+
     const productSchema = {
       '@context': 'https://schema.org/',
       '@type': 'Product',
       name: product.title,
       description: product.description,
-      image: productImage,
+      image: images,
       url: productUrl,
       ...(product.price && {
         offers: {
@@ -131,7 +138,7 @@ export function useSeoMeta() {
       '@context': 'https://schema.org/',
       '@type': 'CollectionPage',
       name: 'საჩუქრების ზარდახშა',
-      description: 'Premium handcrafted gifts and artisan items. ხათი - საჩუქრების ზარდახშა, ხელნაკეთი საჩუქრები. Shop authentic handmade Easter eggs, decorative chests, and unique handcrafted gifts.',
+      description: 'ხათი - საჩუქრების ზარდახშა, ხელნაკეთი საჩუქრები, ხათის საჩუქრები. Premium handcrafted gifts and artisan items.  Shop authentic handmade Easter eggs, decorative chests, and unique handcrafted gifts.',
       url: `${window.location.origin}/`,
       ...(productCount > 0 && {
         numberOfItems: productCount,
@@ -140,7 +147,7 @@ export function useSeoMeta() {
 
     setSeoMeta({
       title: 'საჩუქრების ზარდახშა | Xati - Handcrafted Gifts & Artisan Items | ხათი - საჩუქრები | Premium Handmade Easter Eggs & Gifts',
-      description: 'Discover premium handcrafted gifts and artisan items. ხათი - საჩუქრების ზარდახშა, ხელნაკეთი საჩუქრები. Shop authentic handmade Easter eggs, decorative chests, and unique handcrafted gifts from Xati.',
+      description: 'ხელნაკეთი საჩუქრები, ხათის საჩუქრები,Discover premium handcrafted gifts and artisan items. ხათი - საჩუქრების ზარდახშა, ხელნაკეთი საჩუქრები. Shop authentic handmade Easter eggs, decorative chests, and unique handcrafted gifts from Xati.',
       image: `${window.location.origin}/appicon.svg`,
       url: `${window.location.origin}/`,
       type: 'website',
