@@ -9,14 +9,6 @@
     <priority>1.0</priority>
   </url>
   
-  <!-- Products page -->
-  <url>
-    <loc>https://xati.org/products</loc>
-    <lastmod>2026-05-24</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  
   <!-- Cart page -->
   <url>
     <loc>https://xati.org/cart</loc>
@@ -32,20 +24,5 @@
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
-  
-  <!-- Upload page -->
-  <url>
-    <loc>https://xati.org/upload</loc>
-    <lastmod>2026-05-24</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <!-- Timer page -->
-  <url>
-    <loc>https://xati.org/timer</loc>
-    <lastmod>2026-05-24</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
+
 </urlset>

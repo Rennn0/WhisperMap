@@ -3,7 +3,6 @@
 
 User-agent: *
 Allow: /
-Allow: /products
 Allow: /cart
 Allow: /settings
 Allow: /*.js
