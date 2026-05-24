@@ -130,7 +130,7 @@ export function useSeoMeta() {
     const collectionSchema = {
       '@context': 'https://schema.org/',
       '@type': 'CollectionPage',
-      name: 'Xati - საჩუქრების ზარდახშა',
+      name: 'საჩუქრების ზარდახშა',
       description: 'Premium handcrafted gifts and artisan items. ხათი - საჩუქრების ზარდახშა, ხელნაკეთი საჩუქრები. Shop authentic handmade Easter eggs, decorative chests, and unique handcrafted gifts.',
       url: `${window.location.origin}/`,
       ...(productCount > 0 && {
@@ -139,7 +139,7 @@ export function useSeoMeta() {
     }
 
     setSeoMeta({
-      title: 'ხათი - საჩუქრების ზარდახშა | Xati - Handcrafted Gifts & Artisan Items | ხათი - საჩუქრები | Premium Handmade Easter Eggs & Gifts',
+      title: 'საჩუქრების ზარდახშა | Xati - Handcrafted Gifts & Artisan Items | ხათი - საჩუქრები | Premium Handmade Easter Eggs & Gifts',
       description: 'Discover premium handcrafted gifts and artisan items. ხათი - საჩუქრების ზარდახშა, ხელნაკეთი საჩუქრები. Shop authentic handmade Easter eggs, decorative chests, and unique handcrafted gifts from Xati.',
       image: `${window.location.origin}/appicon.svg`,
       url: `${window.location.origin}/`,

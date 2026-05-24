@@ -75,7 +75,7 @@ function updateMetaTag(attribute: string, name: string, content?: string): void 
  */
 export function resetMeta(): void {
   useMeta({
-    title: 'Xati - Premium Online Marketplace | Shop Quality Products',
+    title: 'Xati - ხელნაკეთი საჩუქრების ზარდახშა',
     description: 'Discover premium quality products on Xati marketplace. Browse our curated collection, enjoy secure shopping, and fast delivery.',
     keywords: 'xati, online shopping, marketplace, products, quality items, e-commerce',
     ogType: 'website',
