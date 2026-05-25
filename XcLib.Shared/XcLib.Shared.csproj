@@ -9,5 +9,6 @@
     <ItemGroup>
         <PackageReference Include="System.Reactive" Version="6.1.0"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.AutoActivation" Version="8.0.0"/>
     </ItemGroup>
 </Project>

@@ -22,8 +22,11 @@ public static partial class Program
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
-        builder.Services.AddSingleton<WebhookMesh>();
-        builder.Services.AddDataflowNodeFactory<DockerWebhookRequest>();
+        builder.Services
+            .AddReactiveBus<DockerWebhookRequest>()
+            .AddDataflowMesh<WebhookMesh>()
+            .AddDataflowNodeFactory<DockerWebhookRequest>();
+        
         builder.AddSqlLogging<MasterLog>(LogLevel.Information);
         builder.AddSqlServer();
 
