@@ -3,17 +3,21 @@ import { computed, ref } from 'vue';
 import { type UploadProps } from '../../types';
 import TablerLoaderBlockWave from '../freestyle/TablerLoaderBlockWave.vue';
 import TablerUploadIcon from '../freestyle/TablerUploadIcon.vue';
-import { getSignedUrl, putOnUrl } from '../../services/http';
+import { getSignedUrl, putOnUrl, updateProduct } from '../../services/http';
 
 const props = defineProps<{ upload: UploadProps }>();
 const emit = defineEmits<{ (e: 'attachments-uploaded', files: File[]): void }>();
 
 const selectedFiles = computed<File[]>(() => [...props.upload.existingFiles]);
 const uploading = ref(false);
+const disableUploadComputed = computed(() =>
+    (!selectedFiles.value.length
+        && !props.upload.product.resIds?.length
+        && !props.upload.product.resIdsDelete?.length)
+    || uploading.value)
 
 const uploadFiles = async () => {
-    if (!selectedFiles.value.length || uploading.value) return;
-
+    if (disableUploadComputed.value) return;
     uploading.value = true;
 
     try {
@@ -23,7 +27,12 @@ const uploadFiles = async () => {
             await putOnUrl(url, buffer);
         });
 
+        if (props.upload.product.resIdsDelete?.length) {
+            await updateProduct(Number(props.upload.id), props.upload.product).request
+        }
+
         await Promise.all(uploadPromises);
+
         emit('attachments-uploaded', selectedFiles.value);
     } finally {
         uploading.value = false;
@@ -58,7 +67,7 @@ const uploadFiles = async () => {
             </div>
 
             <div class="shrink-0">
-                <button type="button" :disabled="uploading || !selectedFiles.length"
+                <button type="button" :disabled="disableUploadComputed"
                     class="inline-flex items-center gap-2 rounded-xl border border-text px-4 py-2.5 text-text transition-colors duration-200 hover:bg-text hover:text-surface disabled:cursor-not-allowed disabled:opacity-50"
                     @click="uploadFiles">
                     <TablerUploadIcon v-if="!uploading" class="h-5 w-5" />

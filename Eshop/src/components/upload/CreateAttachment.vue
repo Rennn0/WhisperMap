@@ -4,19 +4,28 @@ import TablerChooseFileIcon from '../freestyle/TablerChooseFileIcon.vue';
 
 const props = defineProps<{
     existingFiles?: File[];
+    existingResources?: string[];
+    existingResIds?: number[];
+    isEditMode?: boolean;
 }>();
 
 const emit = defineEmits<{
     (e: 'attachments-selected', files: File[]): void;
+    (e: 'resources-selected', ids: number[]): void;
 }>();
 
 const files = ref<File[]>(props.existingFiles ? [...props.existingFiles] : []);
 const isDraggingOver = ref(false);
 const selectedIndex = ref<number | null>(null);
+const selectedResourceIds = ref<number[]>([]);
 
 watch(() => props.existingFiles, (v) => {
     files.value = v ? [...v] : [];
 });
+
+watch(() => props.existingResIds, (v) => {
+    selectedResourceIds.value = v ? [...v] : [];
+}, { immediate: true });
 
 const createStableFiles = async (inputFiles: File[]) => {
     return Promise.all(
@@ -98,6 +107,16 @@ const handleDrop = async (e: DragEvent) => {
     await appendFiles(Array.from(droppedFiles));
 };
 
+const toggleResourceSelection = (resId: number) => {
+    const index = selectedResourceIds.value.indexOf(resId);
+    if (index > -1) {
+        selectedResourceIds.value.splice(index, 1);
+    } else {
+        selectedResourceIds.value.push(resId);
+    }
+    emit('resources-selected', selectedResourceIds.value);
+};
+
 const previews = computed(() =>
     files.value.map(file => ({
         file,
@@ -118,6 +137,51 @@ onBeforeUnmount(() => {
 
 <template>
     <section class="rounded-2xl border border-subtle bg-surface p-5 shadow-sm">
+        <div v-if="isEditMode && existingResources?.length" class="mb-6">
+            <div class="mb-4">
+                <h3 class="text-base font-semibold text-text">
+                    {{ $t('upload.inputs.existingResources') || 'Existing Resources' }}
+                </h3>
+                <p class="mt-1 text-sm text-text/70">
+                    მონიშნე რაც დარჩეს
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                <div v-for="(resource, index) in existingResources" :key="index"
+                    class="group relative flex items-center gap-3 rounded-xl border p-3 transition-all duration-200 cursor-pointer"
+                    :class="selectedResourceIds.includes(existingResIds?.[index] ?? -1)
+                        ? 'border-primary bg-primary/10 shadow-sm'
+                        : 'border-subtle bg-subtle/40 hover:border-primary/40 hover:bg-subtle/70'
+                        " @click="toggleResourceSelection(existingResIds?.[index] ?? -1)">
+                    <input type="checkbox" :checked="selectedResourceIds.includes(existingResIds?.[index] ?? -1)"
+                        class="h-4 w-4 shrink-0 cursor-pointer rounded"
+                        @change="toggleResourceSelection(existingResIds?.[index] ?? -1)" />
+
+                    <div class="relative shrink-0 overflow-visible">
+                        <img :src="resource" :alt="`Preview`"
+                            class="h-16 w-16 rounded-lg border border-subtle object-cover bg-surface transition-transform duration-200 group-hover:scale-105" />
+
+                        <div
+                            class="pointer-events-none absolute left-full top-1/2 z-50 ml-4 -translate-y-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100">
+                            <img :src="resource" :alt="`Preview Large`"
+                                class="max-h-[320px] max-w-[320px] rounded-2xl border border-subtle bg-surface object-contain shadow-2xl" />
+                        </div>
+                    </div>
+
+                    <div class="min-w-0 flex-1">
+                        <div class="truncate text-sm font-medium text-text">
+                            {{ index + 1 }}
+                        </div>
+
+                        <div class="mt-1 truncate text-xs text-text/60">
+                            {{ resource }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="mb-4">
             <h3 class="text-base font-semibold text-text">
                 {{ $t('upload.inputs.chooseFile') }}

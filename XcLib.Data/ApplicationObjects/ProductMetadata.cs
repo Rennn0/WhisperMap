@@ -30,6 +30,6 @@ public record ProductMetadata(
         {
             Id =  model.Id,
             Timestamp = model.Timestamp,
-            Product = Product.From(model.Product)
+            Product = model.Product == null! ? null : Product.From(model.Product)
         };
 }

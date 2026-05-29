@@ -27,8 +27,11 @@ const queryId = computed<number | null>(() => {
 
 const isEditMode = computed(() => queryId.value !== null);
 
-const submited = ref(false);
+const createProductSus = ref(false);
 const loadingProduct = ref(false);
+const existingResources = ref<string[]>([]);
+const existingResIds = ref<number[]>([]);
+const selectedResourceIds = ref<number[]>([]);
 
 const uploadProps = reactive<UploadProps>({
     existingFiles: [],
@@ -36,6 +39,7 @@ const uploadProps = reactive<UploadProps>({
         description: '',
         price: 0,
         title: '',
+        resIds: []
     },
     id: null,
 });
@@ -53,10 +57,15 @@ const loadProductForEdit = async () => {
         const product = await getProduct(queryId.value).request;
         if (product.code == errorCode.argumentMissmatchInDatabase) throw new Error(errorCode.argumentMissmatchInDatabase.toString());
 
+        existingResources.value = product.resources ?? [];
+        existingResIds.value = product.res_ids ?? [];
+        selectedResourceIds.value = [...(product.res_ids ?? [])];
+
         uploadProps.product = {
             title: product.title ?? '',
             description: product.description ?? '',
             price: product.price ?? 0,
+            resIds: product.res_ids
         };
 
         uploadProps.id = queryId.value;
@@ -71,13 +80,13 @@ onMounted(() => {
     loadProductForEdit();
 });
 
-let waitingForSubmit = false;
 
 const handleProductSubmit = (data: { title: string; price: number; description: string }) => {
-    if (waitingForSubmit) return;
-
-    waitingForSubmit = true;
-    uploadProps.product = { ...data };
+    createProductSus.value = true;
+    uploadProps.product = {
+        ...uploadProps.product,
+        ...data
+    };
 
     const request = isEditMode.value && uploadProps.id !== null
         ? updateProduct(uploadProps.id, uploadProps.product).request
@@ -86,20 +95,11 @@ const handleProductSubmit = (data: { title: string; price: number; description: 
     request
         .then((res: any) => {
             if (!isEditMode.value) {
-                if (!res?.product_id) {
-                    waitingForSubmit = false;
-                    return;
-                }
-
-                uploadProps.id = res.product_id;
+                if (res?.product_id)
+                    uploadProps.id = res.product_id;
             }
-
-            submited.value = true;
-            waitingForSubmit = false;
         })
-        .catch(() => {
-            waitingForSubmit = false;
-        });
+        .catch(() => { }).finally(() => { createProductSus.value = false; });
 };
 
 const handleAttachmentsSelected = (files: File[]) => {
@@ -108,6 +108,12 @@ const handleAttachmentsSelected = (files: File[]) => {
 
 const onAttachmentsUploaded = () => {
     uploadProps.existingFiles = [];
+};
+
+const handleResourcesSelected = (ids: number[]) => {
+    selectedResourceIds.value = ids;
+    uploadProps.product.resIds = ids;
+    uploadProps.product.resIdsDelete = existingResIds.value.filter(e => !ids.includes(e))
 };
 </script>
 
@@ -126,31 +132,12 @@ const onAttachmentsUploaded = () => {
         </div>
 
         <div v-else class="grid gap-6">
-            <CreateProduct v-if="!submited" :initialProduct="uploadProps.product" :isEditMode="isEditMode"
+            <CreateProduct :initialProduct="uploadProps.product" :isEditMode="isEditMode" :suspend="createProductSus"
                 @submit-product="handleProductSubmit" />
 
-            <div v-else class="rounded-2xl border border-subtle bg-surface p-4 shadow-sm">
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div class="min-w-0">
-                        <div class="text-xs uppercase tracking-wide text-text/60">
-                            Ready for attachments
-                        </div>
-                        <h2 class="mt-1 truncate text-base font-semibold text-text">
-                            {{ uploadProps.product.title }}
-                        </h2>
-                        <p class="mt-1 text-sm text-text/70 line-clamp-2">
-                            {{ uploadProps.product.description }}
-                        </p>
-                    </div>
-
-                    <div class="shrink-0 rounded-full bg-subtle px-3 py-1.5 text-sm font-medium text-text">
-                        ${{ uploadProps.product.price }}
-                    </div>
-                </div>
-            </div>
-
-            <CreateAttachment v-if="submited" :existingFiles="uploadProps.existingFiles"
-                @attachments-selected="handleAttachmentsSelected" />
+            <CreateAttachment :existingFiles="uploadProps.existingFiles" :existingResources="existingResources"
+                :existingResIds="existingResIds" :isEditMode="isEditMode"
+                @attachments-selected="handleAttachmentsSelected" @resources-selected="handleResourcesSelected" />
 
             <UploadProduct :upload="uploadProps" @attachments-uploaded="onAttachmentsUploaded" />
         </div>

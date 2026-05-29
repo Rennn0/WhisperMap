@@ -1,5 +1,6 @@
 using XatiCraft.ApiContracts;
 using XatiCraft.Handlers.Api;
+using XatiCraft.Handlers.Upload;
 using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
 using XcLib.Data.Postgres.XatiCraft;
@@ -10,17 +11,20 @@ namespace XatiCraft.Handlers.Impl;
 /// </summary>
 internal class ProductManager : IProductManager
 {
+    private readonly IUploader _uploader;
     private readonly IProductRepo _productRepo;
     private readonly IProductRepo _productRepoMongo;
+    private readonly IProductMetadaRepo _productMetadataRepo;
 
-    /// <summary>
-    /// </summary>
-    /// <param name="productRepos"></param>
-    public ProductManager(IEnumerable<IProductRepo> productRepos)
+    public ProductManager(IEnumerable<IProductRepo> iproductRepos, IEnumerable<IProductMetadaRepo> iproductMetadaRepos,
+        IUploader uploader)
     {
-        IEnumerable<IProductRepo> repos = productRepos.ToList();
-        _productRepo = repos.First(p => p is ProductRepo);
-        _productRepoMongo = repos.First(p => p is XcLib.Data.Mongo.XatiCraft.ProductRepo);
+        _uploader = uploader;
+        IEnumerable<IProductRepo> productRepos = iproductRepos.ToList();
+        IEnumerable<IProductMetadaRepo> productMetadaRepos = iproductMetadaRepos.ToList();
+        _productRepo = productRepos.First(p => p is ProductRepo);
+        _productRepoMongo = productRepos.First(p => p is XcLib.Data.Mongo.XatiCraft.ProductRepo);
+        _productMetadataRepo = productMetadaRepos.First(p => p is ProductMetadataRepo); 
     }
 
     /// <summary>
@@ -43,6 +47,17 @@ internal class ProductManager : IProductManager
     {
         await _productRepo.UpdateAsync(new Product(context.Title, context.Description, Normalize(context.Price, 10, 3) ){ Id = context.Id},
             0, cancellationToken);
+        List<Task> productMetadataDeketeTasks = [];
+        if (context.ResourceIdsTobeDelete is { Count: > 0 } ids)
+            foreach (uint resId in ids)
+            {
+                ProductMetadata meta = await _productMetadataRepo.GetByIdAsync(resId, cancellationToken);
+                productMetadataDeketeTasks.Add(_productMetadataRepo.DeleteAsync(new ProductMetadata { Id = resId },
+                    token: cancellationToken));
+                productMetadataDeketeTasks.Add(_uploader.DeleteObjectAsync(meta.FileKey, cancellationToken));
+            }
+
+        await Task.WhenAll(productMetadataDeketeTasks);
         return new CreateProductContract(context.Id, context);
     }
     

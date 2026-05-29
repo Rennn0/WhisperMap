@@ -38,9 +38,6 @@ internal class DeleteProductHandler : IDeleteProductHandler
                     _uploader.DeleteObjectAsync(pm.FileKey, cancellationToken)
                 )
                 .ToList() ?? [];
-#if DEBUG
-        tasks.Clear();
-#endif
 
         tasks.Add(_productRepo.DeleteAsync(new Product { Id = context.ProductId }, token: cancellationToken));
         await Task.WhenAll(tasks);

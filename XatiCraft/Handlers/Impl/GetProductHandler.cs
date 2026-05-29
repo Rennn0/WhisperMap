@@ -61,13 +61,23 @@ internal class GetProductHandler : IGetProductHandler
                     await _productCartMongo.SelectAsync(context.UserId, cancellationToken)
                 )?.ProductIds.Contains(context.Id) ?? false;
 
+        List<string> resources = [];
+        List<uint> resIds = [];
+        foreach (var item in product.ProductMetadata?.OrderBy(x => x.Order)
+                     .Select(pm => new { pm.Location, pm.Id }) ?? [])
+        {
+            resources.Add(item.Location);
+            resIds.Add((uint)item.Id!);
+        }
+            
         return new GetProductContract(
             context.Id,
             product.Title,
             product.Description,
             product.Price,
             inCart,
-            product.ProductMetadata?.OrderBy(x => x.Order).Select(pmd => pmd.Location),
+            resources,
+            resIds,
             context
         );
     }

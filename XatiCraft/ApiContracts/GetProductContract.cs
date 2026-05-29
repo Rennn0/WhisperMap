@@ -18,6 +18,7 @@ public record GetProductContract(
     decimal Price,
     bool InCart,
     IEnumerable<string>? Resources,
+    IEnumerable<uint>? ResIds,
     ApiContext Context)
     : ApiContract(Context)
 {

@@ -12,6 +12,7 @@ type ProductForm = {
 const props = defineProps<{
     initialProduct: ProductForm;
     isEditMode: boolean;
+    suspend: boolean
 }>();
 
 const emit = defineEmits<{
@@ -21,7 +22,6 @@ const emit = defineEmits<{
 const title = ref('');
 const price = ref<number | null>(null);
 const description = ref('');
-const submited = ref(false);
 
 watch(
     () => props.initialProduct,
@@ -29,7 +29,6 @@ watch(
         title.value = value.title ?? '';
         price.value = typeof value.price === 'number' ? value.price : null;
         description.value = value.description ?? '';
-        submited.value = false;
     },
     { immediate: true, deep: true }
 );
@@ -42,9 +41,7 @@ const canSubmit = computed(() =>
 );
 
 const onSubmit = () => {
-    if (!canSubmit.value || submited.value) return;
-
-    submited.value = true;
+    if (!canSubmit.value || props.suspend) return;
 
     emit('submit-product', {
         title: title.value.trim(),
@@ -82,10 +79,10 @@ const onSubmit = () => {
             </div>
 
             <div class="pt-2">
-                <button type="button" :disabled="!canSubmit || submited"
+                <button type="button" :disabled="!canSubmit || suspend"
                     class="inline-flex items-center gap-2 rounded-xl border border-text px-4 py-2.5 text-text transition-colors duration-200 hover:bg-text hover:text-surface disabled:cursor-not-allowed disabled:opacity-50"
                     @click="onSubmit">
-                    <template v-if="!submited">
+                    <template v-if="!suspend">
                         <TablerAddIcon class="h-5 w-5" />
                         <span>
                             {{ props.isEditMode ? $t('upload.inputs.update') : $t('upload.inputs.create') }}

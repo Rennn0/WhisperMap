@@ -61,6 +61,7 @@ public class ProductController : ApplicationController
             new UpdateProductContext(id, product.Title, product.Description, product.Price)
             {
                 UserId = UserIdC,
+                ResourceIdsTobeDelete = product.ResourceIdsTobeDelete
             },
             cancellationToken
         );

@@ -10,7 +10,7 @@ public record ApiContract
     /// </summary>
     protected ApiContract()
     {
-        Timestamp = DateTimeOffset.Now;
+        Timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         RequestId = Guid.NewGuid().ToString("N");
     }
 
@@ -25,7 +25,7 @@ public record ApiContract
 
     /// <summary>
     /// </summary>
-    public DateTimeOffset Timestamp { get; }
+    public long Timestamp { get; }
 
     /// <summary>
     /// </summary>

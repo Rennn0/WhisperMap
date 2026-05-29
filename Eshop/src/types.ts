@@ -15,7 +15,8 @@ export interface Product {
     price?: number;
     preview_img?: string,
     in_cart?: boolean,
-    resources?: string[]
+    resources?: string[],
+    res_ids?: number[]
 }
 
 export interface TCartItem {
@@ -37,6 +38,8 @@ export interface UploadableProduct {
     title: string;
     price: number;
     description: string;
+    resIds?: number[];
+    resIdsDelete?: number[]
 }
 
 export interface UploadProps {
