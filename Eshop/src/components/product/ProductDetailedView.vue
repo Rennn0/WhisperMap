@@ -16,6 +16,7 @@ import ExpandableText from '../shared/ExpandableText.vue';
 import { api as viewerApi } from 'v-viewer';
 import { useSeoMeta } from '../../composables/useSeoMeta';
 import 'viewerjs/dist/viewer.css';
+import { imgUrlTransformer } from '../../utils.ts';
 
 const router = useRouter();
 const props = defineProps<{ id: number | string }>();
@@ -214,8 +215,9 @@ const editClicked = () => {
                             <button type="button" class="block h-full w-full cursor-zoom-in"
                                 :aria-label="`Open image preview for ${product.title}`"
                                 @click="openSelectedImageViewer">
-                                <img :src="selectedMedia.src" :alt="selectedMedia.alt ?? product.title"
-                                    class="h-full w-full object-cover" decoding="async" fetchpriority="high" />
+                                <img :src="imgUrlTransformer(selectedMedia.src, 'main')"
+                                    :alt="selectedMedia.alt ?? product.title" class="h-full w-full object-cover"
+                                    decoding="async" fetchpriority="high" />
                             </button>
                         </template>
 
@@ -230,8 +232,9 @@ const editClicked = () => {
                         class="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border bg-subtle transition-all sm:h-28 sm:w-28"
                         :class="selectedIndex === i ? 'border-primary ring-2 ring-primary/30' : 'border-subtle hover:opacity-85'"
                         @click="selectMedia(i)">
-                        <img v-if="m.type === 'image'" :src="m.src" :alt="m.alt" class="h-full w-full object-cover"
-                            loading="lazy" decoding="async" width="160" height="160" />
+                        <img v-if="m.type === 'image'" :src="imgUrlTransformer(m.src, 'thumb')" :alt="m.alt"
+                            class="h-full w-full object-cover" loading="lazy" decoding="async" width="160"
+                            height="160" />
 
                         <div v-else class="flex h-full w-full items-center justify-center bg-subtle">
                             <svg class="h-6 w-6 text-text" fill="currentColor" viewBox="0 0 24 24">

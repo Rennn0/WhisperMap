@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Product } from '../../types';
+import { imgUrlTransformer } from '../../utils';
 
 const emits = defineEmits<{
     (e: 'select', product: Product): void;
@@ -14,7 +15,8 @@ const props = defineProps<{ product: Product }>();
         @click="emits('select', props.product)" @keydown.enter="emits('select', props.product)"
         @keydown.space.prevent="emits('select', props.product)">
         <div class="relative aspect-[4/3] overflow-hidden bg-subtle">
-            <img :src="props.product.preview_img" :alt="props.product.title"
+            <img :src="imgUrlTransformer(props.product.preview_img, 'grid')"
+                :srcset="`${imgUrlTransformer(props.product.preview_img, 'grid')} 400w`" :alt="props.product.title"
                 class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
 
             <div v-if="props.product.price !== undefined"
