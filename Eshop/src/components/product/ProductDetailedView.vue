@@ -116,7 +116,7 @@ const selectMedia = (i: number) => {
 const openSelectedImageViewer = () => {
     if (!selectedMedia.value || selectedMedia.value.type !== 'image') return;
 
-    const images = imageList.value.map(image => image.src);
+    const images = imageList.value.map(image => imgUrlTransformer(image.src, "main")).filter(i => i != undefined);
     const initialViewIndex = imageList.value.findIndex(image => image.src === selectedMedia.value?.src);
 
     if (initialViewIndex < 0 || images.length === 0) return;
