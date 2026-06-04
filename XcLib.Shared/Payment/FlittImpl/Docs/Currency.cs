@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace XcLib.Shared.Payment.FlittImpl;
+namespace XcLib.Shared.Payment.FlittImpl.Docs;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum Currency
