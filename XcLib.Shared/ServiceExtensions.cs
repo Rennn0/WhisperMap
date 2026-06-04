@@ -1,6 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using XcLib.Shared.Dataflow;
 using XcLib.Shared.Dataflow.Interfaces;
+using XcLib.Shared.Payment;
+using XcLib.Shared.Payment.FlittImpl;
+using XcLib.Shared.Payment.Interfaces;
 using XcLib.Shared.Reactive;
 using XcLib.Shared.Reactive.Interfaces;
 
@@ -36,5 +40,18 @@ public static class ServiceExtensions
     {
         serviceCollection.TryAddActivatedSingleton<IReactiveBus<TMessage>, TImplementation>();
         return serviceCollection;
+    }
+
+    public static IHostApplicationBuilder AddPayments(this IHostApplicationBuilder hostApplicationBuilder)
+    {
+        hostApplicationBuilder.Services.Configure<PaymentConfiguration>(
+            hostApplicationBuilder.Configuration.GetSection(nameof(PaymentConfiguration)));
+        hostApplicationBuilder.Services.AddHttpClient();
+
+        hostApplicationBuilder.Services.AddTransient<ISignatureProvider, FlittSignatureProvider>();
+
+        hostApplicationBuilder.Services.AddTransient<IPaymentProvider, FlittPaymentProvider>();
+
+        return hostApplicationBuilder;
     }
 }

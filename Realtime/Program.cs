@@ -1,6 +1,7 @@
 using Realtime.Background;
 using XcLib.Data;
 using XcLib.Data.SqlServer.Realtime.Entities;
+using XcLib.Shared;
 using XcLib.Sse;
 using XcLib.Sse.Options;
 
@@ -49,6 +50,7 @@ public static partial class Program
 
         builder.AddSqlLogging<RealtimeLog>();
         builder.AddSqlServer();
+        builder.AddPayments();
         
         WebApplication app = builder.Build();
         
@@ -63,8 +65,10 @@ public static partial class Program
         }
 
         RouteGroupBuilder mainGroup = app.MapGroup("/realtime");
+        mainGroup.ApiGetCheckoutUrl();
+        mainGroup.ApiGetOrderStatus();
+        
         RouteGroupBuilder streamGroup = mainGroup.MapGroup("/stream");
-
         streamGroup.ApiGetStreamCache();
         streamGroup.ApiGetSignal();
         streamGroup.ApiGetStream();
