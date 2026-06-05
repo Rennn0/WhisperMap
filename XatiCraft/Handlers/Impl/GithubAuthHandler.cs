@@ -61,7 +61,7 @@ public class GithubAuthHandler : GoogleAuthHandler
             ? e2.GetString()
             : null;
 
-        AuthorizationInfo info = await AuthorizationRepo.UpsertAsync(
+        AuthorizationInfo info = await AuthorizationRepoAdapter.UpsertAsync(
             new AuthorizationInfo(name, DateTimeOffset.Now)
             {
                 AccountEnabled = true,

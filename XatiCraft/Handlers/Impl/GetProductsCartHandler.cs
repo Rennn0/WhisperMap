@@ -17,7 +17,7 @@ internal class GetProductsCartHandler : IGetProductsHandler
         IEnumerable<IProductRepo> productRepos
     )
     {
-        _cartMongo = cartRepos.First(c => c is ProductCartRepo);
+        _cartMongo = cartRepos.First(c => c is ProductCartRepoAdapter);
         _productRepo = productRepos.First(p => p is ProductRepo);
     }
 

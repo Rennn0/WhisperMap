@@ -6,9 +6,9 @@ using XcLib.Data.Mongo.XatiCraft.Model;
 
 namespace XcLib.Data.Mongo.XatiCraft;
 
-public class ProductCartRepo : MongoBase<ProductCart>, IProductCartRepo
+public class ProductCartRepoAdapter : MongoBase<ProductCart>, IProductCartRepo
 {
-    public ProductCartRepo(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
+    public ProductCartRepoAdapter(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 

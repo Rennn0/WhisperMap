@@ -9,6 +9,7 @@ using XcLib.Data.Abstractions;
 using XcLib.Data.Mongo;
 using XcLib.Data.Mongo.XatiCraft;
 using XcLib.Data.Mongo.XatiCraft.Context;
+using XcLib.Data.Mongo.XatiCraft.Interfaces;
 using XcLib.Data.Postgres;
 using XcLib.Data.Postgres.XatiCraft;
 using XcLib.Data.Postgres.XatiCraft.Context;
@@ -187,11 +188,13 @@ public static class ServiceExtensions
     {
         services.AddTransient<IBootstrap, MongoBootstrap>();
 
-        services.AddTransient<IProductRepo, Mongo.XatiCraft.ProductRepo>();
-        services.AddTransient<IProductMetadaRepo, Mongo.XatiCraft.ProductMetadataRepo>();
-        services.AddTransient<IAuthorizationRepo, AuthorizationRepo>();
-        services.AddTransient<IProductCartRepo, ProductCartRepo>();
-        services.AddTransient<IPaymentProviderRepo, PaymentProviderRepo>();
+        services.AddTransient<IProductRepo, Mongo.XatiCraft.ProductRepoAdapter>();
+        services.AddTransient<IProductMetadaRepo, Mongo.XatiCraft.ProductMetadataRepoAdapter>();
+        services.AddTransient<IAuthorizationRepo, AuthorizationRepoAdapter>();
+        services.AddTransient<IProductCartRepo, ProductCartRepoAdapter>();
+        
+        services.AddTransient<IPaymentProviderRepoAdapter,PaymentProviderRepoAdapter>();
+        services.AddTransient<IPaymentProviderRepo>(sp => sp.GetRequiredService<IPaymentProviderRepoAdapter>());
 
         return services;
     }

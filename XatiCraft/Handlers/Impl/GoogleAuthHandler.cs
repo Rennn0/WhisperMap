@@ -19,7 +19,7 @@ public class GoogleAuthHandler : IAuthorizationHandler
 
     /// <summary>
     /// </summary>
-    protected readonly IAuthorizationRepo AuthorizationRepo;
+    protected readonly IAuthorizationRepo AuthorizationRepoAdapter;
 
     /// <summary>
     /// </summary>
@@ -31,7 +31,7 @@ public class GoogleAuthHandler : IAuthorizationHandler
         IOptionsMonitor<GoogleAuthSettings> googleAuthSettings)
     {
         _googleAuthSettings = googleAuthSettings.CurrentValue;
-        AuthorizationRepo = repos.First(r => r is AuthorizationRepo);
+        AuthorizationRepoAdapter = repos.First(r => r is AuthorizationRepoAdapter);
         _httpClient = httpClientFactory.CreateClient(nameof(GoogleAuthHandler));
         _httpClient.DefaultRequestHeaders.Accept
             .Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -63,7 +63,7 @@ public class GoogleAuthHandler : IAuthorizationHandler
             ]
         };
         GoogleJsonWebSignature.Payload? payload = await GoogleJsonWebSignature.ValidateAsync(token, settings);
-        AuthorizationInfo info = await AuthorizationRepo.UpsertAsync(
+        AuthorizationInfo info = await AuthorizationRepoAdapter.UpsertAsync(
             new AuthorizationInfo(payload.Name, DateTimeOffset.Now)
             {
                 AccountEnabled = true,
@@ -86,7 +86,7 @@ public class GoogleAuthHandler : IAuthorizationHandler
     public virtual async ValueTask<ApiContract> HandleAsync(UserInfoContext context,
         CancellationToken cancellationToken)
     {
-        AuthorizationInfo? info = await AuthorizationRepo.SelectAsync(context.Id, cancellationToken);
+        AuthorizationInfo? info = await AuthorizationRepoAdapter.SelectAsync(context.Id, cancellationToken);
         ArgumentNullException.ThrowIfNull(info);
         ArgumentNullException.ThrowIfNull(info.ObjId);
         AuthorizationContract contract =

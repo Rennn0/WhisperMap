@@ -8,9 +8,9 @@ using XcLib.Data.Mongo.XatiCraft.Model;
 namespace XcLib.Data.Mongo.XatiCraft;
 
 /// <inheritdoc cref="IProductRepo" />
-public class ProductRepo : MongoBase<Product>, IProductRepo
+public class ProductRepoAdapter : MongoBase<Product>, IProductRepo
 {
-    public ProductRepo(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
+    public ProductRepoAdapter(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 

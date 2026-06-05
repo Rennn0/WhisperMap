@@ -6,9 +6,9 @@ using XcLib.Data.Mongo.XatiCraft.Model;
 namespace XcLib.Data.Mongo.XatiCraft;
 
 /// <inheritdoc cref="IProductMetadaRepo" />
-public class ProductMetadataRepo : MongoBase<ProductMetadata>, IProductMetadaRepo
+public class ProductMetadataRepoAdapter : MongoBase<ProductMetadata>, IProductMetadaRepo
 {
-    public ProductMetadataRepo(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
+    public ProductMetadataRepoAdapter(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 

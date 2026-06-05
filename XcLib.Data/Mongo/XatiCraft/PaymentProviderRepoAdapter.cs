@@ -1,16 +1,16 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
 using XcLib.Data.Mongo.XatiCraft.Context;
+using XcLib.Data.Mongo.XatiCraft.Interfaces;
 using PaymentProvider = XcLib.Data.Mongo.XatiCraft.Model.PaymentProvider;
 
 namespace XcLib.Data.Mongo.XatiCraft;
 
-public class PaymentProviderRepo : MongoBase<PaymentProvider>, IPaymentProviderRepo
+public class PaymentProviderRepoAdapter : MongoBase<PaymentProvider>, IPaymentProviderRepoAdapter
 {
-    public PaymentProviderRepo(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
+    public PaymentProviderRepoAdapter(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 
