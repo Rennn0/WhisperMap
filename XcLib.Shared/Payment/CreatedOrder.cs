@@ -1,3 +1,3 @@
 namespace XcLib.Shared.Payment;
 
-public abstract record CreatedOrder;
+public record CreatedOrder : RootObj;

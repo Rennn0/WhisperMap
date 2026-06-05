@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using Realtime.Background;
+using Realtime.Exceptions;
 using XcLib.Data;
 using XcLib.Data.SqlServer.Realtime.Entities;
 using XcLib.Shared;
@@ -24,6 +26,11 @@ public static partial class Program
         if (File.Exists(swarmAppSettingsPath))
             builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
 
+        builder.Services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        });
+        
         builder.Configuration.ConfigureSseDefaults(OptionsLoaderTask);
         builder.Services.AddSseService();
 
@@ -46,6 +53,9 @@ public static partial class Program
             });
         });
 
+        builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+        builder.Services.AddProblemDetails();
+
         builder.Services.AddHostedService<UserStatsBackgroundService>();
 
         builder.AddSqlLogging<RealtimeLog>();
@@ -54,16 +64,9 @@ public static partial class Program
         builder.AddPayments();
         
         WebApplication app = builder.Build();
-        
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseCors("dev");
-            app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            app.UseCors("prod");
-        }
+        app.UseExceptionHandler();
+
+        app.UseCors(app.Environment.IsDevelopment() ? "dev" : "prod");
 
         RouteGroupBuilder mainGroup = app.MapGroup("/realtime");
         mainGroup.ApiGetCheckoutUrl();

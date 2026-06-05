@@ -2,7 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace XcLib.Shared.Extensions;
+namespace XcLib.Shared.Utils;
 
 public static class HttpExtension
 {
@@ -18,7 +18,16 @@ public static class HttpExtension
         HttpResponseMessage res =
             await httpClient.PostAsJsonAsync(url, request, JsonSerializerOptions, ct);
         string content = await res.Content.ReadAsStringAsync(ct);
-        T? model = JsonSerializer.Deserialize<T>(content);
+        T? model = default;
+        try
+        {
+            model = JsonSerializer.Deserialize<T>(content);
+        }
+        catch
+        {
+            // ignored
+        }
+
         return (model, content);
     }
 }

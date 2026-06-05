@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Options;
-using XcLib.Shared.Extensions;
 using XcLib.Shared.Payment.FlittImpl.Docs;
 using XcLib.Shared.Payment.Interfaces;
+using XcLib.Shared.Utils;
 
 namespace XcLib.Shared.Payment.FlittImpl;
 
@@ -45,7 +45,9 @@ public class FlittPaymentProvider : IPaymentProvider
         (GetOrderStatusResponse? model, string json) =
             await _http.MakePostAsync<GetOrderStatusResponse>(request, _configuration.OrderStatusUrl, ct);
 
-        GetOrderStatusResponseData data = model?.Response ?? throw new InvalidOperationException();
+        if (model?.Response is not { } data)
+            return new OrderStatus { Error = $"{getArgs.InternalOrderId} not found" };
+        
         string signature = SignatureProvider.Sign(data);
         Trace.Assert(signature.Equals(data.Signature), "signature.Equals(data.Signature)");
         

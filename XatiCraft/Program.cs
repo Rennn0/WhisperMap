@@ -202,7 +202,6 @@ public static class Program
         app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
         await app.RunBootStrapsAsync();
-
         await app.RunAsync();
     }
 }

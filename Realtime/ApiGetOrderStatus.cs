@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using XcLib.Shared.Payment.FlittImpl;
 using XcLib.Shared.Payment.Interfaces;
+using ApplicationException = Realtime.Exceptions.ApplicationException;
 
 namespace Realtime;
 
@@ -13,7 +14,7 @@ public static partial class Program
             [FromServices] IPaymentProvider paymentProvider) => provider switch
         {
             1 => await paymentProvider.GetOrderStatusAsync(new GetRedirectOrderStatusArgs(orderId)),
-            _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null)
+            _ => throw new ApplicationException(StatusCodes.Status400BadRequest)
         }
     );
 }

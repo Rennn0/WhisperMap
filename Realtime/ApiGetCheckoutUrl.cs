@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using XcLib.Shared.Payment.FlittImpl;
 using XcLib.Shared.Payment.FlittImpl.Docs;
 using XcLib.Shared.Payment.Interfaces;
+using ApplicationException = Realtime.Exceptions.ApplicationException;
 
 namespace Realtime;
 
@@ -17,6 +18,6 @@ public static partial class Program
             {
                 1 => await paymentProvider.CreateOrderAsync(new CreateRedirectOrderArgs(amount, Currency.Gel,
                     description)),
-                _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null)
+                _ => throw new ApplicationException(StatusCodes.Status400BadRequest)
             });
 }
