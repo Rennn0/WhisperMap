@@ -16,9 +16,9 @@ public class ProductRepo : MongoBase<Product>, IProductRepo
 
     public async Task<ApplicationObjects.Product> GetByIdAsync(string objId, CancellationToken cancellationToken)
     {
-        Product pDoc = await Collection.Find(p => p.Id == objId, new FindOptions { BatchSize = 1 })
+        Product pDoc = await Collection.Find(p => p.Id.ToString() == objId, new FindOptions { BatchSize = 1 })
             .SingleAsync(cancellationToken);
-        return new ApplicationObjects.Product(pDoc.Title, pDoc.Description, pDoc.Price) { ObjId = pDoc.Id };
+        return new ApplicationObjects.Product(pDoc.Title, pDoc.Description, pDoc.Price) { ObjId = pDoc.Id.ToString() };
     }
 
     public async Task<ApplicationObjects.Product>
@@ -28,7 +28,7 @@ public class ProductRepo : MongoBase<Product>, IProductRepo
         Product pDoc = new Product(obj.Title, obj.Description, obj.Price);
         await Collection.InsertOneAsync(pDoc,
             new InsertOneOptions { BypassDocumentValidation = true }, token);
-        return obj with { ObjId = pDoc.Id };
+        return obj with { ObjId = pDoc.Id.ToString() };
     }
 
     public Task<bool> ExistsAsync(string objId, CancellationToken cancellationToken) =>

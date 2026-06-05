@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
-using System.Threading.Tasks.Sources;
 using OpenTelemetry.Metrics;
 using XatiCraft.ApiContracts;
 using XatiCraft.Guards;
@@ -202,11 +201,7 @@ public static class Program
 
         app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
-        await Parallel.ForEachAsync(
-            app.Services.GetRequiredService<IEnumerable<IBootstrap>>(),
-            CancellationToken.None,
-            (bootstrap, _) => bootstrap.RunAsync()
-        );
+        await app.RunBootStrapsAsync();
 
         await app.RunAsync();
     }

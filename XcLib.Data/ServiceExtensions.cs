@@ -69,6 +69,13 @@ public static class ServiceExtensions
         return builder;
     }
 
+    public static Task RunBootStrapsAsync(this IHost host) =>
+        Parallel.ForEachAsync(
+            host.Services.GetRequiredService<IEnumerable<IBootstrap>>(),
+            CancellationToken.None,
+            (bootstrap, _) => bootstrap.RunAsync()
+        );
+
 
     private static IServiceCollection AddSqlServerCache(this IServiceCollection services, IConfiguration configuration)
     {

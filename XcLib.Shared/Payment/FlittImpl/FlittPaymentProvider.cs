@@ -1,7 +1,6 @@
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Diagnostics;
 using Microsoft.Extensions.Options;
+using XcLib.Shared.Extensions;
 using XcLib.Shared.Payment.FlittImpl.Docs;
 using XcLib.Shared.Payment.Interfaces;
 
@@ -11,7 +10,6 @@ public class FlittPaymentProvider : IPaymentProvider
 {
     private readonly PaymentConfiguration _configuration;
     private readonly HttpClient _http;
-    private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     public FlittPaymentProvider(IEnumerable<ISignatureProvider> signatureProviders,
         IOptions<PaymentConfiguration> options, IHttpClientFactory httpClientFactory)
@@ -19,10 +17,6 @@ public class FlittPaymentProvider : IPaymentProvider
         SignatureProvider = signatureProviders.First(sp => sp is FlittSignatureProvider);
         _configuration = options.Value;
         _http = httpClientFactory.CreateClient(nameof(FlittPaymentProvider));
-        _jsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
     }
 
     public ISignatureProvider SignatureProvider { get; }
@@ -34,7 +28,7 @@ public class FlittPaymentProvider : IPaymentProvider
 
         CreateOrderRequest request = GetRequest(createArgs);
         (CreateOrderResponse? model, string json) =
-            await GetHttpResponse<CreateOrderResponse>(request, _configuration.CreateOrderUrl, ct);
+            await _http.MakePostAsync<CreateOrderResponse>(request, _configuration.CreateOrderUrl, ct);
 
         CreateOrderResponseData response = model?.Response ?? throw new InvalidOperationException();
 
@@ -49,18 +43,16 @@ public class FlittPaymentProvider : IPaymentProvider
 
         GetOrderStatusRequest request = GetRequest(getArgs);
         (GetOrderStatusResponse? model, string json) =
-            await GetHttpResponse<GetOrderStatusResponse>(request, _configuration.OrderStatusUrl, ct);
-
-        using JsonDocument doc = JsonDocument.Parse(json);
-        JsonElement responseElement = doc.RootElement.GetProperty("response");
-        string sig = SignatureProvider.Sign(responseElement);
+            await _http.MakePostAsync<GetOrderStatusResponse>(request, _configuration.OrderStatusUrl, ct);
 
         GetOrderStatusResponseData data = model?.Response ?? throw new InvalidOperationException();
-
+        string signature = SignatureProvider.Sign(data);
+        Trace.Assert(signature.Equals(data.Signature), "signature.Equals(data.Signature)");
+        
         return new RedirectedOrderStatus(
             data.OrderId,
             int.TryParse(data.Amount, out int a) ? a : -1,
-            data.Currency,
+            data.CurrencyEnum,
             data.MaskedCard,
             DateTime.TryParse(data.OrderTime, out DateTime t) ? t : null);
     }
@@ -101,15 +93,5 @@ public class FlittPaymentProvider : IPaymentProvider
         {
             Request = requestData
         };
-    }
-
-    private async Task<(T? model, string json)> GetHttpResponse<T>(object request, string url, CancellationToken ct)
-    {
-        HttpResponseMessage res =
-            await _http.PostAsJsonAsync(url, request, _jsonSerializerOptions, ct);
-        res.EnsureSuccessStatusCode();
-        string content = await res.Content.ReadAsStringAsync(ct);
-        T? model = JsonSerializer.Deserialize<T>(content);
-        return (model, content);
     }
 }

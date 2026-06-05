@@ -21,7 +21,7 @@ public class AuthorizationRepo : MongoBase<AuthorizationInfo>, IAuthorizationRep
     public async ValueTask<ApplicationObjects.AuthorizationInfo?> SelectAsync(string id,
         CancellationToken cancellationToken)
     {
-        FilterDefinition<AuthorizationInfo>? filter = Builders<AuthorizationInfo>.Filter.Eq(x => x.Id, id);
+        FilterDefinition<AuthorizationInfo>? filter = Builders<AuthorizationInfo>.Filter.Eq(x => x.Id.ToString(), id);
         AuthorizationInfo? authInfo = await Collection.Find(filter)
             .FirstOrDefaultAsync(cancellationToken);
         return authInfo is not { Username.Length: > 0, Created: not null }
@@ -34,7 +34,7 @@ public class AuthorizationRepo : MongoBase<AuthorizationInfo>, IAuthorizationRep
                 Email = authInfo.Email,
                 ProfilePicture = authInfo.ProfilePicture,
                 VerifiedEmail = authInfo.VerifiedEmail,
-                ObjId = authInfo.Id
+                ObjId = authInfo.Id.ToString()
             };
     }
 
@@ -68,7 +68,7 @@ public class AuthorizationRepo : MongoBase<AuthorizationInfo>, IAuthorizationRep
         
         return authorizationInfo with
         {
-            ObjId = model.Id
+            ObjId = model.Id.ToString()
         };
     }
 }

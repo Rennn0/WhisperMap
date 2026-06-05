@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 using XcLib.Shared.Payment.Interfaces;
@@ -16,9 +15,10 @@ public class FlittSignatureProvider : ISignatureProvider
 
     public string Sign(object data)
     {
-        List<string?> values = data
+        var values = data
             .GetType()
             .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            .Where(p => p.GetCustomAttribute<JsonIgnoreAttribute>() is null)
             .Select(p => new
             {
                 Name = p.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? p.Name,
@@ -26,54 +26,21 @@ public class FlittSignatureProvider : ISignatureProvider
             })
             .Where(x =>
                 !string.Equals(x.Name, "signature", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(x.Name, "response_signature_string", StringComparison.OrdinalIgnoreCase) &&
                 !string.IsNullOrEmpty(x.Value))
             .OrderBy(x => x.Name, StringComparer.Ordinal)
-            .Select(x => x.Value)
             .ToList();
 
-        string payload = string.Join("|", new[] { _configuration.PaymentKey }.Concat(values));
-
-        byte[] hash = SHA1.HashData(Encoding.UTF8.GetBytes(payload));
-        return Convert.ToHexString(hash).ToLowerInvariant();
+        return Sign(values.Select(v => v.Value).ToList()!);
     }
 
-    public string Sign(JsonElement data)
+    public string Sign(List<string> values)
     {
-        Dictionary<string, string?> dict = new Dictionary<string, string?>();
-
-        foreach (JsonProperty prop in data.EnumerateObject())
-        {
-            if (prop.NameEquals("signature"))
-                continue;
-
-            string? value = prop.Value.ValueKind switch
-            {
-                JsonValueKind.String => prop.Value.GetString(),
-                JsonValueKind.Number => prop.Value.ToString(),
-                JsonValueKind.True => "true",
-                JsonValueKind.False => "false",
-                JsonValueKind.Null => null,
-
-                JsonValueKind.Object => prop.Value.GetRawText(),
-
-                _ => prop.Value.GetRawText()
-            };
-
-            if (!string.IsNullOrEmpty(value))
-                dict[prop.Name] = value;
-        }
-
-        List<string?> values = dict
-            .OrderBy(x => x.Key, StringComparer.Ordinal)
-            .Select(x => x.Value)
-            .ToList();
-
-        string payload = string.Join("|", new[] { _configuration.PaymentKey }.Concat(values));
-
+        string payload = string.Join("|", values.Prepend(_configuration.PaymentKey));
         byte[] hash = SHA1.HashData(Encoding.UTF8.GetBytes(payload));
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
-
+    
     private static string? GetValue(object? value)
     {
         if (value is null)

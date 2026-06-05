@@ -50,6 +50,7 @@ public static partial class Program
 
         builder.AddSqlLogging<RealtimeLog>();
         builder.AddSqlServer();
+        builder.AddMongo();
         builder.AddPayments();
         
         WebApplication app = builder.Build();
@@ -72,7 +73,8 @@ public static partial class Program
         streamGroup.ApiGetStreamCache();
         streamGroup.ApiGetSignal();
         streamGroup.ApiGetStream();
-        
+
+        await app.RunBootStrapsAsync();
         await app.RunAsync();
         //#TODO sheamowme sesia rato etisheba avtorizebuls
     }

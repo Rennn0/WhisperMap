@@ -4,5 +4,10 @@ namespace XcLib.Shared.Payment.FlittImpl;
 
 public record GetRedirectOrderStatusArgs(string InternalOrderId) : GetOrderStatusArgs;
 
-public record RedirectedOrderStatus(string InternalOrderId, int Amount, Currency Currency, string? Card, DateTime? Time)
+public record RedirectedOrderStatus(
+    string InternalOrderId,
+    int Amount,
+    Currency? Currency,
+    string? Card,
+    DateTime? Time)
     : OrderStatus;

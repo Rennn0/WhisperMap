@@ -37,7 +37,7 @@ public class ProductCartRepo : MongoBase<ProductCart>, IProductCartRepo
         
         return productCart with
         {
-            ObjId = model.Id
+            ObjId = model.Id.ToString()
         };
     }
 
