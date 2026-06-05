@@ -71,6 +71,7 @@ public static partial class Program
         RouteGroupBuilder mainGroup = app.MapGroup("/realtime");
         mainGroup.ApiGetCheckoutUrl();
         mainGroup.ApiGetOrderStatus();
+        mainGroup.ApiGetAvailableCheckouts();
         
         RouteGroupBuilder streamGroup = mainGroup.MapGroup("/stream");
         streamGroup.ApiGetStreamCache();

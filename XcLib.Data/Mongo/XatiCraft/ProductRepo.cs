@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using XcLib.Data.Abstractions;
 using XcLib.Data.Mongo.XatiCraft.Context;
@@ -16,7 +17,7 @@ public class ProductRepo : MongoBase<Product>, IProductRepo
 
     public async Task<ApplicationObjects.Product> GetByIdAsync(string objId, CancellationToken cancellationToken)
     {
-        Product pDoc = await Collection.Find(p => p.Id.ToString() == objId, new FindOptions { BatchSize = 1 })
+        Product pDoc = await Collection.Find(p => p.Id == ObjectId.Parse(objId), new FindOptions { BatchSize = 1 })
             .SingleAsync(cancellationToken);
         return new ApplicationObjects.Product(pDoc.Title, pDoc.Description, pDoc.Price) { ObjId = pDoc.Id.ToString() };
     }

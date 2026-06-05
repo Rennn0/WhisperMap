@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using XcLib.Data.ApplicationObjects;
 
 namespace XcLib.Data.Mongo.XatiCraft.Context;
 
@@ -13,4 +14,7 @@ public class MongoBase<T> : MongoConnector
 
     protected static IMongoCollection<T> Collection => Database!.GetCollection<T>(typeof(T).Name);
     protected static IClientSession Session => Client!.StartSession();
+
+    protected virtual FilterDefinition<T> ToSearchPredicate(ApplicationObject applicationObject, sbyte searchFlag) =>
+        Builders<T>.Filter.Empty;
 }

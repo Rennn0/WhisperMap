@@ -191,6 +191,7 @@ public static class ServiceExtensions
         services.AddTransient<IProductMetadaRepo, Mongo.XatiCraft.ProductMetadataRepo>();
         services.AddTransient<IAuthorizationRepo, AuthorizationRepo>();
         services.AddTransient<IProductCartRepo, ProductCartRepo>();
+        services.AddTransient<IPaymentProviderRepo, PaymentProviderRepo>();
 
         return services;
     }

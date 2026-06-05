@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using XcLib.Data.Abstractions;
 using XcLib.Data.Mongo.XatiCraft.Context;
@@ -21,7 +22,8 @@ public class AuthorizationRepo : MongoBase<AuthorizationInfo>, IAuthorizationRep
     public async ValueTask<ApplicationObjects.AuthorizationInfo?> SelectAsync(string id,
         CancellationToken cancellationToken)
     {
-        FilterDefinition<AuthorizationInfo>? filter = Builders<AuthorizationInfo>.Filter.Eq(x => x.Id.ToString(), id);
+        FilterDefinition<AuthorizationInfo>? filter =
+            Builders<AuthorizationInfo>.Filter.Eq(x => x.Id, ObjectId.Parse(id));
         AuthorizationInfo? authInfo = await Collection.Find(filter)
             .FirstOrDefaultAsync(cancellationToken);
         return authInfo is not { Username.Length: > 0, Created: not null }
