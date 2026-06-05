@@ -94,7 +94,7 @@ public class SessionController : ApplicationController
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("gt/{provider}")]
-    public async Task<IActionResult> VerifyGoogleToken(
+    public async Task<IActionResult> VerifyToken(
         [FromRoute] ApplicationAuthProvider provider,
         [FromQuery(Name = "t")] string token,
         [FromServices] IEnumerable<IAuthorizationHandler> handlers,

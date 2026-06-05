@@ -1,6 +1,9 @@
+using System.ComponentModel;
+
 namespace XcLib.Data.Mongo.XatiCraft.Model;
 
-public record AuthorizationInfo : MongoDoc
+[Description("auth_info")]
+public record AuthorizationInfoDoc : MongoDoc
 {
     public bool? AccountEnabled { get; init; }
     public bool? VerifiedEmail { get; init; }

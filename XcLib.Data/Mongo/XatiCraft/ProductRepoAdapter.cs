@@ -2,31 +2,32 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using XcLib.Data.Abstractions;
+using XcLib.Data.ApplicationObjects;
 using XcLib.Data.Mongo.XatiCraft.Context;
 using XcLib.Data.Mongo.XatiCraft.Model;
 
 namespace XcLib.Data.Mongo.XatiCraft;
 
 /// <inheritdoc cref="IProductRepo" />
-public class ProductRepoAdapter : MongoBase<Product>, IProductRepo
+public class ProductRepoAdapter : MongoBase<ProductDoc>, IProductRepo
 {
     public ProductRepoAdapter(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 
 
-    public async Task<ApplicationObjects.Product> GetByIdAsync(string objId, CancellationToken cancellationToken)
+    public async Task<Product> GetByIdAsync(string objId, CancellationToken cancellationToken)
     {
-        Product pDoc = await Collection.Find(p => p.Id == ObjectId.Parse(objId), new FindOptions { BatchSize = 1 })
+        ProductDoc pDoc = await Collection.Find(p => p.Id == ObjectId.Parse(objId), new FindOptions { BatchSize = 1 })
             .SingleAsync(cancellationToken);
-        return new ApplicationObjects.Product(pDoc.Title, pDoc.Description, pDoc.Price) { ObjId = pDoc.Id.ToString() };
+        return new Product(pDoc.Title, pDoc.Description, pDoc.Price) { ObjId = pDoc.Id.ToString() };
     }
 
-    public async Task<ApplicationObjects.Product>
-        AddAsync(ApplicationObjects.Product obj, CancellationToken token = default) 
+    public async Task<Product>
+        AddAsync(Product obj, CancellationToken token = default) 
 
     {
-        Product pDoc = new Product(obj.Title, obj.Description, obj.Price);
+        ProductDoc pDoc = new ProductDoc(obj.Title, obj.Description, obj.Price);
         await Collection.InsertOneAsync(pDoc,
             new InsertOneOptions { BypassDocumentValidation = true }, token);
         return obj with { ObjId = pDoc.Id.ToString() };
@@ -38,22 +39,22 @@ public class ProductRepoAdapter : MongoBase<Product>, IProductRepo
     public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken) =>
         throw new NotImplementedException();
 
-    public Task<ApplicationObjects.Product> GetByIdAsync(long id, CancellationToken token = default) =>
+    public Task<Product> GetByIdAsync(long id, CancellationToken token = default) =>
         throw new NotImplementedException();
 
-    public Task<List<ApplicationObjects.Product>> GetAsync(ApplicationObjects.Product obj, sbyte searchFlag = 0,
+    public Task<List<Product>> GetAsync(Product obj, sbyte searchFlag = 0,
         CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<ApplicationObjects.Product?> UpdateAsync(ApplicationObjects.Product obj, sbyte searchFlag = 0,
+    public Task<Product?> UpdateAsync(Product obj, sbyte searchFlag = 0,
         CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<int> DeleteAsync(ApplicationObjects.Product obj, sbyte searchFlag = 0,
+    public Task<int> DeleteAsync(Product obj, sbyte searchFlag = 0,
         CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<bool> ExistsAsync(ApplicationObjects.Product obj, sbyte searchFlag = 0,
+    public Task<bool> ExistsAsync(Product obj, sbyte searchFlag = 0,
         CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<List<ApplicationObjects.Product>> GetAsync(IEnumerable<long>? ids = null, OrderBy? orderBy = null,
+    public Task<List<Product>> GetAsync(IEnumerable<long>? ids = null, OrderBy? orderBy = null,
         string? query = null, SearchCursor? cursor = null,
         CancellationToken cancellationToken = default) =>
         throw new NotImplementedException();

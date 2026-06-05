@@ -1,3 +1,5 @@
+using XcLib.Data.Postgres.XatiCraft.Model;
+
 namespace XcLib.Data.ApplicationObjects;
 
 public record PageVisitor(string Page, string? IpAddress, string? Uid, string? Browser) : ApplicationObject
@@ -6,7 +8,7 @@ public record PageVisitor(string Page, string? IpAddress, string? Uid, string? B
     {
     }
 
-    public static PageVisitor From(Postgres.XatiCraft.Model.PageVisitor model) =>
+    public static PageVisitor From(PageVisitorModel model) =>
         new PageVisitor(model.Page, model.IpAddress, model.Uid, model.Browser)
         {
             Id = model.Id,

@@ -4,11 +4,12 @@ using XcLib.Sse.Core.Signal;
 using XcLib.Sse.Core.Streamer;
 using XcLib.Sse.DataProvider;
 
-namespace Realtime;
+namespace Realtime.Api.Stream;
 
-public static partial class Program
+public static partial class Api
 {
-    private static void ApiGetSignal(this RouteGroupBuilder streamGroup) =>
+    public static void ApiGetSignal(this RouteGroupBuilder streamGroup)
+    {
         streamGroup.MapGet("/signal",
             async (HttpContext context,
                 [FromQuery(Name = "sid")] string? streamId,
@@ -23,5 +24,6 @@ public static partial class Program
                     sseSignalRegistry.GetSignal("users", cancellationToken);
 
                 await streamer.StreamAsync(handle);
-            });
+            }).WithTags("stream");
+    }
 }

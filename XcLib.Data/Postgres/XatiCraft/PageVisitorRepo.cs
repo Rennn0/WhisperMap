@@ -3,22 +3,22 @@ using Microsoft.EntityFrameworkCore;
 using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
 using XcLib.Data.Postgres.XatiCraft.Context;
-using PageVisitor = XcLib.Data.Postgres.XatiCraft.Model.PageVisitor;
+using XcLib.Data.Postgres.XatiCraft.Model;
 
 namespace XcLib.Data.Postgres.XatiCraft;
 
-public class PageVisitorRepo : RootRepo<PageVisitor>, IPageVisitorRepo
+public class PageVisitorRepo : RootRepo<PageVisitorModel>, IPageVisitorRepo
 {
     /// <inheritdoc />
     public PageVisitorRepo(IDbContextFactory<ApplicationContext> dbContextFactory) : base(dbContextFactory)
     {
     }
 
-    public async Task<ApplicationObjects.PageVisitor> AddAsync(ApplicationObjects.PageVisitor obj,
+    public async Task<PageVisitor> AddAsync(PageVisitor obj,
         CancellationToken token = default) =>
         await ExecuteAsync(async (pageVisitors, cancellationToken) =>
         {
-            PageVisitor pv = new PageVisitor
+            PageVisitorModel pv = new PageVisitorModel
             {
                 IpAddress = obj.IpAddress,
                 Browser = obj.Browser,
@@ -30,24 +30,24 @@ public class PageVisitorRepo : RootRepo<PageVisitor>, IPageVisitorRepo
             return obj;
         }, token);
 
-    public async Task<ApplicationObjects.PageVisitor> GetByIdAsync(long id, CancellationToken token = default) =>
+    public async Task<PageVisitor> GetByIdAsync(long id, CancellationToken token = default) =>
         await ExecuteAsync(
-            async (pageVisitors, cancellationToken) => ApplicationObjects.PageVisitor.From(await pageVisitors
+            async (pageVisitors, cancellationToken) => PageVisitor.From(await pageVisitors
                 .AsNoTracking()
                 .SingleAsync(pv => pv.Id == id, cancellationToken)), token);
 
-    public async Task<List<ApplicationObjects.PageVisitor>> GetAsync(ApplicationObjects.PageVisitor obj,
+    public async Task<List<PageVisitor>> GetAsync(PageVisitor obj,
         sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteAsync(async (pageVisitors, cancellationToken) =>
         {
-            List<PageVisitor> entities = await pageVisitors.Where(ToSearchPredicate(obj, searchFlag))
+            List<PageVisitorModel> entities = await pageVisitors.Where(ToSearchPredicate(obj, searchFlag))
                 .ToListAsync(cancellationToken);
-            return entities.Select(ApplicationObjects.PageVisitor.From).ToList();
+            return entities.Select(PageVisitor.From).ToList();
         }, token);
 
 
-    public async Task<ApplicationObjects.PageVisitor?> UpdateAsync(ApplicationObjects.PageVisitor obj,
+    public async Task<PageVisitor?> UpdateAsync(PageVisitor obj,
         sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteTransactionAsync(async (context, cancellationToken) =>
@@ -64,7 +64,7 @@ public class PageVisitorRepo : RootRepo<PageVisitor>, IPageVisitorRepo
             return obj;
         }, token: token);
 
-    public async Task<int> DeleteAsync(ApplicationObjects.PageVisitor obj, sbyte searchFlag = 0,
+    public async Task<int> DeleteAsync(PageVisitor obj, sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteTransactionAsync(
             (context, cancellationToken) => context.PageVisitors
@@ -72,16 +72,16 @@ public class PageVisitorRepo : RootRepo<PageVisitor>, IPageVisitorRepo
                 .ExecuteDeleteAsync(cancellationToken),
             token: token);
 
-    public async Task<bool> ExistsAsync(ApplicationObjects.PageVisitor obj, sbyte searchFlag = 0,
+    public async Task<bool> ExistsAsync(PageVisitor obj, sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteAsync(
             (pageVisitors, cancellationToken) => pageVisitors.AsNoTracking()
                 .AnyAsync(ToSearchPredicate(obj, searchFlag), cancellationToken), token);
 
-    protected override Expression<Func<PageVisitor, bool>> ToSearchPredicate(ApplicationObject obj,
+    protected override Expression<Func<PageVisitorModel, bool>> ToSearchPredicate(ApplicationObject obj,
         sbyte searchFlag)
     {
-        if (obj is not ApplicationObjects.PageVisitor pvObj) throw new ArgumentOutOfRangeException(nameof(obj));
+        if (obj is not PageVisitor pvObj) throw new ArgumentOutOfRangeException(nameof(obj));
         return searchFlag switch
         {
             1 => p => p.IpAddress == pvObj.IpAddress,

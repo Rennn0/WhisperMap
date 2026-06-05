@@ -1,41 +1,35 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace XcLib.Data.Postgres.XatiCraft.Model;
 
 /// <summary>
 /// </summary>
-public sealed class ProductMetadata
+public class VProductModel
 {
     /// <summary>
     /// </summary>
-    public long Id { get; init; }
+    public long? Id { get; init; }
 
     /// <summary>
     /// </summary>
     [MaxLength(512)]
-    public string OriginalFile { get; init; } = null!;
+    public string? Title { get; init; }
 
     /// <summary>
     /// </summary>
     [MaxLength(512)]
-    public string FileKey { get; init; } = null!;
+    public string? Description { get; init; }
 
     /// <summary>
     /// </summary>
-    [MaxLength(512)]
-    public string Location { get; init; } = null!;
-
-    /// <summary>
-    /// </summary>
-    public long ProductId { get; init; }
+    public decimal? Price { get; init; }
 
     /// <summary>
     /// </summary>
     public DateTime? Timestamp { get; init; }
 
-    public int? Order { get; init; }
-
     /// <summary>
     /// </summary>
-    public Product Product { get; init; } = null!;
+    public JsonDocument? Metadata { get; init; }
 }

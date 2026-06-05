@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace XcLib.Data.Postgres.XatiCraft.Model;
 
-public sealed class PageVisitor
+public sealed class PageVisitorModel
 {
     public long Id { get; init; }
     [MaxLength(128)] public string Page { get; init; } = null!;

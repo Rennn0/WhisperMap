@@ -7,5 +7,6 @@ public record RedirectedOrderStatus(
     int Amount,
     Currency? Currency,
     string? Card,
+    string? Status,
     DateTime? Time)
     : OrderStatus;

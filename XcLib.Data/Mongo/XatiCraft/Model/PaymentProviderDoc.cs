@@ -1,6 +1,9 @@
+using System.ComponentModel;
+
 namespace XcLib.Data.Mongo.XatiCraft.Model;
 
-public record PaymentProvider(string Name, sbyte UniqSelector) : MongoDoc
+[Description("payment_provider")]
+public record PaymentProviderDoc(string Name, sbyte UniqSelector) : MongoDoc
 {
     public string? LogoUrl { get; init; }
     public string? FullName { get; init; }

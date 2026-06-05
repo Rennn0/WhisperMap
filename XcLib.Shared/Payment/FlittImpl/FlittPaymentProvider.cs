@@ -56,6 +56,7 @@ public class FlittPaymentProvider : IPaymentProvider
             int.TryParse(data.Amount, out int a) ? a : -1,
             data.CurrencyEnum,
             data.MaskedCard,
+            data.OrderStatus,
             DateTime.TryParse(data.OrderTime, out DateTime t) ? t : null);
     }
 

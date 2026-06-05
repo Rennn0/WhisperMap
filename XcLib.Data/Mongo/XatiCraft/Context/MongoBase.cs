@@ -1,20 +1,22 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.ComponentModel;
+using System.Reflection;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using XcLib.Data.ApplicationObjects;
+using XcLib.Data.Mongo.XatiCraft.Model;
 
 namespace XcLib.Data.Mongo.XatiCraft.Context;
 
 /// <summary>
 /// </summary>
-public class MongoBase<T> : MongoConnector
+public class MongoBase<TDoc> : MongoConnector where TDoc : MongoDoc
 {
     protected MongoBase(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 
-    protected static IMongoCollection<T> Collection => Database!.GetCollection<T>(typeof(T).Name);
-    protected static IClientSession Session => Client!.StartSession();
+    protected IMongoCollection<TDoc> Collection => Database!.GetCollection<TDoc>(Name);
+    protected IClientSession Session => Client!.StartSession();
 
-    protected virtual FilterDefinition<T> ToSearchPredicate(ApplicationObject applicationObject, sbyte searchFlag) =>
-        Builders<T>.Filter.Empty;
+    public static string Name =>
+        typeof(TDoc).GetCustomAttribute<DescriptionAttribute>()?.Description ?? typeof(TDoc).Name;
 }

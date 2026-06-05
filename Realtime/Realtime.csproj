@@ -21,4 +21,8 @@
         <ProjectReference Include="..\XcLib.Shared\XcLib.Shared.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="8.0.0"/>
+    </ItemGroup>
+
 </Project>

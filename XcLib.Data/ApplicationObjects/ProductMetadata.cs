@@ -1,3 +1,5 @@
+using XcLib.Data.Postgres.XatiCraft.Model;
+
 namespace XcLib.Data.ApplicationObjects;
 
 /// <summary>
@@ -25,11 +27,11 @@ public record ProductMetadata(
     /// </summary>
     public Product? Product { get; set; }
 
-    public static ProductMetadata From(Postgres.XatiCraft.Model.ProductMetadata model)
+    public static ProductMetadata From(ProductMetadataModel model)
         => new ProductMetadata(model.OriginalFile, model.FileKey, model.Location, model.ProductId, model.Order)
         {
             Id =  model.Id,
             Timestamp = model.Timestamp,
-            Product = model.Product == null! ? null : Product.From(model.Product)
+            Product = model.ProductModel == null! ? null : Product.From(model.ProductModel)
         };
 }

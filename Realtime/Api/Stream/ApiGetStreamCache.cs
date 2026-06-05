@@ -5,11 +5,12 @@ using Realtime.SseFeatures.Formatters;
 using XcLib.Sse.Configuration;
 using XcLib.Sse.Core.Signal;
 
-namespace Realtime;
+namespace Realtime.Api.Stream;
 
-public static partial class Program
+public static partial class Api
 {
-    private static void ApiGetStreamCache(this RouteGroupBuilder streamGroup) =>
+    public static void ApiGetStreamCache(this RouteGroupBuilder streamGroup)
+    {
         streamGroup.MapGet("/cache", async (
             [FromServices] IDistributedCache cache,
             [FromServices] SseSignalRegistry<UserStats> signalReg,
@@ -34,5 +35,6 @@ public static partial class Program
 
             await signalReg.GetSignal("users").PublishAsync(new UserStats { Offline = 99, Online = 33 });
             return "x";
-        });
+        }).WithTags("stream");
+    }
 }

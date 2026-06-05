@@ -4,11 +4,12 @@ using XcLib.Sse.Core.Stream;
 using XcLib.Sse.Core.Streamer;
 using XcLib.Sse.DataProvider;
 
-namespace Realtime;
+namespace Realtime.Api.Stream;
 
-public static partial class Program
+public static partial class Api
 {
-    private static void ApiGetStream(this RouteGroupBuilder streamGroup) =>
+    public static void ApiGetStream(this RouteGroupBuilder streamGroup)
+    {
         streamGroup.MapGet("/u",
             async (HttpContext context,
                 [FromQuery(Name = "sid")] string? streamId,
@@ -26,5 +27,6 @@ public static partial class Program
                 UserStats initialVal = await sseDataProvider.GetAsync(handle, cancellationToken);
 
                 await streamer.StreamAsync(subscription.ReadAllAsync(cancellationToken), initialValue: initialVal);
-            });
+            }).WithTags("stream");
+    }
 }

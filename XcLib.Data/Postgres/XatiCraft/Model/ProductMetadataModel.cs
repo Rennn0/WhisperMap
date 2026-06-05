@@ -4,7 +4,7 @@ namespace XcLib.Data.Postgres.XatiCraft.Model;
 
 /// <summary>
 /// </summary>
-public sealed class Product
+public sealed class ProductMetadataModel
 {
     /// <summary>
     /// </summary>
@@ -13,22 +13,29 @@ public sealed class Product
     /// <summary>
     /// </summary>
     [MaxLength(512)]
-    public string Title { get; init; } = null!;
+    public string OriginalFile { get; init; } = null!;
 
     /// <summary>
     /// </summary>
     [MaxLength(512)]
-    public string Description { get; init; } = null!;
+    public string FileKey { get; init; } = null!;
 
     /// <summary>
     /// </summary>
-    public decimal Price { get; init; }
+    [MaxLength(512)]
+    public string Location { get; init; } = null!;
+
+    /// <summary>
+    /// </summary>
+    public long ProductId { get; init; }
 
     /// <summary>
     /// </summary>
     public DateTime? Timestamp { get; init; }
 
+    public int? Order { get; init; }
+
     /// <summary>
     /// </summary>
-    public ICollection<ProductMetadata> ProductMetadata { get; init; } = new List<ProductMetadata>();
+    public ProductModel ProductModel { get; init; } = null!;
 }

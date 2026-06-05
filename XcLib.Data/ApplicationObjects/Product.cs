@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using XcLib.Data.Postgres.XatiCraft.Model;
 
 namespace XcLib.Data.ApplicationObjects;
 
@@ -31,7 +32,7 @@ public record Product(
     [JsonPropertyName("resIds")] public List<uint>? ExistingResourceIds { get; set; }
     [JsonPropertyName("resIdsDelete")] public List<uint>? ResourceIdsTobeDelete { get; set; }
 
-    public static Product From(Postgres.XatiCraft.Model.Product model) =>
+    public static Product From(ProductModel model) =>
         new Product(model.Title, model.Description, model.Price)
         {
             Id = model.Id,

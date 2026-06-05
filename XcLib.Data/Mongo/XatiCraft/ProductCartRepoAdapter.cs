@@ -1,36 +1,37 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using XcLib.Data.Abstractions;
+using XcLib.Data.ApplicationObjects;
 using XcLib.Data.Mongo.XatiCraft.Context;
 using XcLib.Data.Mongo.XatiCraft.Model;
 
 namespace XcLib.Data.Mongo.XatiCraft;
 
-public class ProductCartRepoAdapter : MongoBase<ProductCart>, IProductCartRepo
+public class ProductCartRepoAdapter : MongoBase<ProductCartDoc>, IProductCartRepo
 {
     public ProductCartRepoAdapter(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 
-    public async ValueTask<ApplicationObjects.ProductCart> UpsertAsync(ApplicationObjects.ProductCart productCart,
+    public async ValueTask<ProductCart> UpsertAsync(ProductCart productCart,
         CancellationToken cancellationToken)
     {
-        FilterDefinition<ProductCart> filterDefinition = Builders<ProductCart>.Filter.And(
-            Builders<ProductCart>.Filter.Eq(x => x.UserId, productCart.UserId)
+        FilterDefinition<ProductCartDoc> filterDefinition = Builders<ProductCartDoc>.Filter.And(
+            Builders<ProductCartDoc>.Filter.Eq(x => x.UserId, productCart.UserId)
         );
 
-        UpdateDefinition<ProductCart> updateDefinition =
-            Builders<ProductCart>.Update
+        UpdateDefinition<ProductCartDoc> updateDefinition =
+            Builders<ProductCartDoc>.Update
                 .SetOnInsert(x => x.UserId, productCart.UserId)
                 .AddToSetEach(x => x.ProductIds, productCart.ProductIds);
 
-        FindOneAndUpdateOptions<ProductCart> options = new FindOneAndUpdateOptions<ProductCart>
+        FindOneAndUpdateOptions<ProductCartDoc> options = new FindOneAndUpdateOptions<ProductCartDoc>
         {
             IsUpsert = true,
             ReturnDocument = ReturnDocument.After
         };
 
-        ProductCart? model =
+        ProductCartDoc? model =
             await Collection.FindOneAndUpdateAsync(filterDefinition, updateDefinition, options, cancellationToken);
 
         ArgumentNullException.ThrowIfNull(model);
@@ -41,47 +42,49 @@ public class ProductCartRepoAdapter : MongoBase<ProductCart>, IProductCartRepo
         };
     }
 
-    public async ValueTask<ApplicationObjects.ProductCart?> SelectAsync(string userId,
+    public async ValueTask<ProductCart?> SelectAsync(string userId,
         CancellationToken cancellationToken)
     {
-        FilterDefinition<ProductCart> filterDefinition = Builders<ProductCart>.Filter.Eq(x => x.UserId, userId);
-        ProductCart? model = await Collection.Find(filterDefinition).FirstOrDefaultAsync(cancellationToken);
+        FilterDefinition<ProductCartDoc> filterDefinition = Builders<ProductCartDoc>.Filter.Eq(x => x.UserId, userId);
+        ProductCartDoc? model = await Collection.Find(filterDefinition).FirstOrDefaultAsync(cancellationToken);
         return model is not { UserId: not null }
             ? null
-            : new ApplicationObjects.ProductCart(model.UserId) { ProductIds = model.ProductIds };
+            : new ProductCart(model.UserId) { ProductIds = model.ProductIds };
     }
 
-    public async ValueTask<ApplicationObjects.ProductCart?> RemoveAsync(string userId, string productId,
+    public async ValueTask<ProductCart?> RemoveAsync(string userId, string productId,
         CancellationToken cancellationToken)
     {
-        FilterDefinition<ProductCart> filterDefinition = Builders<ProductCart>.Filter.Eq(x => x.UserId, userId);
-        UpdateDefinition<ProductCart>
-            updateDefinition = Builders<ProductCart>.Update.Pull(x => x.ProductIds, productId);
-        FindOneAndUpdateOptions<ProductCart> updateOptions = new FindOneAndUpdateOptions<ProductCart>
+        FilterDefinition<ProductCartDoc> filterDefinition = Builders<ProductCartDoc>.Filter.Eq(x => x.UserId, userId);
+        UpdateDefinition<ProductCartDoc>
+            updateDefinition = Builders<ProductCartDoc>.Update.Pull(x => x.ProductIds, productId);
+        FindOneAndUpdateOptions<ProductCartDoc> updateOptions = new FindOneAndUpdateOptions<ProductCartDoc>
         {
             ReturnDocument = ReturnDocument.After
         };
-        ProductCart? model = await Collection.FindOneAndUpdateAsync(filterDefinition, updateDefinition, updateOptions,
+        ProductCartDoc? model = await Collection.FindOneAndUpdateAsync(filterDefinition, updateDefinition,
+            updateOptions,
             cancellationToken);
         return model is not { UserId: not null }
             ? null
-            : new ApplicationObjects.ProductCart(model.UserId) { ProductIds = model.ProductIds };
+            : new ProductCart(model.UserId) { ProductIds = model.ProductIds };
     }
 
-    public async ValueTask<ApplicationObjects.ProductCart?> RemoveAsync(string userId, IEnumerable<string> productIds,
+    public async ValueTask<ProductCart?> RemoveAsync(string userId, IEnumerable<string> productIds,
         CancellationToken cancellationToken)
     {
-        FilterDefinition<ProductCart> filterDefinition = Builders<ProductCart>.Filter.Eq(x => x.UserId, userId);
-        UpdateDefinition<ProductCart>
-            updateDefinition = Builders<ProductCart>.Update.PullAll(x => x.ProductIds, productIds);
-        FindOneAndUpdateOptions<ProductCart> updateOptions = new FindOneAndUpdateOptions<ProductCart>
+        FilterDefinition<ProductCartDoc> filterDefinition = Builders<ProductCartDoc>.Filter.Eq(x => x.UserId, userId);
+        UpdateDefinition<ProductCartDoc>
+            updateDefinition = Builders<ProductCartDoc>.Update.PullAll(x => x.ProductIds, productIds);
+        FindOneAndUpdateOptions<ProductCartDoc> updateOptions = new FindOneAndUpdateOptions<ProductCartDoc>
         {
             ReturnDocument = ReturnDocument.After
         };
-        ProductCart? model = await Collection.FindOneAndUpdateAsync(filterDefinition, updateDefinition, updateOptions,
+        ProductCartDoc? model = await Collection.FindOneAndUpdateAsync(filterDefinition, updateDefinition,
+            updateOptions,
             cancellationToken);
         return model is not { UserId: not null }
             ? null
-            : new ApplicationObjects.ProductCart(model.UserId) { ProductIds = model.ProductIds };
+            : new ProductCart(model.UserId) { ProductIds = model.ProductIds };
     }
 }

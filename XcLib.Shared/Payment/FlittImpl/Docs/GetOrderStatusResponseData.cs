@@ -109,7 +109,8 @@ public record GetOrderStatusResponseData
     ///     Card bin — usually first 6 digits 444444r
     /// </summary>
 
-    [JsonPropertyName("card_bin")] public int? CardBin { get; init; }
+    [JsonPropertyName("card_bin")]
+    public object? CardBin { get; init; }
 
     /// <summary>
     ///     Supported values:

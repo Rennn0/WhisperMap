@@ -10,7 +10,7 @@ using ProductMetadata = XcLib.Data.ApplicationObjects.ProductMetadata;
 
 namespace XcLib.Data.Postgres.XatiCraft;
 
-public class ProductRepo : RootRepo<Model.Product>, IProductRepo
+public class ProductRepo : RootRepo<ProductModel>, IProductRepo
 {
     private readonly JsonSerializerOptions _serializerOptions;
 
@@ -36,7 +36,7 @@ public class ProductRepo : RootRepo<Model.Product>, IProductRepo
             ArgumentNullException.ThrowIfNull(cursor);
 
             OrderBy order = orderBy ?? OrderBy.NewestFirst;
-            IQueryable<VProduct> dbQuery = context.VProducts.AsNoTracking();
+            IQueryable<VProductModel> dbQuery = context.VProducts.AsNoTracking();
 
             if (ids is not null)
             {
@@ -76,7 +76,7 @@ public class ProductRepo : RootRepo<Model.Product>, IProductRepo
     public async Task<Product> AddAsync(Product obj, CancellationToken token = default) =>
         Product.From(await ExecuteAsync(async (products, cancellationToken) =>
         {
-            Model.Product mp = new Model.Product
+            ProductModel mp = new ProductModel
             {
                 Description = obj.Description,
                 Title = obj.Title,
@@ -89,7 +89,7 @@ public class ProductRepo : RootRepo<Model.Product>, IProductRepo
     public async Task<Product> GetByIdAsync(long id, CancellationToken token = default) =>
         await ExecuteTransactionAsync(async (context, cancellationToken) =>
         {
-            VProduct v = await context.VProducts.AsNoTracking()
+            VProductModel v = await context.VProducts.AsNoTracking()
                 .SingleAsync(vp => vp.Id == id, cancellationToken);
 
             return new Product(v.Title ?? "", v.Description ?? "", v.Price ?? 0m)
@@ -134,7 +134,8 @@ public class ProductRepo : RootRepo<Model.Product>, IProductRepo
 
     public Task<Product> GetByIdAsync(string objId, CancellationToken cancellationToken) =>
         throw new NotImplementedException();
-    private static IQueryable<VProduct> ApplyOrdering(IQueryable<VProduct> queryable, OrderBy? orderBy) =>
+
+    private static IQueryable<VProductModel> ApplyOrdering(IQueryable<VProductModel> queryable, OrderBy? orderBy) =>
         orderBy switch
         {
             OrderBy.NewestFirst => queryable.OrderByDescending(x => x.Timestamp).ThenByDescending(x => x.Id),
@@ -146,7 +147,7 @@ public class ProductRepo : RootRepo<Model.Product>, IProductRepo
             _ => throw new ArgumentOutOfRangeException(nameof(orderBy), orderBy, null)
         };
 
-    private static IQueryable<VProduct> ApplyCursor(IQueryable<VProduct> queryable, OrderBy orderBy,
+    private static IQueryable<VProductModel> ApplyCursor(IQueryable<VProductModel> queryable, OrderBy orderBy,
         SearchCursor? cursor)
     {
         if (cursor is not { Id: not null } searchCursor) return queryable;
@@ -165,7 +166,7 @@ public class ProductRepo : RootRepo<Model.Product>, IProductRepo
         };
     }
 
-    protected override Expression<Func<Model.Product, bool>> ToSearchPredicate(ApplicationObject obj, sbyte searchFlag)
+    protected override Expression<Func<ProductModel, bool>> ToSearchPredicate(ApplicationObject obj, sbyte searchFlag)
     {
         if (obj is not Product pObj) throw new ArgumentOutOfRangeException(nameof(obj));
         return searchFlag switch

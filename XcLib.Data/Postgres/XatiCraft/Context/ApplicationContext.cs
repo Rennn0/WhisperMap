@@ -16,26 +16,26 @@ public partial class ApplicationContext : DbContext, IDataProtectionKeyContext
 
     /// <summary>
     /// </summary>
-    public virtual DbSet<Product> Products { get; set; }
+    public virtual DbSet<ProductModel> Products { get; set; }
 
     /// <summary>
     /// </summary>
-    public virtual DbSet<ProductMetadata> ProductMetadata { get; set; }
+    public virtual DbSet<ProductMetadataModel> ProductMetadata { get; set; }
 
     /// <summary>
     /// </summary>
-    public virtual DbSet<VProduct> VProducts { get; set; }
+    public virtual DbSet<VProductModel> VProducts { get; set; }
 
     /// <summary>
     /// </summary>
-    public virtual DbSet<PageVisitor> PageVisitors { get; set; }
+    public virtual DbSet<PageVisitorModel> PageVisitors { get; set; }
 
     /// <summary>
     /// </summary>
     /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Product>(entity =>
+        modelBuilder.Entity<ProductModel>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("products_pkey");
 
@@ -53,7 +53,7 @@ public partial class ApplicationContext : DbContext, IDataProtectionKeyContext
             entity.Property(e => e.Title).HasColumnName("title");
         });
 
-        modelBuilder.Entity<ProductMetadata>(entity =>
+        modelBuilder.Entity<ProductMetadataModel>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("product_metadata_pkey");
 
@@ -70,12 +70,12 @@ public partial class ApplicationContext : DbContext, IDataProtectionKeyContext
                 .HasColumnName("timestamp");
             entity.Property(e => e.Order).HasColumnName("order");
 
-            entity.HasOne(d => d.Product).WithMany(p => p.ProductMetadata)
+            entity.HasOne(d => d.ProductModel).WithMany(p => p.ProductMetadata)
                 .HasForeignKey(d => d.ProductId)
                 .HasConstraintName("product_metadata_product_id_fkey");
         });
 
-        modelBuilder.Entity<VProduct>(entity =>
+        modelBuilder.Entity<VProductModel>(entity =>
         {
             entity
                 .HasNoKey()
@@ -95,7 +95,7 @@ public partial class ApplicationContext : DbContext, IDataProtectionKeyContext
             entity.Property(e => e.Title).HasColumnName("title");
         });
 
-        modelBuilder.Entity<PageVisitor>(entity =>
+        modelBuilder.Entity<PageVisitorModel>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("page_visitors_pkey");
             entity.ToTable("page_visitors");

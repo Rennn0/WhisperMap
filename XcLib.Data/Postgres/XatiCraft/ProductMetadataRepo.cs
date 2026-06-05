@@ -3,22 +3,22 @@ using Microsoft.EntityFrameworkCore;
 using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
 using XcLib.Data.Postgres.XatiCraft.Context;
-using ProductMetadata = XcLib.Data.Postgres.XatiCraft.Model.ProductMetadata;
+using XcLib.Data.Postgres.XatiCraft.Model;
 
 namespace XcLib.Data.Postgres.XatiCraft;
 
-public class ProductMetadataRepo : RootRepo<ProductMetadata>, IProductMetadaRepo
+public class ProductMetadataRepo : RootRepo<ProductMetadataModel>, IProductMetadaRepo
 {
     /// <inheritdoc />
     public ProductMetadataRepo(IDbContextFactory<ApplicationContext> dbContextFactory) : base(dbContextFactory)
     {
     }
 
-    public async Task<ApplicationObjects.ProductMetadata> AddAsync(ApplicationObjects.ProductMetadata obj,
+    public async Task<ProductMetadata> AddAsync(ProductMetadata obj,
         CancellationToken token = default)
         => await ExecuteAsync(async (productMetadata, cancellationToken) =>
         {
-            ProductMetadata mpt = new ProductMetadata
+            ProductMetadataModel mpt = new ProductMetadataModel
             {
                 FileKey = obj.FileKey,
                 Location = obj.Location,
@@ -32,23 +32,23 @@ public class ProductMetadataRepo : RootRepo<ProductMetadata>, IProductMetadaRepo
             return obj;
         }, token);
 
-    public async Task<ApplicationObjects.ProductMetadata> GetByIdAsync(long id, CancellationToken token = default) =>
+    public async Task<ProductMetadata> GetByIdAsync(long id, CancellationToken token = default) =>
         await ExecuteAsync(
             async (productMetadata, cancellationToken) =>
-                ApplicationObjects.ProductMetadata.From(
+                ProductMetadata.From(
                     await productMetadata.SingleAsync(pm => pm.Id == id, cancellationToken)), token);
 
-    public async Task<List<ApplicationObjects.ProductMetadata>> GetAsync(ApplicationObjects.ProductMetadata obj,
+    public async Task<List<ProductMetadata>> GetAsync(ProductMetadata obj,
         sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteAsync(async (productMetadata, cancellationToken) =>
         {
-            List<ProductMetadata> entities = await productMetadata.Where(ToSearchPredicate(obj, searchFlag))
+            List<ProductMetadataModel> entities = await productMetadata.Where(ToSearchPredicate(obj, searchFlag))
                 .ToListAsync(cancellationToken);
-            return entities.Select(ApplicationObjects.ProductMetadata.From).ToList();
+            return entities.Select(ProductMetadata.From).ToList();
         }, token);
 
-    public async Task<ApplicationObjects.ProductMetadata?> UpdateAsync(ApplicationObjects.ProductMetadata obj,
+    public async Task<ProductMetadata?> UpdateAsync(ProductMetadata obj,
         sbyte searchFlag = 0,
         CancellationToken token = default)
     {
@@ -66,7 +66,7 @@ public class ProductMetadataRepo : RootRepo<ProductMetadata>, IProductMetadaRepo
         return obj;
     }
 
-    public async Task<int> DeleteAsync(ApplicationObjects.ProductMetadata obj, sbyte searchFlag = 0,
+    public async Task<int> DeleteAsync(ProductMetadata obj, sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteTransactionAsync(
             (context, cancellationToken) => context.ProductMetadata
@@ -74,16 +74,16 @@ public class ProductMetadataRepo : RootRepo<ProductMetadata>, IProductMetadaRepo
                 .ExecuteDeleteAsync(cancellationToken),
             token: token);
 
-    public async Task<bool> ExistsAsync(ApplicationObjects.ProductMetadata obj, sbyte searchFlag = 0,
+    public async Task<bool> ExistsAsync(ProductMetadata obj, sbyte searchFlag = 0,
         CancellationToken token = default) =>
         await ExecuteAsync(
             (productMetadata, cancellationToken) => productMetadata.AsNoTracking()
                 .AnyAsync(ToSearchPredicate(obj, searchFlag), cancellationToken), token);
 
-    protected override Expression<Func<ProductMetadata, bool>> ToSearchPredicate(ApplicationObject obj,
+    protected override Expression<Func<ProductMetadataModel, bool>> ToSearchPredicate(ApplicationObject obj,
         sbyte searchFlag)
     {
-        if (obj is not ApplicationObjects.ProductMetadata pmObj) throw new ArgumentOutOfRangeException(nameof(obj));
+        if (obj is not ProductMetadata pmObj) throw new ArgumentOutOfRangeException(nameof(obj));
 
         return searchFlag switch
         {

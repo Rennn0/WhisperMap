@@ -1,6 +1,10 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Routing.Constraints;
+using Realtime.Api.Payment;
+using Realtime.Api.Stream;
 using Realtime.Background;
 using Realtime.Exceptions;
+using Swashbuckle.AspNetCore.SwaggerUI;
 using XcLib.Data;
 using XcLib.Data.SqlServer.Realtime.Entities;
 using XcLib.Shared;
@@ -53,7 +57,11 @@ public static partial class Program
             });
         });
 
+        builder.Services.Configure<RouteOptions>(options =>
+            options.SetParameterPolicy<RegexInlineRouteConstraint>("regex"));
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
         builder.Services.AddProblemDetails();
 
         builder.Services.AddHostedService<UserStatsBackgroundService>();
@@ -69,15 +77,23 @@ public static partial class Program
         app.UseCors(app.Environment.IsDevelopment() ? "dev" : "prod");
 
         RouteGroupBuilder mainGroup = app.MapGroup("/realtime");
-        mainGroup.ApiGetCheckoutUrl();
-        mainGroup.ApiGetOrderStatus();
-        mainGroup.ApiGetAvailableCheckouts();
+        mainGroup.MapPaymentApi();
         
         RouteGroupBuilder streamGroup = mainGroup.MapGroup("/stream");
         streamGroup.ApiGetStreamCache();
         streamGroup.ApiGetSignal();
         streamGroup.ApiGetStream();
 
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.DefaultModelsExpandDepth(-1);
+                c.DocExpansion(DocExpansion.None);
+            });
+        }
+        
         await app.RunBootStrapsAsync();
         await app.RunAsync();
         //#TODO sheamowme sesia rato etisheba avtorizebuls

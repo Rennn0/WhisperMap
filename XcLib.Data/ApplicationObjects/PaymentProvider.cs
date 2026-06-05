@@ -1,3 +1,5 @@
+using XcLib.Data.Mongo.XatiCraft.Model;
+
 namespace XcLib.Data.ApplicationObjects;
 
 public record PaymentProvider(string Name, sbyte UniqSelector) : ApplicationObject
@@ -11,7 +13,7 @@ public record PaymentProvider(string Name, sbyte UniqSelector) : ApplicationObje
     {
     }
 
-    public static PaymentProvider From(Mongo.XatiCraft.Model.PaymentProvider model) =>
+    public static PaymentProvider From(PaymentProviderDoc model) =>
         new PaymentProvider(model.Name, model.UniqSelector)
         {
             LogoUrl = model.LogoUrl,

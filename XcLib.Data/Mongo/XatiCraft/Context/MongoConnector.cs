@@ -4,12 +4,12 @@ using XcLib.Data.Abstractions;
 
 namespace XcLib.Data.Mongo.XatiCraft.Context;
 
-public class MongoConnector
+public class MongoConnector : IDisposable
 {
-    private static Lazy<MongoClient>? _client;
-    private static Lazy<IMongoDatabase>? _database;
-    protected static MongoClient? Client => _client?.Value;
-    protected static IMongoDatabase? Database => _database?.Value;
+    private readonly Lazy<MongoClient>? _client;
+    private readonly Lazy<IMongoDatabase>? _database;
+    protected MongoClient? Client => _client?.Value;
+    protected IMongoDatabase? Database => _database?.Value;
 
     protected MongoConnector(IOptions<MongoConnectionOptions> connectionOptions)
     {
@@ -22,5 +22,11 @@ public class MongoConnector
             LazyThreadSafetyMode.ExecutionAndPublication);
         _database ??= new Lazy<IMongoDatabase>(() => _client.Value.GetDatabase(options.Database),
             LazyThreadSafetyMode.ExecutionAndPublication);
+    }
+
+    public void Dispose()
+    {
+        if (_client is { IsValueCreated: true }) _client.Value.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

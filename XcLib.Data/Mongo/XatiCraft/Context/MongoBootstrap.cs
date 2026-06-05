@@ -21,9 +21,9 @@ public class MongoBootstrap : MongoConnector, IBootstrap
 
         Task[] tasks =
         [
-            CreateIndexesAsync(Database.GetCollection<AuthorizationInfo>(nameof(AuthorizationInfo))),
-            CreateIndexesAsync(Database.GetCollection<PaymentProvider>(nameof(PaymentProvider))),
-            SeedDataAsync(Database.GetCollection<PaymentProvider>(nameof(PaymentProvider)))
+            CreateIndexesAsync(Database.GetCollection<AuthorizationInfoDoc>(MongoBase<AuthorizationInfoDoc>.Name)),
+            CreateIndexesAsync(Database.GetCollection<PaymentProviderDoc>(MongoBase<PaymentProviderDoc>.Name)),
+            SeedDataAsync(Database.GetCollection<PaymentProviderDoc>(MongoBase<PaymentProviderDoc>.Name))
         ];
 
         await Task.WhenAll(tasks);
@@ -33,47 +33,48 @@ public class MongoBootstrap : MongoConnector, IBootstrap
     /// <inheritdoc />
     public void Run() => throw new NotImplementedException();
 
-    private static Task<string> CreateIndexesAsync(IMongoCollection<AuthorizationInfo> collection)
+    private static Task<string> CreateIndexesAsync(IMongoCollection<AuthorizationInfoDoc> collection)
     {
-        IndexKeysDefinition<AuthorizationInfo>? indexKeys = Builders<AuthorizationInfo>.IndexKeys
+        IndexKeysDefinition<AuthorizationInfoDoc>? indexKeys = Builders<AuthorizationInfoDoc>.IndexKeys
             .Ascending(x => x.Email)
             .Ascending(x => x.AuthProviderSystemId);
 
         CreateIndexOptions indexOptions = new CreateIndexOptions { Unique = true };
 
         return collection.Indexes.CreateOneAsync(
-            new CreateIndexModel<AuthorizationInfo>(indexKeys, indexOptions));
+            new CreateIndexModel<AuthorizationInfoDoc>(indexKeys, indexOptions));
     }
 
-    private static Task<string> CreateIndexesAsync(IMongoCollection<PaymentProvider> collection)
+    private static Task<string> CreateIndexesAsync(IMongoCollection<PaymentProviderDoc> collection)
     {
-        IndexKeysDefinition<PaymentProvider>? indexKeys = Builders<PaymentProvider>.IndexKeys
+        IndexKeysDefinition<PaymentProviderDoc>? indexKeys = Builders<PaymentProviderDoc>.IndexKeys
             .Ascending(x => x.UniqSelector);
 
         CreateIndexOptions indexOptions = new CreateIndexOptions { Unique = true };
 
         return collection.Indexes.CreateOneAsync(
-            new CreateIndexModel<PaymentProvider>(indexKeys, indexOptions));
+            new CreateIndexModel<PaymentProviderDoc>(indexKeys, indexOptions));
     }
 
 
-    private static Task<BulkWriteResult<PaymentProvider>> SeedDataAsync(IMongoCollection<PaymentProvider> collection)
+    private static Task<BulkWriteResult<PaymentProviderDoc>> SeedDataAsync(
+        IMongoCollection<PaymentProviderDoc> collection)
     {
-        PaymentProvider[] data =
+        PaymentProviderDoc[] data =
         [
-            new PaymentProvider("Flitt", 1) { Enabled = true },
-            new PaymentProvider("Google", 2)
+            new PaymentProviderDoc("Flitt", 1) { Enabled = true },
+            new PaymentProviderDoc("Google", 2)
             {
                 Enabled = true, LogoUrl = "https://pay.google.com/about/static_kcs/images/logos/google-pay-logo.svg"
             },
-            new PaymentProvider("Apple", 3)
+            new PaymentProviderDoc("Apple", 3)
                 { Enabled = true, LogoUrl = "https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" }
         ];
 
-        IEnumerable<UpdateOneModel<PaymentProvider>> writes = data.Select(d =>
-            new UpdateOneModel<PaymentProvider>(
-                Builders<PaymentProvider>.Filter.Eq(x => x.UniqSelector, d.UniqSelector),
-                Builders<PaymentProvider>.Update
+        IEnumerable<UpdateOneModel<PaymentProviderDoc>> writes = data.Select(d =>
+            new UpdateOneModel<PaymentProviderDoc>(
+                Builders<PaymentProviderDoc>.Filter.Eq(x => x.UniqSelector, d.UniqSelector),
+                Builders<PaymentProviderDoc>.Update
                     .Set(x => x.Name, d.Name)
                     .Set(x => x.Enabled, d.Enabled)
                     .Set(x => x.Description, d.Description)
