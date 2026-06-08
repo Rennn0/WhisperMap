@@ -25,6 +25,7 @@ public static partial class Api
                     description)),
                 _ => throw new ApplicationException(StatusCodes.Status400BadRequest)
             })
+            .RequireAuthorization()
             .WithTags("payment", "order")
             .WithSummary("create order and get payment url");
 
@@ -39,6 +40,9 @@ public static partial class Api
                 1 or 2 or 3 => await paymentProvider.GetOrderStatusAsync(new GetRedirectOrderStatusArgs(orderId)),
                 _ => throw new ApplicationException(StatusCodes.Status400BadRequest)
             }
-        ).WithTags("payment", "order").WithSummary("created order's status");
+            )
+            .RequireAuthorization()
+            .WithTags("payment", "order")
+            .WithSummary("created order's status");
     }
 }

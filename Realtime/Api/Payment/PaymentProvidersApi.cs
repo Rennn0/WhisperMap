@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
+using XcLib.Shared.Utils;
 
 namespace Realtime.Api.Payment;
 
@@ -11,13 +12,33 @@ public static partial class Api
         route.MapGet("/payments",
                 async ([FromServices] IPaymentProviderRepo paymentProviderRepo) =>
                 await paymentProviderRepo.GetAsync(new PaymentProvider(), sbyte.MaxValue))
+            .RequireAuthorization()
             .WithTags("payment")
             .WithSummary("all available payment providers");
 
         route.MapGet("/payments/{id}",
                 async ([FromRoute] string id, [FromServices] IPaymentProviderRepo paymentProviderRepo) =>
                 await paymentProviderRepo.GetAsync(new PaymentProvider { ObjId = id }, sbyte.MinValue))
+            .RequireAuthorization()
             .WithTags("payment")
             .WithSummary("payment provider by id");
+
+        route.MapGet("/payments/token",
+                async (HttpContext context, [FromServices] TokenProvider tokenProvider,
+                    [FromServices] IAuthorizationRepo authRepo) =>
+                {
+                    string? sessionCookie = context.Request.Cookies["__xc_se"];
+                    string? userIdCookie = context.Request.Cookies["__xc_uid"];
+
+                    if (string.IsNullOrEmpty(sessionCookie) || string.IsNullOrEmpty(userIdCookie)) return null;
+
+                    AuthorizationInfo? authInfo = await authRepo.SelectAsync(userIdCookie, CancellationToken.None);
+                    if (authInfo is not { AccountEnabled: true, VerifiedEmail: true, Email.Length: > 0 })
+                        return null;
+
+                    return tokenProvider.Create(userIdCookie, authInfo.Username, authInfo.Email,
+                        permissions: ["pay:create"]);
+                })
+            .WithTags("payment");
     }
 }

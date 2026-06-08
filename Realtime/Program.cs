@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.OpenApi.Models;
 using Realtime.Api.Payment;
 using Realtime.Api.Stream;
 using Realtime.Background;
@@ -56,12 +57,40 @@ public static partial class Program
                 );
             });
         });
-
+        builder.Services.AddTokenAuth(builder.Configuration);    
         builder.Services.Configure<RouteOptions>(options =>
             options.SetParameterPolicy<RegexInlineRouteConstraint>("regex"));
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Enter: Bearer {your JWT token}"
+            });
+
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+        });
         builder.Services.AddProblemDetails();
 
         builder.Services.AddHostedService<UserStatsBackgroundService>();
@@ -73,6 +102,8 @@ public static partial class Program
         
         WebApplication app = builder.Build();
         app.UseExceptionHandler();
+        app.UseAuthentication();
+        app.UseAuthorization();
 
         app.UseCors(app.Environment.IsDevelopment() ? "dev" : "prod");
 
