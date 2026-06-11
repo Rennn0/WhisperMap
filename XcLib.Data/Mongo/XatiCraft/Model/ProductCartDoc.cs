@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace XcLib.Data.Mongo.XatiCraft.Model;
 
@@ -6,5 +7,6 @@ namespace XcLib.Data.Mongo.XatiCraft.Model;
 public record ProductCartDoc : MongoDoc
 {
     public string? UserId { get; init; }
-    public HashSet<string> ProductIds { get; init; } = [];
+    public HashSet<string>? ProductIds { get; init; }
+    [BsonElement("p_orders")] public HashSet<string>? ProductOrderIds  { get; init; } 
 }

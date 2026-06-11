@@ -34,6 +34,7 @@ public sealed class ProductMetadataModel
     public DateTime? Timestamp { get; init; }
 
     public int? Order { get; init; }
+    public ushort? InStock { get; init; }
 
     /// <summary>
     /// </summary>

@@ -25,8 +25,12 @@ public static partial class Api
 
         route.MapGet("/payments/token",
                 async (HttpContext context, [FromServices] TokenProvider tokenProvider,
-                    [FromServices] IAuthorizationRepo authRepo) =>
+                    [FromServices] IAuthorizationRepo authRepo, IWebHostEnvironment hostEnvironment) =>
                 {
+                    if (hostEnvironment.IsDevelopment())
+                        return tokenProvider.Create("5ab35807cbe1408eb214a11088b08163", "dev", "dev@xati.org",
+                            permissions: [Permissions.PaymentCreate]);
+
                     string? sessionCookie = context.Request.Cookies["__xc_se"];
                     string? userIdCookie = context.Request.Cookies["__xc_uid"];
 
@@ -35,9 +39,9 @@ public static partial class Api
                     AuthorizationInfo? authInfo = await authRepo.SelectAsync(userIdCookie, CancellationToken.None);
                     if (authInfo is not { AccountEnabled: true, VerifiedEmail: true, Email.Length: > 0 })
                         return null;
-
+                        
                     return tokenProvider.Create(userIdCookie, authInfo.Username, authInfo.Email,
-                        permissions: ["pay:create"]);
+                        permissions: [Permissions.PaymentCreate]);
                 })
             .WithTags("payment");
     }

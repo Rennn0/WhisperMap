@@ -23,7 +23,8 @@ public class ProductCartRepoAdapter : MongoBase<ProductCartDoc>, IProductCartRep
         UpdateDefinition<ProductCartDoc> updateDefinition =
             Builders<ProductCartDoc>.Update
                 .SetOnInsert(x => x.UserId, productCart.UserId)
-                .AddToSetEach(x => x.ProductIds, productCart.ProductIds);
+                .AddToSetEach(x => x.ProductIds, productCart.ProductIds ?? [])
+                .AddToSetEach(x => x.ProductOrderIds, productCart.ProductOrderIds ?? []);
 
         FindOneAndUpdateOptions<ProductCartDoc> options = new FindOneAndUpdateOptions<ProductCartDoc>
         {
@@ -49,7 +50,7 @@ public class ProductCartRepoAdapter : MongoBase<ProductCartDoc>, IProductCartRep
         ProductCartDoc? model = await Collection.Find(filterDefinition).FirstOrDefaultAsync(cancellationToken);
         return model is not { UserId: not null }
             ? null
-            : new ProductCart(model.UserId) { ProductIds = model.ProductIds };
+            : ProductCart.From(model);
     }
 
     public async ValueTask<ProductCart?> RemoveAsync(string userId, string productId,

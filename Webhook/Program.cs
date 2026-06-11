@@ -29,6 +29,7 @@ public static partial class Program
         
         builder.AddSqlLogging<MasterLog>(LogLevel.Information);
         builder.AddSqlServer();
+        builder.AddMongo();
 
         WebApplication app = builder.Build();
 

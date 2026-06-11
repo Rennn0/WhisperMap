@@ -27,6 +27,8 @@ public record ProductMetadata(
     /// </summary>
     public Product? Product { get; set; }
 
+    public ushort? InStock { get; set; }
+
     public static ProductMetadata From(ProductMetadataModel model)
         => new ProductMetadata(model.OriginalFile, model.FileKey, model.Location, model.ProductId, model.Order)
         {
