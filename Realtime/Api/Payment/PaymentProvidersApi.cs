@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
 using XcLib.Shared.Utils;
+using ApplicationException = Realtime.Exceptions.ApplicationException;
 
 namespace Realtime.Api.Payment;
 
@@ -34,11 +35,14 @@ public static partial class Api
                     string? sessionCookie = context.Request.Cookies["__xc_se"];
                     string? userIdCookie = context.Request.Cookies["__xc_uid"];
 
-                    if (string.IsNullOrEmpty(sessionCookie) || string.IsNullOrEmpty(userIdCookie)) return null;
+                    Console.WriteLine($"{sessionCookie} {userIdCookie}");
+
+                    if (string.IsNullOrEmpty(sessionCookie) || string.IsNullOrEmpty(userIdCookie))
+                        throw new ApplicationException(StatusCodes.Status400BadRequest);
 
                     AuthorizationInfo? authInfo = await authRepo.SelectAsync(userIdCookie, CancellationToken.None);
                     if (authInfo is not { AccountEnabled: true, VerifiedEmail: true, Email.Length: > 0 })
-                        return null;
+                        throw new ApplicationException(StatusCodes.Status204NoContent);
                         
                     return tokenProvider.Create(userIdCookie, authInfo.Username, authInfo.Email,
                         permissions: [Permissions.PaymentCreate]);
