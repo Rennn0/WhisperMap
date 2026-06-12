@@ -55,7 +55,7 @@ public static partial class Api
                             string version = c.Key.Split('_')[^1];
                             return (version, c.Value);
                         }).OrderByDescending(c => c.version)
-                        .Select(c => c.version)
+                        .Select(c => c.Value)
                         .FirstOrDefault();
                 })
             .WithTags("payment");
