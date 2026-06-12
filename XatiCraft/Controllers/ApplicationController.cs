@@ -10,15 +10,27 @@ public class ApplicationController : ControllerBase
 {
     /// <summary>
     /// </summary>
-    protected AppMetrics AppMetrics => HttpContext.RequestServices.GetRequiredService<AppMetrics>();
+    protected readonly CookieOptions CookieOptions;
 
-    private readonly CookieOptions _defaultCookieOptions = new CookieOptions
+    /// <inheritdoc />
+    protected ApplicationController()
     {
-        HttpOnly = true,
-        Secure = true,
-        SameSite = SameSiteMode.Strict,
-        Expires = DateTimeOffset.Now.AddDays(1),
-    };
+        CookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.Now.AddDays(7),
+            IsEssential = true,
+#if DEBUG
+#else
+            Domain = "xati.org"
+#endif
+        };
+    }
+    /// <summary>
+    /// </summary>
+    protected AppMetrics AppMetrics => HttpContext.RequestServices.GetRequiredService<AppMetrics>();
 
     /// <summary>
     ///     User Id Cookie
@@ -32,14 +44,14 @@ public class ApplicationController : ControllerBase
     /// <param name="value"></param>
     /// <param name="options"></param>
     protected void AppendC(string key, string value, CookieOptions? options = null) =>
-        HttpContext.Response.Cookies.Append(key, value, options ?? _defaultCookieOptions);
+        HttpContext.Response.Cookies.Append(key, value, options ?? CookieOptions);
 
     /// <summary>
     /// </summary>
     /// <param name="key"></param>
     /// <param name="options"></param>
     protected void DeleteC(string key, CookieOptions? options = null) =>
-        HttpContext.Response.Cookies.Delete(key, options ?? _defaultCookieOptions);
+        HttpContext.Response.Cookies.Delete(key, options ?? CookieOptions);
 
     /// <summary>
     /// </summary>

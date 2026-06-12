@@ -18,7 +18,7 @@ namespace XatiCraft.Controllers;
 public class SessionController : ApplicationController
 {
     private readonly Security _aspProtector;
-    private readonly CookieOptions _cookieOptions;
+    
     private readonly ILogger<SessionController> _logger;
 
     /// <summary>
@@ -29,18 +29,6 @@ public class SessionController : ApplicationController
     {
         _aspProtector = securities.First(s => s is AspDataProtector);
         _logger = logger;
-        _cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Lax,
-            Expires = DateTimeOffset.Now.AddDays(7),
-            IsEssential = true,
-#if DEBUG
-#else         
-            Domain = "xati.org"
-#endif
-        };
     }
 
     /// <summary>
@@ -62,9 +50,9 @@ public class SessionController : ApplicationController
         string protectedData = _aspProtector.Pack(
             JsonSerializer.Serialize(new SessionData(ip, Guid.NewGuid().ToString("N")))
         );
-        AppendC(AuthGuard.SessionCookie, protectedData, _cookieOptions);
+        AppendC(AuthGuard.SessionCookie, protectedData, CookieOptions);
         if (User.Identity is { IsAuthenticated: true })
-            AppendC(AuthGuard.UserIdCookie, User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "", _cookieOptions);
+            AppendC(AuthGuard.UserIdCookie, User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "", CookieOptions);
         return NoContent();
     }
 
@@ -130,7 +118,7 @@ public class SessionController : ApplicationController
                     }
                 )
                 .HandleAsync(new AuthorizationContext(token, provider), cancellationToken);
-        AppendC(AuthGuard.UserIdCookie, contract.Uid, _cookieOptions);
+        AppendC(AuthGuard.UserIdCookie, contract.Uid, CookieOptions);
         return NoContent();
     }
 
@@ -142,7 +130,7 @@ public class SessionController : ApplicationController
     {
         foreach (string cookie in HttpContext.Request.Cookies.Keys.Where(c =>
                      c.StartsWith("__xc", StringComparison.OrdinalIgnoreCase)))
-            DeleteC(cookie, _cookieOptions);
+            DeleteC(cookie, CookieOptions);
         //#NOTE invalidate session maybe
         return NoContent();
     }

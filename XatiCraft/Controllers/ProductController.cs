@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -153,7 +154,7 @@ public class ProductController : ApplicationController
         {
             ApiContract contract = await handler.HandleAsync(context, cancellationToken);
             if (contract is AddProductInCartContract { AsCookie: true } cartContract)
-                AppendC(cartContract.CookieKey, cartContract.ProtectedCookie);
+                AppendC(cartContract.CookieKey, cartContract.ProtectedCookie,CookieOptions);
         }
 
         return new ApiContract(context);
