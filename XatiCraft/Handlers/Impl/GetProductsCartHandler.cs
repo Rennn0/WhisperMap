@@ -45,6 +45,7 @@ internal class GetProductsCartHandler : IGetProductsHandler
 
         Dictionary<string, string> productOrder = cart.ProductOrderIds?
             .Select(po => po.Split('_'))
+            .DistinctBy(x => x[0])
             .ToDictionary(x => x[0], x => x[1])
             .Where(kvp => cart.ProductIds.Contains(kvp.Key))
             .ToDictionary() ?? [];

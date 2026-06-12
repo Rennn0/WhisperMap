@@ -140,8 +140,8 @@ public class SessionController : ApplicationController
     [HttpGet("lo")]
     public IActionResult Logout()
     {
-        DeleteC(AuthGuard.UserIdCookie);
-        DeleteC(AuthGuard.SessionCookie);
+        DeleteC(AuthGuard.UserIdCookie, _cookieOptions);
+        DeleteC(AuthGuard.SessionCookie,_cookieOptions);
         //#NOTE invalidate session maybe
         return NoContent();
     }
