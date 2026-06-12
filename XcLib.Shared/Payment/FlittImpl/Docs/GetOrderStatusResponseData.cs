@@ -129,7 +129,7 @@ public record GetOrderStatusResponseData
     ///     Order decline response code. Possible codes see in Response codes
     /// </summary>
 
-    [JsonPropertyName("response_code")] public string? ResponseCode { get; init; }
+    [JsonPropertyName("response_code")] public object? ResponseCode { get; init; }
 
     /// <summary>
     ///     Order response code description, see Response codes
