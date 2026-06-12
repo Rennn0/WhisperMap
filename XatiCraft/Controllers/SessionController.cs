@@ -140,8 +140,9 @@ public class SessionController : ApplicationController
     [HttpGet("lo")]
     public IActionResult Logout()
     {
-        DeleteC(AuthGuard.UserIdCookie, _cookieOptions);
-        DeleteC(AuthGuard.SessionCookie,_cookieOptions);
+        foreach (string cookie in HttpContext.Request.Cookies.Keys.Where(c =>
+                     c.StartsWith("__xc", StringComparison.OrdinalIgnoreCase)))
+            DeleteC(cookie, _cookieOptions);
         //#NOTE invalidate session maybe
         return NoContent();
     }

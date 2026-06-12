@@ -101,6 +101,7 @@ const onSearchBlur = () => {
 const onProfile = () => { /* TODO */ };
 
 const onLogout = () => {
+  sessionStorage.clear();
   logout().request.then(() => window.location.reload());
 };
 
