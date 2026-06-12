@@ -30,7 +30,7 @@ const handleVisit = (close: () => void) => {
     emit('visit', props.id);
 };
 
-const handlePay = (close: () => void) => {
+const handlePay = (_: () => void) => {
     // close();
     emit('pay', props.id);
 };
