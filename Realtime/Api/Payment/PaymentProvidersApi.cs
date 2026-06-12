@@ -29,7 +29,7 @@ public static partial class Api
                     ILoggerFactory loggerFactory) =>
                 {
                     if (hostEnvironment.IsDevelopment())
-                        return Results.Ok(tokenProvider.Create("b7dc9fb35e998892e77fdccf", "dev", "dev@xati.org",
+                        return Results.Text(tokenProvider.Create("b7dc9fb35e998892e77fdccf", "dev", "dev@xati.org",
                             permissions: [Permissions.PaymentCreate]));
 
                     ILogger logger = loggerFactory.CreateLogger("payments/token");
@@ -45,7 +45,7 @@ public static partial class Api
                     if (authInfo is not { AccountEnabled: true, VerifiedEmail: true, Email.Length: > 0 })
                         return Results.StatusCode(StatusCodes.Status418ImATeapot);
 
-                    return Results.Ok(tokenProvider.Create(userIdCookie, authInfo.Username, authInfo.Email,
+                    return Results.Text(tokenProvider.Create(userIdCookie, authInfo.Username, authInfo.Email,
                         permissions: [Permissions.PaymentCreate]));
 
                     string? GetLatestVersionCookie(string key) => context.Request.Cookies
