@@ -513,7 +513,7 @@ onMounted(async () => {
                         <span class="h-3 w-3 rounded-full" :class="isSelected(item.id) ? 'bg-primary' : 'bg-hover'" />
                     </button>
 
-                    <div class="rounded-2xl transition-all duration-150"
+                    <div class="rounded-2xl h-full transition-all duration-150"
                         :class="selectionMode && isSelected(item.id) ? 'ring-2 ring-primary/60' : ''">
                         <ProductItem :product="item" @select="onProductClick(item)" />
                     </div>
