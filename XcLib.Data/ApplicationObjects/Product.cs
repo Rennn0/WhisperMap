@@ -31,6 +31,7 @@ public record Product(
 
     [JsonPropertyName("resIds")] public List<uint>? ExistingResourceIds { get; set; }
     [JsonPropertyName("resIdsDelete")] public List<uint>? ResourceIdsTobeDelete { get; set; }
+    public List<ProductOrder>? Orders { get; set; }
 
     public static Product From(ProductModel model) =>
         new Product(model.Title, model.Description, model.Price)

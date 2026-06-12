@@ -54,10 +54,7 @@ public static partial class Api
                     });
                 await cartRepo.UpsertAsync(new ProductCart(userId)
                     {
-                        ProductOrderIds =
-                        [
-                            addedOrder.ObjId ?? ""
-                        ]
+                        ProductOrderIds = [$"{addedOrder.ProductId}_{addedOrder.ObjId}"]
                     },
                     CancellationToken.None);
 

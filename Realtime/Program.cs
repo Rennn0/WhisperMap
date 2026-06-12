@@ -44,6 +44,8 @@ public static partial class Program
             opt.AddPolicy("prod", pol =>
             {
                 pol.WithMethods("GET");
+                pol.AllowAnyHeader();
+                pol.AllowCredentials();
                 pol.WithOrigins(
                     "https://xati.org",
                     "https://www.xati.org"
@@ -52,6 +54,8 @@ public static partial class Program
             opt.AddPolicy("dev", pol =>
             {
                 pol.WithMethods("GET");
+                pol.AllowAnyHeader();
+                pol.AllowCredentials();
                 pol.WithOrigins(
                     "http://localhost:18000"
                 );
@@ -101,11 +105,10 @@ public static partial class Program
         builder.AddPayments();
         
         WebApplication app = builder.Build();
+        app.UseCors(app.Environment.IsDevelopment() ? "dev" : "prod");
         app.UseExceptionHandler();
         app.UseAuthentication();
         app.UseAuthorization();
-
-        app.UseCors(app.Environment.IsDevelopment() ? "dev" : "prod");
 
         RouteGroupBuilder mainGroup = app.MapGroup("/realtime");
         mainGroup.MapPaymentApi();

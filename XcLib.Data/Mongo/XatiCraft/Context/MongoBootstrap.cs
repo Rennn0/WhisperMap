@@ -98,11 +98,14 @@ public class MongoBootstrap : MongoConnector, IBootstrap
         [
             new AuthorizationInfoDoc
             {
-                Id = new ObjectId("5ab35807cbe1408eb214a11088b08163"),
+                Id = new ObjectId("b7dc9fb35e998892e77fdccf"),
                 Username = "dev",
                 Email = "dev@xati.org",
                 AccountEnabled = true,
-                VerifiedEmail = true
+                VerifiedEmail = true,
+                Created = DateTimeOffset.Parse("6/12/2025 12:20:00 PM +04:00"),
+                ProfilePicture =
+                    "https://randompicturegenerator.com/img/picture-generator/siyan-ren-qLiFcanSpuA-unsplash.jpg"
             }
         ];
 
@@ -110,12 +113,13 @@ public class MongoBootstrap : MongoConnector, IBootstrap
             new UpdateOneModel<AuthorizationInfoDoc>(
                 Builders<AuthorizationInfoDoc>.Filter.Eq(x => x.Id, d.Id),
                 Builders<AuthorizationInfoDoc>.Update
-                    .SetOnInsert(x => x.AccountEnabled, d.AccountEnabled)
+                    .Set(x => x.AccountEnabled, d.AccountEnabled)
                     .SetOnInsert(x => x.Created, d.Created)
-                    .SetOnInsert(x => x.Email, d.Email)
-                    .SetOnInsert(x => x.Username, d.Username)
-                    .SetOnInsert(x => x.VerifiedEmail, d.VerifiedEmail)
-                    .SetOnInsert(x => x.Id, d.Id)
+                    .Set(x => x.ProfilePicture, d.ProfilePicture)
+                    .Set(x => x.Email, d.Email)
+                    .Set(x => x.Username, d.Username)
+                    .Set(x => x.VerifiedEmail, d.VerifiedEmail)
+                    .Set(x => x.Id, d.Id)
             )
             {
                 IsUpsert = true
@@ -132,7 +136,7 @@ public class MongoBootstrap : MongoConnector, IBootstrap
             new ProductCartDoc
             {
                 Id = new ObjectId("6a2a9e5227e9caea6921f3ee"),
-                UserId = "5ab35807cbe1408eb214a11088b08163",
+                UserId = "b7dc9fb35e998892e77fdccf",
                 ProductIds = ["-10"],
                 ProductOrderIds = []
             }
@@ -144,8 +148,8 @@ public class MongoBootstrap : MongoConnector, IBootstrap
                 Builders<ProductCartDoc>.Update
                     .SetOnInsert(x => x.ProductIds, d.ProductIds)
                     .SetOnInsert(x => x.ProductOrderIds, d.ProductOrderIds)
-                    .SetOnInsert(x => x.UserId, d.UserId)
-                    .SetOnInsert(x => x.Id, d.Id)
+                    .Set(x => x.UserId, d.UserId)
+                    .Set(x => x.Id, d.Id)
             )
             {
                 IsUpsert = true

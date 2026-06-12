@@ -14,6 +14,7 @@ using XcLib.Data;
 using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
 using XcLib.Data.SqlServer.Realtime.Entities;
+using XcLib.Shared;
 
 namespace XatiCraft;
 
@@ -107,6 +108,7 @@ public static class Program
                 return default;
             };
         });
+        builder.Services.AddTokenAuth(builder.Configuration);
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(opt =>
         {

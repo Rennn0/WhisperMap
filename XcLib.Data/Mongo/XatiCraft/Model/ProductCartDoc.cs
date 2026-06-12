@@ -8,5 +8,5 @@ public record ProductCartDoc : MongoDoc
 {
     public string? UserId { get; init; }
     public HashSet<string>? ProductIds { get; init; }
-    [BsonElement("p_orders")] public HashSet<string>? ProductOrderIds  { get; init; } 
+    [BsonElement("p_orders")] public HashSet<string>? ProductOrderIds { get; init; } 
 }

@@ -28,7 +28,7 @@ public static partial class Api
                     [FromServices] IAuthorizationRepo authRepo, IWebHostEnvironment hostEnvironment) =>
                 {
                     if (hostEnvironment.IsDevelopment())
-                        return tokenProvider.Create("5ab35807cbe1408eb214a11088b08163", "dev", "dev@xati.org",
+                        return tokenProvider.Create("b7dc9fb35e998892e77fdccf", "dev", "dev@xati.org",
                             permissions: [Permissions.PaymentCreate]);
 
                     string? sessionCookie = context.Request.Cookies["__xc_se"];

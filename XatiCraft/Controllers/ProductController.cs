@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using XatiCraft.ApiContracts;
@@ -66,7 +67,9 @@ public class ProductController : ApplicationController
             cancellationToken
         );
 
+
     /// <summary>
+    /// 
     /// </summary>
     /// <param name="handlers"></param>
     /// <param name="query"></param>
@@ -77,7 +80,9 @@ public class ProductController : ApplicationController
     /// <param name="fromCart"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     [HttpGet]
+    [AllowAnonymous]
     // [ResponseCache(Location = ResponseCacheLocation.Client,VaryByQueryKeys =
     // ["q", "o", "b", "ct", "fcs", "fct" ],NoStore = false,Duration = 300)]
     public async Task<ApiContract> GetProducts(

@@ -9,14 +9,17 @@ namespace XatiCraft.Handlers.Impl;
 
 internal class GetProductsCartHandler : IGetProductsHandler
 {
+    private readonly IProductOrderRepo _productOrderRepo;
     private readonly IProductCartRepo _cartMongo;
     private readonly IProductRepo _productRepo;
 
     public GetProductsCartHandler(
         IEnumerable<IProductCartRepo> cartRepos,
-        IEnumerable<IProductRepo> productRepos
+        IEnumerable<IProductRepo> productRepos,
+        IProductOrderRepo productOrderRepo
     )
     {
+        _productOrderRepo = productOrderRepo;
         _cartMongo = cartRepos.First(c => c is ProductCartRepoAdapter);
         _productRepo = productRepos.First(p => p is ProductRepo);
     }
@@ -31,9 +34,19 @@ internal class GetProductsCartHandler : IGetProductsHandler
 
         ProductCart? cart = await _cartMongo.SelectAsync(context.UserId, cancellationToken);
 
-        if (cart is null)
+        if (cart is not { ProductIds.Count: > 0 })
             return new ApiContract(context);
 
+        Dictionary<string, string> productOrder = cart.ProductOrderIds?
+            .Select(po => po.Split('_'))
+            .ToDictionary(x => x[0], x => x[1])
+            .Where(kvp => cart.ProductIds.Contains(kvp.Key))
+            .ToDictionary() ?? [];
+
+        List<ProductOrder> orders = (await Task.WhenAll(productOrder.Select(po =>
+                _productOrderRepo.GetAsync(new ProductOrder { ObjId = po.Value }, 0, cancellationToken))))
+            .SelectMany(x => x).DistinctBy(x => x.ObjId).ToList();
+        
         List<Product> products = await _productRepo.GetAsync(
             cart.ProductIds.Select(long.Parse),
             cursor: new GetProductsGeneralHandler.Cursor
@@ -50,7 +63,15 @@ internal class GetProductsCartHandler : IGetProductsHandler
                 PreviewImg = p
                     .ProductMetadata?.Where(pm => !string.IsNullOrEmpty(pm.Location))
                     .MinBy(pm => pm.Id)
-                    ?.Location
+                    ?.Location,
+                Orders = orders.Where(o => o.ProductId == p.Id).Select(x => new ProductOrder
+                {
+                    Amount = x.Amount,
+                    OrderStatus = x.OrderStatus,
+                    CheckoutUrl = x.CheckoutUrl,
+                    Paid = x.OrderStatus == "approved",
+                    Expired = x.OrderStatus == "expired"
+                }).ToList()
             }),
             context
         );

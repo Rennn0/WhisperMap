@@ -24,7 +24,7 @@ public class AuthorizationRepoAdapter : MongoBase<AuthorizationInfoDoc>, IAuthor
         CancellationToken cancellationToken)
     {
         FilterDefinition<AuthorizationInfoDoc>? filter =
-            Builders<AuthorizationInfoDoc>.Filter.Eq(x => x.Id, ObjectId.Parse(id));
+            Builders<AuthorizationInfoDoc>.Filter.Eq(x => x.Id, new ObjectId(id));
         AuthorizationInfoDoc? authInfo = await Collection.Find(filter)
             .FirstOrDefaultAsync(cancellationToken);
         return authInfo is not { Username.Length: > 0, Created: not null }
