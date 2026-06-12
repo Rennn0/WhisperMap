@@ -14,8 +14,8 @@ public record ProductOrder(string OrderOwner, long ProductId, sbyte PaymentProvi
     public string? CheckoutUrl { get; init; }
     public string? ProviderOrderId { get; init; }
     public string? InternalOrderId { get; init; }
-    public bool? Paid { get; init; }
-    public bool? Expired { get; init; }
+    public bool? Paid { get; set; }
+    public bool? Expired { get; set; }
 
     public static ProductOrder From(ProductOrderDoc doc) =>
         new ProductOrder(doc.OrderOwner, doc.ProductId, doc.PaymentProvider, doc.Amount)

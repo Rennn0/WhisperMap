@@ -3,6 +3,9 @@ using XatiCraft.Handlers.Api;
 using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
 using XcLib.Data.Mongo.XatiCraft;
+using XcLib.Shared.Payment;
+using XcLib.Shared.Payment.FlittImpl;
+using XcLib.Shared.Payment.Interfaces;
 using ProductRepo = XcLib.Data.Postgres.XatiCraft.ProductRepo;
 
 namespace XatiCraft.Handlers.Impl;
@@ -10,16 +13,19 @@ namespace XatiCraft.Handlers.Impl;
 internal class GetProductsCartHandler : IGetProductsHandler
 {
     private readonly IProductOrderRepo _productOrderRepo;
+    private readonly IPaymentProvider _paymentProvider;
     private readonly IProductCartRepo _cartMongo;
     private readonly IProductRepo _productRepo;
 
     public GetProductsCartHandler(
         IEnumerable<IProductCartRepo> cartRepos,
         IEnumerable<IProductRepo> productRepos,
-        IProductOrderRepo productOrderRepo
+        IProductOrderRepo productOrderRepo,
+        IPaymentProvider paymentProvider
     )
     {
         _productOrderRepo = productOrderRepo;
+        _paymentProvider = paymentProvider;
         _cartMongo = cartRepos.First(c => c is ProductCartRepoAdapter);
         _productRepo = productRepos.First(p => p is ProductRepo);
     }
@@ -46,6 +52,16 @@ internal class GetProductsCartHandler : IGetProductsHandler
         List<ProductOrder> orders = (await Task.WhenAll(productOrder.Select(po =>
                 _productOrderRepo.GetAsync(new ProductOrder { ObjId = po.Value }, 0, cancellationToken))))
             .SelectMany(x => x).DistinctBy(x => x.ObjId).ToList();
+
+        foreach (ProductOrder order in orders.Where(order => !string.IsNullOrEmpty(order.InternalOrderId)))
+        {
+            OrderStatus orderStatus =
+                await _paymentProvider.GetOrderStatusAsync(new GetRedirectOrderStatusArgs(order.InternalOrderId!),
+                    cancellationToken);
+            if (orderStatus is not RedirectedOrderStatus ros) continue;
+            order.Expired = ros.Status == "expired";
+            order.Paid = ros.Status == "approved";
+        }
         
         List<Product> products = await _productRepo.GetAsync(
             cart.ProductIds.Select(long.Parse),
@@ -55,7 +71,7 @@ internal class GetProductsCartHandler : IGetProductsHandler
             },
             cancellationToken: cancellationToken
         );
-
+        
         GetProductsContract contract = new GetProductsContract(
             products.Select(p => new Product(p.Title, p.Description, p.Price)
             {
@@ -69,8 +85,8 @@ internal class GetProductsCartHandler : IGetProductsHandler
                     Amount = x.Amount,
                     OrderStatus = x.OrderStatus,
                     CheckoutUrl = x.CheckoutUrl,
-                    Paid = x.OrderStatus == "approved",
-                    Expired = x.OrderStatus == "expired"
+                    Paid = x.Paid,
+                    Expired = x.Expired
                 }).ToList()
             }),
             context
