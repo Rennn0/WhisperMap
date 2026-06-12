@@ -49,7 +49,7 @@ public static class ServiceExtensions
         return serviceCollection;
     }
     
-    public static IHostApplicationBuilder AddPayments(this IHostApplicationBuilder hostApplicationBuilder)
+    public static IHostApplicationBuilder AddPaymentsModule(this IHostApplicationBuilder hostApplicationBuilder)
     {
         hostApplicationBuilder.Services.Configure<PaymentConfiguration>(
             hostApplicationBuilder.Configuration.GetSection(nameof(PaymentConfiguration)));

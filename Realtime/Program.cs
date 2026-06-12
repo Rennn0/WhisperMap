@@ -102,7 +102,7 @@ public static partial class Program
         builder.AddSqlLogging<RealtimeLog>();
         builder.AddSqlServer();
         builder.AddMongo();
-        builder.AddPayments();
+        builder.AddPaymentsModule();
         
         WebApplication app = builder.Build();
         app.UseCors(app.Environment.IsDevelopment() ? "dev" : "prod");

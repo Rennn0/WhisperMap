@@ -179,7 +179,7 @@ public static class Program
 
         builder.AddSqlLogging<XaticraftLog>();
         builder.AddXcLibDataModule();
-        builder.AddPayments();
+        builder.AddPaymentsModule();
 #if USE_CERT
         builder.Services.AddCert();
 #endif
