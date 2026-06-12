@@ -36,6 +36,7 @@ public class SessionController : ApplicationController
             SameSite = SameSiteMode.Lax,
             Expires = DateTimeOffset.Now.AddDays(7),
             IsEssential = true,
+            Domain = "xati.org"
         };
     }
 
