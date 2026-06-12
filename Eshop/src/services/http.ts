@@ -1,12 +1,13 @@
-import ky, { type Options } from "ky";
+import ky, { type KyInstance, type Options } from "ky";
 import type { UserInfo, Product, UploadableProduct, ApiMeta, AuditLog } from "../types";
 import type { authProvider } from "../components/auth/AuthView.vue";
-
+const realtimeHost = `${import.meta.env.VITE_REALTIME_HOST}/realtime`;
 const headers = new Headers();
 headers.set("content-type", "application/json; charset=utf-8");
 const auditClient = ky.create({ prefixUrl: "cl" })
 const appHeaders = {
-    auditHeader: "xc-audit"
+    auditHeader: "xc-audit",
+    auth: "authorization"
 }
 const noAudit = () => ({ [appHeaders.auditHeader]: "0" });
 const httpClint = ky.create({
@@ -72,10 +73,16 @@ const httpClint = ky.create({
     }
 });
 
-const makeGet = <T>(url: string, options?: Options) => {
+const makeGet = <T>(url: string, options?: Options, client?: KyInstance) => {
     const controller = new AbortController();
+    const token = sessionStorage.getItem("t");
+    const mergedHeaders: Record<string, string> = {
+        ...(options?.headers as Record<string, string>),
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+    };
+
     return {
-        request: httpClint.get(url, { ...options, signal: controller.signal }).json<T>(),
+        request: (client ?? httpClint).get(url, { ...options, headers: mergedHeaders, signal: controller.signal }).json<T>(),
         cancel: (reason?: any) => controller.abort(reason ?? { abort: url })
     };
 }
@@ -149,3 +156,14 @@ export const sendAuthToken = (token: string, provider: authProvider) => makeGet<
 export const logout = () => makeGet<void>("s/lo", { headers: noAudit() })
 
 export const sendAudit = (arg: AuditLog) => makePost<void>("audit", arg);
+
+export const getToken = (): Promise<string> => ky(`${realtimeHost}/payments/token`, { credentials: "include" }).text()
+
+export const requestPay = (productId: string, amount: string, description: string) => {
+    const params = new URLSearchParams();
+    params.set('pId', productId);
+    params.set('p', '1');
+    params.set('a', amount);
+    params.set('d', description);
+    return makeGet<{ checkoutUrl: string }>(`${realtimeHost}/payments/order?${params.toString()}`, { credentials: "include" }, ky.create());
+} 

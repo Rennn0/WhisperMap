@@ -14,16 +14,25 @@ const props = defineProps<TCartItem & {
 const emit = defineEmits<{
     remove: [id: number];
     visit: [id: number];
+    pay: [id: number]
 }>();
 
 const showRemoveConfirmation = ref(false);
 const showLoading = ref(false);
 
 const formattedPrice = computed(() => `$${(props.price ?? 0).toFixed(2)}`);
+const hasUnpaidOrders = computed(() => (props.orders ?? []).some(o => !o.paid));
+const isEmpty = computed(() => (props.orders ?? []).length === 0);
+const showPayButton = computed(() => isEmpty.value || hasUnpaidOrders.value);
 
 const handleVisit = (close: () => void) => {
     close();
     emit('visit', props.id);
+};
+
+const handlePay = (close: () => void) => {
+    // close();
+    emit('pay', props.id);
 };
 
 const handleRemoveClick = (close: () => void) => {
@@ -86,7 +95,18 @@ const handleRemoveConfirmed = () => {
                                     Visit
                                 </button>
 
-                                <button type="button" role="menuitem"
+                                <button v-if="showPayButton" type="button" role="menuitem"
+                                    class="w-full rounded-md px-3 py-2 text-left text-sm text-primary transition-colors hover:bg-hover"
+                                    @click="handlePay(close)">
+                                    Pay
+                                </button>
+
+                                <button v-else type="button" role="menuitem"
+                                    class="w-full rounded-md px-3 py-2 text-left text-sm text-success-text transition-colors hover:bg-success-bg">
+                                    Paid
+                                </button>
+
+                                <button v-if="showPayButton" type="button" role="menuitem"
                                     class="w-full rounded-md px-3 py-2 text-left text-sm text-danger-text transition-colors hover:bg-danger-bg"
                                     @click="handleRemoveClick(close)">
                                     Remove

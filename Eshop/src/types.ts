@@ -16,13 +16,24 @@ export interface Product {
     preview_img?: string,
     in_cart?: boolean,
     resources?: string[],
-    res_ids?: number[]
+    res_ids?: number[],
+    orders?: CartItemOrder[]
 }
 
 export interface TCartItem {
     id: number,
     title: string,
-    price?: number
+    price?: number,
+    description?: string,
+    orders?: CartItemOrder[],
+}
+
+export interface CartItemOrder {
+    amount: number,
+    order_status: string,
+    checkout_url: string,
+    paid?: boolean,
+    expired?: boolean
 }
 
 export interface UserInfo {

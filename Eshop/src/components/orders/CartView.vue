@@ -3,25 +3,27 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import type { TCartItem } from '../../types';
 import CartItem from './CartItem.vue';
 import { useRouter } from 'vue-router';
-import { getProducts, removeProduct } from '../../services/http';
+import { getProducts, getToken, removeProduct, requestPay } from '../../services/http';
 
 const router = useRouter();
-const orders = reactive<TCartItem[]>([]);
+const cartItems = reactive<TCartItem[]>([]);
 const loading = ref(true);
 
 onMounted(() => {
+    getToken().then(t => sessionStorage.setItem("t", t)).catch(console.error);
     const { request } = getProducts({ fromCookie: true, fromCart: true });
-
     request
         .then(data => {
-            orders.splice(0, orders.length);
+            cartItems.splice(0, cartItems.length);
 
             data.products.forEach(p =>
-                orders.push({
+                cartItems.push({
                     id: p.id,
                     price: p.price,
                     title: p.title,
                     preview_img: p.preview_img,
+                    description: p.description,
+                    orders: p.orders
                 } as TCartItem & { preview_img?: string })
             );
         })
@@ -32,9 +34,9 @@ onMounted(() => {
 
 const removeItem = (id: number) => {
     removeProduct(id).request.then(() => {
-        const index = orders.findIndex(o => o.id === id);
+        const index = cartItems.findIndex(o => o.id === id);
         if (index !== -1) {
-            orders.splice(index, 1);
+            cartItems.splice(index, 1);
         }
     });
 };
@@ -43,8 +45,22 @@ const visitItem = (id: number) => {
     router.push({ name: 'product', params: { id } });
 };
 
+const payForItem = (id: number) => {
+    const item = cartItems.find(c => c.id == id);
+    const existingCheckout = item?.orders?.find(x => !x.paid && !x.expired);
+    if (existingCheckout) {
+        window.open(existingCheckout.checkout_url, '_blank')?.focus();
+    }
+    else if (item?.id && item.price && item.description)
+        requestPay(item.id.toString(), item.price.toString().replace('.', ''), item.description).request.then(d => {
+            console.log(d);
+            window.open(d.checkoutUrl, '_blank')?.focus();
+        })
+};
+
+
 const total = computed(() =>
-    orders.reduce((sum, item) => sum + (item.price ?? 0), 0)
+    cartItems.reduce((sum, item) => sum + (item.price ?? 0), 0)
 );
 </script>
 
@@ -55,12 +71,12 @@ const total = computed(() =>
                 {{ $t('cart.title') }}
             </h2>
 
-            <div v-if="orders.length" class="rounded-full bg-subtle px-3 py-1.5 text-sm font-medium text-text">
+            <div v-if="cartItems.length" class="rounded-full bg-subtle px-3 py-1.5 text-sm font-medium text-text">
                 ${{ total.toFixed(2) }}
             </div>
         </div>
 
-        <div v-if="!loading && !orders.length" class="rounded-2xl border border-subtle bg-surface p-6">
+        <div v-if="!loading && !cartItems.length" class="rounded-2xl border border-subtle bg-surface p-6">
             <div class="grid gap-3">
                 <div class="h-5 w-32 rounded-lg bg-subtle" />
                 <div class="h-4 w-48 rounded-lg bg-subtle" />
@@ -68,9 +84,9 @@ const total = computed(() =>
         </div>
 
         <ul v-else class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <li v-for="o in orders" :key="o.id">
+            <li v-for="o in cartItems" :key="o.id">
                 <CartItem :id="o.id" :title="o.title" :price="o.price" :preview_img="(o as any).preview_img"
-                    @remove="removeItem" @visit="visitItem" />
+                    :orders="o.orders" @remove="removeItem" @visit="visitItem" @pay="payForItem" />
             </li>
 
             <li v-if="loading" v-for="i in 4" :key="'skeleton-' + i">

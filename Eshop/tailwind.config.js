@@ -16,6 +16,10 @@ export default {
         danger: {
           bg: 'var(--color-danger-bg)',
           text: 'var(--color-danger-text)'
+        },
+        success: {
+          bg: 'var(--color-success-bg)',
+          text: 'var(--color-success-text)'
         }
       },
     },

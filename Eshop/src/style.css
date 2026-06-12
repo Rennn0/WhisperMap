@@ -20,12 +20,12 @@ body {
 }
 
 ::-webkit-scrollbar {
-    width: 6px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 9999px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 9999px;
 }
 
 :root {
@@ -36,6 +36,8 @@ body {
   --color-hover: rgba(0, 0, 0, 0.04);
   --color-danger-bg: rgba(255, 0, 0, 0.10);
   --color-danger-text: #D14343;
+  --color-success-bg: rgba(0, 200, 83, 0.12);
+  --color-success-text: #1E8E3E;
 }
 
 /* Dark theme */
@@ -47,6 +49,8 @@ html.dark {
   --color-hover: rgba(255, 255, 255, 0.06);
   --color-danger-bg: rgba(255, 77, 77, 0.15);
   --color-danger-text: #FF6B6B;
+  --color-success-bg: rgba(0, 255, 135, 0.14);
+  --color-success-text: #5CFF9D;
 }
 
 /* Solarized theme */
@@ -58,6 +62,8 @@ html.solarized {
   --color-hover: rgba(0, 0, 0, 0.05);
   --color-danger-bg: rgba(220, 50, 47, 0.15);
   --color-danger-text: #DC322F;
+  --color-success-bg: rgba(133, 153, 0, 0.15);
+  --color-success-text: #859900;
 }
 
 /* High Contrast theme */
@@ -69,6 +75,8 @@ html.highcontrast {
   --color-hover: rgba(255, 255, 255, 0.15);
   --color-danger-bg: rgba(255, 0, 0, 0.4);
   --color-danger-text: #FF4444;
+  --color-success-bg: rgba(0, 255, 0, 0.35);
+  --color-success-text: #00FF00;
 }
 
 .text-danger-text {
