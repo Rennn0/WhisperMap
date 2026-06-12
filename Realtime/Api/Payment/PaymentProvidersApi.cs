@@ -50,11 +50,14 @@ public static partial class Api
                         permissions: [Permissions.PaymentCreate]);
 
                     string? GetLatestVersionCookie(string key) => context.Request.Cookies
-                        .Where(c => c.Key.StartsWith(key)).Select(c =>
+                        .Where(c => c.Key.StartsWith(key))
+                        .Select(c =>
                         {
                             string version = c.Key.Split('_')[^1];
                             return (version, c.Value);
-                        }).MaxBy(c => c.version).Value;
+                        }).OrderByDescending(c => c.version)
+                        .Select(c => c.version)
+                        .FirstOrDefault();
                 })
             .WithTags("payment");
     }
