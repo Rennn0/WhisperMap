@@ -11,19 +11,21 @@ namespace XatiCraft.Guards;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public abstract class AuthGuard : Attribute, IAuthorizationFilter
 {
+    //#WARN mustbe number, ascending order
+    private const string V = "1";
     /// <summary>
     ///     client must have cookie
     /// </summary>
-    public const string SessionCookie = "__xc_se";
+    public const string SessionCookie = $"__xc_se_{V}";
 
+    /// <summary>
+    /// </summary>
+    public const string UserIdCookie = $"__xc_uid_{V}";
     /// <summary>
     ///     policy for rate limiting by session
     /// </summary>
     public const string SessionPolicy = "__xc_se_policy";
 
-    /// <summary>
-    /// </summary>
-    public const string UserIdCookie = "__xc_uid";
 
     /// <summary>
     ///     must header for initializing session cookie

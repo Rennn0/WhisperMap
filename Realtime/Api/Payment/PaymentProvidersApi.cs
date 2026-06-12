@@ -26,16 +26,18 @@ public static partial class Api
 
         route.MapGet("/payments/token",
                 async (HttpContext context, [FromServices] TokenProvider tokenProvider,
-                    [FromServices] IAuthorizationRepo authRepo, IWebHostEnvironment hostEnvironment) =>
+                    [FromServices] IAuthorizationRepo authRepo, IWebHostEnvironment hostEnvironment,
+                    ILoggerFactory loggerFactory) =>
                 {
                     if (hostEnvironment.IsDevelopment())
                         return tokenProvider.Create("b7dc9fb35e998892e77fdccf", "dev", "dev@xati.org",
                             permissions: [Permissions.PaymentCreate]);
 
-                    string? sessionCookie = context.Request.Cookies["__xc_se"];
-                    string? userIdCookie = context.Request.Cookies["__xc_uid"];
+                    ILogger logger = loggerFactory.CreateLogger("payments/token");
+                    string? sessionCookie = GetLatestVersionCookie("__xc_se");
+                    string? userIdCookie = GetLatestVersionCookie("__xc_uid");
 
-                    Console.WriteLine($"{sessionCookie} {userIdCookie}");
+                    logger.LogInformation("{SessionCookie} {UserIdCookie}", sessionCookie, userIdCookie);
 
                     if (string.IsNullOrEmpty(sessionCookie) || string.IsNullOrEmpty(userIdCookie))
                         throw new ApplicationException(StatusCodes.Status400BadRequest);
@@ -46,6 +48,13 @@ public static partial class Api
                         
                     return tokenProvider.Create(userIdCookie, authInfo.Username, authInfo.Email,
                         permissions: [Permissions.PaymentCreate]);
+
+                    string? GetLatestVersionCookie(string key) => context.Request.Cookies
+                        .Where(c => c.Key.StartsWith("__xc_se")).Select(c =>
+                        {
+                            string version = c.Key.Split('_')[^1];
+                            return (version, c.Value);
+                        }).MaxBy(c => c.version).Value;
                 })
             .WithTags("payment");
     }
