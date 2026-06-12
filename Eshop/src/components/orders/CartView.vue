@@ -56,6 +56,14 @@ const payForItem = (id: number) => {
         requestPay(item.id.toString(), amountInCents.toString(), item.title).request.then(d => {
             console.log(d);
             window.open(d.checkoutUrl, '_blank')?.focus();
+        }).catch(err => {
+            if (err?.response?.status === 401) {
+                sessionStorage.removeItem("t");
+                window.location.href = "/auth";
+                return;
+            }
+
+            console.error(err);
         })
     }
 };
