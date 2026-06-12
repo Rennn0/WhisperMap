@@ -51,9 +51,9 @@ const payForItem = (id: number) => {
     if (existingCheckout) {
         window.open(existingCheckout.checkout_url, '_blank')?.focus();
     }
-    else if (item?.id && item.price && item.description) {
+    else if (item?.id && item.price) {
         const amountInCents = Math.round(item.price * 100);
-        requestPay(item.id.toString(), amountInCents.toString(), item.description).request.then(d => {
+        requestPay(item.id.toString(), amountInCents.toString(), item.title).request.then(d => {
             console.log(d);
             window.open(d.checkoutUrl, '_blank')?.focus();
         })
