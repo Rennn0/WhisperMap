@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
 using XcLib.Shared.Utils;
-using ApplicationException = Realtime.Exceptions.ApplicationException;
 
 namespace Realtime.Api.Payment;
 
@@ -30,8 +29,8 @@ public static partial class Api
                     ILoggerFactory loggerFactory) =>
                 {
                     if (hostEnvironment.IsDevelopment())
-                        return tokenProvider.Create("b7dc9fb35e998892e77fdccf", "dev", "dev@xati.org",
-                            permissions: [Permissions.PaymentCreate]);
+                        return Results.Ok(tokenProvider.Create("b7dc9fb35e998892e77fdccf", "dev", "dev@xati.org",
+                            permissions: [Permissions.PaymentCreate]));
 
                     ILogger logger = loggerFactory.CreateLogger("payments/token");
                     string? sessionCookie = GetLatestVersionCookie("__xc_se");
@@ -40,14 +39,14 @@ public static partial class Api
                     logger.LogInformation("{SessionCookie} {UserIdCookie}", sessionCookie, userIdCookie);
 
                     if (string.IsNullOrEmpty(sessionCookie) || string.IsNullOrEmpty(userIdCookie))
-                        throw new ApplicationException(StatusCodes.Status400BadRequest);
+                        return Results.StatusCode(StatusCodes.Status406NotAcceptable);
 
                     AuthorizationInfo? authInfo = await authRepo.SelectAsync(userIdCookie, CancellationToken.None);
                     if (authInfo is not { AccountEnabled: true, VerifiedEmail: true, Email.Length: > 0 })
-                        throw new ApplicationException(StatusCodes.Status204NoContent);
-                        
-                    return tokenProvider.Create(userIdCookie, authInfo.Username, authInfo.Email,
-                        permissions: [Permissions.PaymentCreate]);
+                        return Results.StatusCode(StatusCodes.Status418ImATeapot);
+
+                    return Results.Ok(tokenProvider.Create(userIdCookie, authInfo.Username, authInfo.Email,
+                        permissions: [Permissions.PaymentCreate]));
 
                     string? GetLatestVersionCookie(string key) => context.Request.Cookies
                         .Where(c => c.Key.StartsWith(key))
