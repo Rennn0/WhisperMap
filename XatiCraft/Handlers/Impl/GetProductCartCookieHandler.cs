@@ -8,7 +8,6 @@ namespace XatiCraft.Handlers.Impl;
 /// <inheritdoc />
 internal class GetProductCartCookieHandler : IProductCartHandler
 {
-    private const string CookieKey = "__xc_pcc";
     private const char Delimiter = ';';
     private readonly IGetProductsHandler _getProductsHandler;
     private readonly HttpContext _httpContext;
@@ -47,7 +46,7 @@ internal class GetProductCartCookieHandler : IProductCartHandler
             true,
             _security.Pack(newCookie),
             newCookie,
-            CookieKey,
+            VersioningConst.CartItemsCookie,
             context
         );
         return new ValueTask<ApiContract>(contract);
@@ -88,7 +87,7 @@ internal class GetProductCartCookieHandler : IProductCartHandler
                 true,
                 _security.Pack(newCookie),
                 newCookie,
-                CookieKey,
+                VersioningConst.CartItemsCookie,
                 context
             )
         );
@@ -111,7 +110,7 @@ internal class GetProductCartCookieHandler : IProductCartHandler
     private string GetPlainCookie() =>
         !_httpContext
             .Request.Cookies.ToDictionary()
-            .TryGetValue(CookieKey, out string? protectedCookie)
+            .TryGetValue(VersioningConst.CartItemsCookie, out string? protectedCookie)
             ? string.Empty
             : _security.UnPack(protectedCookie);
 }

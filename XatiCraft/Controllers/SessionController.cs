@@ -39,7 +39,7 @@ public class SessionController : ApplicationController
     {
         if (
             !HttpContext.Request.Headers.TryGetValue(
-                AuthGuard.IpHeader,
+                VersioningConst.IpHeader,
                 out StringValues forwardHeader
             )
         )
@@ -50,9 +50,10 @@ public class SessionController : ApplicationController
         string protectedData = _aspProtector.Pack(
             JsonSerializer.Serialize(new SessionData(ip, Guid.NewGuid().ToString("N")))
         );
-        AppendC(AuthGuard.SessionCookie, protectedData, CookieOptions);
+        AppendC(VersioningConst.SessionCookie, protectedData, CookieOptions);
         if (User.Identity is { IsAuthenticated: true })
-            AppendC(AuthGuard.UserIdCookie, User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "", CookieOptions);
+            AppendC(VersioningConst.UserIdCookie, User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "",
+                CookieOptions);
         return NoContent();
     }
 
@@ -118,7 +119,7 @@ public class SessionController : ApplicationController
                     }
                 )
                 .HandleAsync(new AuthorizationContext(token, provider), cancellationToken);
-        AppendC(AuthGuard.UserIdCookie, contract.Uid, CookieOptions);
+        AppendC(VersioningConst.UserIdCookie, contract.Uid, CookieOptions);
         return NoContent();
     }
 

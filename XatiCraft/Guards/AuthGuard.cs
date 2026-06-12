@@ -11,27 +11,6 @@ namespace XatiCraft.Guards;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public abstract class AuthGuard : Attribute, IAuthorizationFilter
 {
-    //#WARN mustbe number, ascending order
-    private const string V = "1";
-    /// <summary>
-    ///     client must have cookie
-    /// </summary>
-    public const string SessionCookie = $"__xc_se_{V}";
-
-    /// <summary>
-    /// </summary>
-    public const string UserIdCookie = $"__xc_uid_{V}";
-    /// <summary>
-    ///     policy for rate limiting by session
-    /// </summary>
-    public const string SessionPolicy = "__xc_se_policy";
-
-
-    /// <summary>
-    ///     must header for initializing session cookie
-    /// </summary>
-    public const string IpHeader = "x-public-ip";
-
     private ILogger<AuthGuard>? _logger;
 
     /// <summary>
@@ -70,7 +49,7 @@ public abstract class AuthGuard : Attribute, IAuthorizationFilter
     protected virtual bool TryGetSessionData(HttpContext context, out SessionData? sessionData)
     {
         sessionData = null;
-        if (!context.Request.Cookies.TryGetValue(SessionCookie, out string? protectedSession))
+        if (!context.Request.Cookies.TryGetValue(VersioningConst.SessionCookie, out string? protectedSession))
         {
             _logger ??= context.RequestServices.GetRequiredService<ILogger<AuthGuard>>();
             _logger.LogWarning("no session cookie");
