@@ -31,6 +31,7 @@ export interface TCartItem {
 export interface CartItemOrder {
     order_status: string,
     checkout_url: string,
+    use_link?:boolean
 }
 
 export interface UserInfo {

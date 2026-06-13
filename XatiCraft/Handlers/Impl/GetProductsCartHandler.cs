@@ -64,6 +64,9 @@ internal class GetProductsCartHandler : IGetProductsHandler
                         token);
                 if (orderStatus is not RedirectedOrderStatus ros) continue;
                 order.OrderStatus ??= _paymentProvider.MapStatus(ros.Status).ToString();
+                order.UseLink =
+                    new[] { AppOrderStatus.None, AppOrderStatus.Expired, AppOrderStatus.Declined }.Contains(
+                        _paymentProvider.MapStatus(ros.Status));
                 if (productOrderes.TryGetValue(strings[0], out List<ProductOrder>? list))
                     list.Add(order);
                 else

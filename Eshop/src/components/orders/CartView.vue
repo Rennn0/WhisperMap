@@ -47,7 +47,7 @@ const visitItem = (id: number) => {
 
 const payForItem = (id: number) => {
     const item = cartItems.find(c => c.id == id);
-    const existingCheckout = item?.orders?.find(x => x.order_status.toLowerCase() == "none");
+    const existingCheckout = item?.orders?.find(x => x.use_link);
     if (existingCheckout) {
         window.open(existingCheckout.checkout_url, '_blank')?.focus();
     }
