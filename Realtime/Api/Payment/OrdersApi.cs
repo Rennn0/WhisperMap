@@ -50,7 +50,7 @@ public static partial class Api
                         o.OrderStatus = ((RedirectedOrderStatus)os).Status;
                     }
 
-                    if (new[] { AppOrderStatus.None, AppOrderStatus.Expired, AppOrderStatus.Declined }.Contains(
+                    if (new[] { AppOrderStatus.None, AppOrderStatus.Declined }.Contains(
                             paymentProvider.MapStatus(o!.OrderStatus)))
                         return new CreatedRedirectOrder(o.CheckoutUrl!, o.InternalOrderId!);
                 }
