@@ -21,7 +21,7 @@ const showRemoveConfirmation = ref(false);
 const showLoading = ref(false);
 
 const formattedPrice = computed(() => `$${(props.price ?? 0).toFixed(2)}`);
-const hasUnpaidOrders = computed(() => (props.orders ?? []).some(o => !o.paid));
+const hasUnpaidOrders = computed(() => (props.orders ?? []).some(o => o.order_status.toLowerCase() == "none"));
 const isEmpty = computed(() => (props.orders ?? []).length === 0);
 const showPayButton = computed(() => isEmpty.value || hasUnpaidOrders.value);
 
