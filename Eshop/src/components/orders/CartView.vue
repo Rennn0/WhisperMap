@@ -23,7 +23,8 @@ onMounted(() => {
                     title: p.title,
                     preview_img: p.preview_img,
                     description: p.description,
-                    orders: p.orders
+                    orders: p.orders,
+                  is_paid: p.is_paid,
                 } as TCartItem & { preview_img?: string })
             );
         })
@@ -96,7 +97,7 @@ const total = computed(() =>
         <ul v-else class="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <li v-for="o in cartItems" :key="o.id">
                 <CartItem :id="o.id" :title="o.title" :price="o.price" :preview_img="(o as any).preview_img"
-                    :orders="o.orders" @remove="removeItem" @visit="visitItem" @pay="payForItem" />
+                    :orders="o.orders" :is_paid="o.is_paid" @remove="removeItem" @visit="visitItem" @pay="payForItem" />
             </li>
 
             <li v-if="loading" v-for="i in 4" :key="'skeleton-' + i">

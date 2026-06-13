@@ -65,7 +65,7 @@ internal class GetProductsCartHandler : IGetProductsHandler
                 if (orderStatus is not RedirectedOrderStatus ros) continue;
                 order.OrderStatus ??= _paymentProvider.MapStatus(ros.Status).ToString();
                 order.UseLink =
-                    new[] { AppOrderStatus.None, AppOrderStatus.Declined }.Contains(
+                    new[] { AppOrderStatus.None }.Contains(
                         _paymentProvider.MapStatus(order.OrderStatus));
                 if (productOrderes.TryGetValue(strings[0], out List<ProductOrder>? list))
                     list.Add(order);
@@ -84,21 +84,25 @@ internal class GetProductsCartHandler : IGetProductsHandler
         );
         
         GetProductsContract contract = new GetProductsContract(
-            products.Select(p => new Product(p.Title, p.Description, p.Price)
+            products.Select(p =>
             {
-                Id = p.Id,
-                PreviewImg = p
+                productOrderes.TryGetValue(p.Id.ToString() ?? "", out List<ProductOrder>? o);
+                o ??= [];
+                return new Product(p.Title, p.Description, p.Price)
+                {
+                    Id = p.Id,
+                    IsPaid = o.Any(v => _paymentProvider.MapStatus(v.OrderStatus) == AppOrderStatus.Paid),
+                    PreviewImg = p
                     .ProductMetadata?.Where(pm => !string.IsNullOrEmpty(pm.Location))
                     .MinBy(pm => pm.Id)
                     ?.Location,
-                Orders = productOrderes.TryGetValue(p.Id.ToString() ?? "", out List<ProductOrder>? o)
-                    ? o.Select(x => new ProductOrder
-                {
-                    OrderStatus = x.OrderStatus,
-                    CheckoutUrl = x.CheckoutUrl,
-                    UseLink = x.UseLink
-                }).ToList()
-                    : []
+                    Orders = o.Select(x => new ProductOrder
+                    {
+                        OrderStatus = x.OrderStatus,
+                        CheckoutUrl = x.CheckoutUrl,
+                        UseLink = x.UseLink
+                    }).ToList()
+                };
             }),
             context
         );

@@ -17,6 +17,7 @@ export interface Product {
     in_cart?: boolean,
     resources?: string[],
     res_ids?: number[],
+    is_paid?: boolean,
     orders?: CartItemOrder[]
 }
 
@@ -25,6 +26,7 @@ export interface TCartItem {
     title: string,
     price?: number,
     description?: string,
+    is_paid?: boolean,
     orders?: CartItemOrder[],
 }
 

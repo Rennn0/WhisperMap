@@ -28,6 +28,7 @@ public record Product(
     /// <summary>
     /// </summary>
     public string? PreviewImg { get; set; }
+    public bool? IsPaid { get; set; } 
 
     [JsonPropertyName("resIds")] public List<uint>? ExistingResourceIds { get; set; }
     [JsonPropertyName("resIdsDelete")] public List<uint>? ResourceIdsTobeDelete { get; set; }
