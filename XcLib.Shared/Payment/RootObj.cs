@@ -7,3 +7,5 @@ public abstract record RootObj
     [JsonPropertyName("k")] public bool? Ok { get; init; }
     [JsonPropertyName("e")] public string? Error { get; init; }
 }
+
+

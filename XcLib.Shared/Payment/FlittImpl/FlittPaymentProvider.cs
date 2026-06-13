@@ -19,6 +19,16 @@ public class FlittPaymentProvider : IPaymentProvider
         _http = httpClientFactory.CreateClient(nameof(FlittPaymentProvider));
     }
 
+    public AppOrderStatus MapStatus(string? status) => status switch
+    {
+        "approved" => AppOrderStatus.Paid,
+        "expired" => AppOrderStatus.Expired,
+        "created" or "processing" => AppOrderStatus.None,
+        "declined" => AppOrderStatus.Declined,
+        "reversed" => AppOrderStatus.Refunded,
+        _ => AppOrderStatus.None
+    };
+
     public ISignatureProvider SignatureProvider { get; }
 
     public async Task<CreatedOrder> CreateOrderAsync(CreateOrderArgs args, CancellationToken ct = default)

@@ -165,5 +165,5 @@ export const requestPay = (productId: string, amount: string, description: strin
     params.set('p', '1');
     params.set('a', amount);
     params.set('d', description);
-    return makeGet<{ checkoutUrl: string }>(`${realtimeHost}/payments/order?${params.toString()}`, { credentials: "include" }, ky.create());
+    return makeGet<{ checkoutUrl: string }>(`${realtimeHost}/payments/order?${params.toString()}`, { credentials: "include" }, ky.create({timeout:false}));
 } 

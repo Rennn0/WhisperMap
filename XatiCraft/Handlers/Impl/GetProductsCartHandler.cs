@@ -1,4 +1,5 @@
-﻿using XatiCraft.ApiContracts;
+﻿using System.Collections.Concurrent;
+using XatiCraft.ApiContracts;
 using XatiCraft.Handlers.Api;
 using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
@@ -43,26 +44,32 @@ internal class GetProductsCartHandler : IGetProductsHandler
         if (cart is not { ProductIds.Count: > 0 })
             return new ApiContract(context);
 
-        Dictionary<string, string> productOrder = cart.ProductOrderIds?
+        IEnumerable<IGrouping<string, string[]>> productOrderIds = cart.ProductOrderIds?
             .Select(po => po.Split('_'))
-            .DistinctBy(x => x[0])
-            .ToDictionary(x => x[0], x => x[1])
-            .Where(kvp => cart.ProductIds.Contains(kvp.Key))
-            .ToDictionary() ?? [];
+            .GroupBy(x => x[0])
+            .Where(kvp => cart.ProductIds.Contains(kvp.Key)) ?? [];
 
-        List<ProductOrder> orders = (await Task.WhenAll(productOrder.Select(po =>
-                _productOrderRepo.GetAsync(new ProductOrder { ObjId = po.Value }, 0, cancellationToken))))
-            .SelectMany(x => x).DistinctBy(x => x.ObjId).ToList();
-
-        foreach (ProductOrder order in orders.Where(order => !string.IsNullOrEmpty(order.InternalOrderId)))
+        ConcurrentDictionary<string, List<ProductOrder>> productOrderes =
+            new ConcurrentDictionary<string, List<ProductOrder>>();
+        await Parallel.ForEachAsync(productOrderIds, cancellationToken, async (group, token) =>
         {
-            OrderStatus orderStatus =
-                await _paymentProvider.GetOrderStatusAsync(new GetRedirectOrderStatusArgs(order.InternalOrderId!),
-                    cancellationToken);
-            if (orderStatus is not RedirectedOrderStatus ros) continue;
-            order.Expired = ros.Status == "expired";
-            order.Paid = ros.Status == "approved";
-        }
+            foreach (string[] strings in group)
+            {
+                ProductOrder? order =
+                    (await _productOrderRepo.GetAsync(new ProductOrder { ObjId = strings[1] }, 0, token))
+                    .FirstOrDefault();
+                if (order is { InternalOrderId: null }) continue;
+                OrderStatus orderStatus =
+                    await _paymentProvider.GetOrderStatusAsync(new GetRedirectOrderStatusArgs(order!.InternalOrderId),
+                        token);
+                if (orderStatus is not RedirectedOrderStatus ros) continue;
+                order.OrderStatus ??= _paymentProvider.MapStatus(ros.Status).ToString();
+                if (productOrderes.TryGetValue(strings[0], out List<ProductOrder>? list))
+                    list.Add(order);
+                else
+                    productOrderes[strings[0]] = [order];
+            }
+        });
         
         List<Product> products = await _productRepo.GetAsync(
             cart.ProductIds.Select(long.Parse),
@@ -81,14 +88,14 @@ internal class GetProductsCartHandler : IGetProductsHandler
                     .ProductMetadata?.Where(pm => !string.IsNullOrEmpty(pm.Location))
                     .MinBy(pm => pm.Id)
                     ?.Location,
-                Orders = orders.Where(o => o.ProductId == p.Id).Select(x => new ProductOrder
+                Orders = productOrderes.TryGetValue(p.Id.ToString() ?? "", out List<ProductOrder>? o)
+                    ? o.Select(x => new ProductOrder
                 {
                     Amount = x.Amount,
                     OrderStatus = x.OrderStatus,
                     CheckoutUrl = x.CheckoutUrl,
-                    Paid = x.Paid,
-                    Expired = x.Expired
                 }).ToList()
+                    : []
             }),
             context
         );

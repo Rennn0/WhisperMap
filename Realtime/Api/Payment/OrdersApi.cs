@@ -36,6 +36,24 @@ public static partial class Api
                 if (cart is not { ProductIds.Count: > 0 } || !cart.ProductIds.Contains(productId.ToString()))
                     return null;
 
+                IEnumerable<string> pos = cart.ProductOrderIds?.Where(po => po.StartsWith(productId.ToString())) ?? [];
+                foreach (string po in pos)
+                {
+                    string objId = po.Split('_')[1];
+                    ProductOrder? o = (await orderRepo.GetAsync(new ProductOrder { ObjId = objId }, sbyte.MinValue))
+                        .FirstOrDefault();
+                    if (o is { OrderStatus: null, InternalOrderId: not null })
+                    {
+                        OrderStatus os =
+                            await paymentProvider.GetOrderStatusAsync(
+                                new GetRedirectOrderStatusArgs(o.InternalOrderId));
+                        o.OrderStatus = ((RedirectedOrderStatus)os).Status;
+                    }
+
+                    if (paymentProvider.MapStatus(o!.OrderStatus) == AppOrderStatus.None)
+                        return new CreatedRedirectOrder(o.CheckoutUrl!, o.InternalOrderId!);
+                }
+                
                 CreatedOrder order = provider switch
                 {
                     1 or 2 or 3 => await paymentProvider.CreateOrderAsync(new CreateRedirectOrderArgs(amount,

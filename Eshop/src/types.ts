@@ -29,11 +29,8 @@ export interface TCartItem {
 }
 
 export interface CartItemOrder {
-    amount: number,
     order_status: string,
     checkout_url: string,
-    paid?: boolean,
-    expired?: boolean
 }
 
 export interface UserInfo {

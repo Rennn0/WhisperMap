@@ -1,21 +1,24 @@
+using System.Text.Json.Serialization;
 using MongoDB.Bson;
 using XcLib.Data.Mongo.XatiCraft.Model;
 
 namespace XcLib.Data.ApplicationObjects;
 
-public record ProductOrder(string OrderOwner, long ProductId, sbyte PaymentProvider, long Amount)
+public record ProductOrder(
+    [property: JsonIgnore] string OrderOwner,
+    [property: JsonIgnore] long ProductId,
+    [property: JsonIgnore] sbyte PaymentProvider,
+    [property: JsonIgnore] long Amount)
     : ApplicationObject
 {
     public ProductOrder() : this(null!, 0, 0, 0)
     {
     }
 
-    public string? OrderStatus { get; init; }
+    public string? OrderStatus { get; set; }
     public string? CheckoutUrl { get; init; }
     public string? ProviderOrderId { get; init; }
     public string? InternalOrderId { get; init; }
-    public bool? Paid { get; set; }
-    public bool? Expired { get; set; }
 
     public static ProductOrder From(ProductOrderDoc doc) =>
         new ProductOrder(doc.OrderOwner, doc.ProductId, doc.PaymentProvider, doc.Amount)
