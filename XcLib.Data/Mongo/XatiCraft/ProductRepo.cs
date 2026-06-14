@@ -9,9 +9,9 @@ using XcLib.Data.Mongo.XatiCraft.Model;
 namespace XcLib.Data.Mongo.XatiCraft;
 
 /// <inheritdoc cref="IProductRepo" />
-public class ProductRepoAdapter : MongoBase<ProductDoc>, IProductRepo
+public class ProductRepo : MongoBase<ProductDoc>, IProductRepo
 {
-    public ProductRepoAdapter(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
+    public ProductRepo(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 
@@ -39,7 +39,7 @@ public class ProductRepoAdapter : MongoBase<ProductDoc>, IProductRepo
     public Task<bool> DeleteAsync(string objId, CancellationToken cancellationToken) =>
         throw new NotImplementedException();
 
-    public Task<Product> GetByIdAsync(long id, CancellationToken token = default) =>
+    public Task<Product> GetByIdAsync(object id, CancellationToken token = default) =>
         throw new NotImplementedException();
 
     public Task<List<Product>> GetAsync(Product obj, sbyte searchFlag = 0,

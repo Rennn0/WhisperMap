@@ -31,7 +31,7 @@ public class GoogleAuthHandler : IAuthorizationHandler
         IOptionsMonitor<GoogleAuthSettings> googleAuthSettings)
     {
         _googleAuthSettings = googleAuthSettings.CurrentValue;
-        AuthorizationRepoAdapter = repos.First(r => r is AuthorizationRepoAdapter);
+        AuthorizationRepoAdapter = repos.First(r => r is AuthorizationRepo);
         _httpClient = httpClientFactory.CreateClient(nameof(GoogleAuthHandler));
         _httpClient.DefaultRequestHeaders.Accept
             .Add(new MediaTypeWithQualityHeaderValue("application/json"));

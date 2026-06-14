@@ -29,9 +29,9 @@ internal class GetProductHandler : IGetProductHandler
     {
         IEnumerable<IProductRepo> repos = productRepos.ToList();
         _productRepos = repos.First(p => p is ProductRepo);
-        _productObjRepos = repos.First(p => p is XcLib.Data.Mongo.XatiCraft.ProductRepoAdapter);
+        _productObjRepos = repos.First(p => p is XcLib.Data.Mongo.XatiCraft.ProductRepo);
         _productCartHandler = productCartHandler;
-        _productCartMongo = productCartRepos.First(x => x is ProductCartRepoAdapter);
+        _productCartMongo = productCartRepos.First(x => x is ProductCartRepo);
     }
 
     /// <summary>

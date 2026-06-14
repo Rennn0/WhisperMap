@@ -6,11 +6,11 @@ namespace XcLib.Data.ApplicationObjects;
 public record ProductCart(string UserId) : ApplicationObject
 {
     public HashSet<string>? ProductIds { get; init; }
-    public HashSet<string>? ProductOrderIds { get; init; }
+    public HashSet<string>? ProductIdOrderId { get; init; }
 
     public static ProductCart From(ProductCartDoc doc) => new ProductCart(doc.UserId!)
     {
-        ProductOrderIds =  doc.ProductOrderIds,
+        ProductIdOrderId =  doc.ProductIdOrderId,
         ProductIds = doc.ProductIds,
         ObjId = doc.Id.ToString()
     };

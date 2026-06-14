@@ -6,13 +6,13 @@ using XcLib.Data.Mongo.XatiCraft.Model;
 
 namespace XcLib.Data.Mongo.XatiCraft;
 
-public class ProductMetadataRepoAdapter : MongoBase<ProductMetadataDoc>, IProductMetadaRepo
+public class ProductMetadataRepo : MongoBase<ProductMetadataDoc>, IProductMetadaRepo
 {
-    public ProductMetadataRepoAdapter(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
+    public ProductMetadataRepo(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 
-    public Task<ProductMetadata> GetByIdAsync(long id, CancellationToken token = default) =>
+    public Task<ProductMetadata> GetByIdAsync(object id, CancellationToken token = default) =>
         throw new NotImplementedException();
 
     public Task<ProductMetadata> AddAsync(ProductMetadata obj, CancellationToken token = default) =>

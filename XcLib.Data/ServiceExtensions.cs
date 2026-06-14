@@ -188,10 +188,10 @@ public static class ServiceExtensions
     {
         services.AddTransient<IBootstrap, MongoBootstrap>();
 
-        services.AddTransient<IProductRepo, ProductRepoAdapter>();
-        services.AddTransient<IProductMetadaRepo, ProductMetadataRepoAdapter>();
-        services.AddTransient<IAuthorizationRepo, AuthorizationRepoAdapter>();
-        services.AddTransient<IProductCartRepo, ProductCartRepoAdapter>();
+        services.AddTransient<IProductRepo, Mongo.XatiCraft.ProductRepo>();
+        services.AddTransient<IProductMetadaRepo, Mongo.XatiCraft.ProductMetadataRepo>();
+        services.AddTransient<IAuthorizationRepo, AuthorizationRepo>();
+        services.AddTransient<IProductCartRepo, ProductCartRepo>();
         
         services.AddTransient<IPaymentProviderRepoAdapter,PaymentProviderRepoAdapter>();
         services.AddTransient<IPaymentProviderRepo>(sp => sp.GetRequiredService<IPaymentProviderRepoAdapter>());

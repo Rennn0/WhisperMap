@@ -30,7 +30,7 @@ public static partial class Api
                 {
                     if (hostEnvironment.IsDevelopment())
                         return Results.Text(tokenProvider.Create("b7dc9fb35e998892e77fdccf", "dev", "dev@xati.org",
-                            permissions: [Permissions.PaymentCreate]));
+                            permissions: [ApiPermissions.PaymentCreate]));
 
                     ILogger logger = loggerFactory.CreateLogger("payments/token");
                     string? sessionCookie = GetLatestVersionCookie("__xc_se");
@@ -46,7 +46,7 @@ public static partial class Api
                         return Results.StatusCode(StatusCodes.Status418ImATeapot);
 
                     return Results.Text(tokenProvider.Create(userIdCookie, authInfo.Username, authInfo.Email,
-                        permissions: [Permissions.PaymentCreate]));
+                        permissions: [ApiPermissions.PaymentCreate]));
 
                     string? GetLatestVersionCookie(string key) => context.Request.Cookies
                         .Where(c => c.Key.StartsWith(key))

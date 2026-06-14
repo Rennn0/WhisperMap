@@ -138,7 +138,7 @@ public class MongoBootstrap : MongoConnector, IBootstrap
                 Id = new ObjectId("6a2a9e5227e9caea6921f3ee"),
                 UserId = "b7dc9fb35e998892e77fdccf",
                 ProductIds = ["-10"],
-                ProductOrderIds = []
+                ProductIdOrderId = []
             }
         ];
 
@@ -147,7 +147,7 @@ public class MongoBootstrap : MongoConnector, IBootstrap
                 Builders<ProductCartDoc>.Filter.Eq(x => x.Id, d.Id),
                 Builders<ProductCartDoc>.Update
                     .SetOnInsert(x => x.ProductIds, d.ProductIds)
-                    .SetOnInsert(x => x.ProductOrderIds, d.ProductOrderIds)
+                    .SetOnInsert(x => x.ProductIdOrderId, d.ProductIdOrderId)
                     .Set(x => x.UserId, d.UserId)
                     .Set(x => x.Id, d.Id)
             )

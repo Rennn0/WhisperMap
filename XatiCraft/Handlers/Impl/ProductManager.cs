@@ -23,7 +23,7 @@ internal class ProductManager : IProductManager
         IEnumerable<IProductRepo> productRepos = iproductRepos.ToList();
         IEnumerable<IProductMetadaRepo> productMetadaRepos = iproductMetadaRepos.ToList();
         _productRepo = productRepos.First(p => p is ProductRepo);
-        _productRepoMongo = productRepos.First(p => p is XcLib.Data.Mongo.XatiCraft.ProductRepoAdapter);
+        _productRepoMongo = productRepos.First(p => p is XcLib.Data.Mongo.XatiCraft.ProductRepo);
         _productMetadataRepo = productMetadaRepos.First(p => p is ProductMetadataRepo); 
     }
 

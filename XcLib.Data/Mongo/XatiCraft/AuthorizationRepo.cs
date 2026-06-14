@@ -8,9 +8,9 @@ using XcLib.Data.Mongo.XatiCraft.Model;
 
 namespace XcLib.Data.Mongo.XatiCraft;
 
-public class AuthorizationRepoAdapter : MongoBase<AuthorizationInfoDoc>, IAuthorizationRepo
+public class AuthorizationRepo : MongoBase<AuthorizationInfoDoc>, IAuthorizationRepo
 {
-    public AuthorizationRepoAdapter(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
+    public AuthorizationRepo(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 

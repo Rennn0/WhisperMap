@@ -86,11 +86,11 @@ public class ProductRepo : RootRepo<ProductModel>, IProductRepo
             return mp;
         }, token));
 
-    public async Task<Product> GetByIdAsync(long id, CancellationToken token = default) =>
+    public async Task<Product> GetByIdAsync(object id, CancellationToken token = default) =>
         await ExecuteTransactionAsync(async (context, cancellationToken) =>
         {
             VProductModel v = await context.VProducts.AsNoTracking()
-                .SingleAsync(vp => vp.Id == id, cancellationToken);
+                .SingleAsync(vp => vp.Id == (long)id, cancellationToken);
 
             return new Product(v.Title ?? "", v.Description ?? "", v.Price ?? 0m)
             {

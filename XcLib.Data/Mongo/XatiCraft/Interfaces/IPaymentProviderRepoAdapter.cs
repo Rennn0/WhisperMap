@@ -7,5 +7,5 @@ namespace XcLib.Data.Mongo.XatiCraft.Interfaces;
 
 public interface IPaymentProviderRepoAdapter : IPaymentProviderRepo
 {
-    FilterDefinition<PaymentProviderDoc> ToSearchPredicate(ApplicationObject applicationObject, sbyte searchFlag);
+    FilterDefinition<PaymentProviderDoc> ToFilterDefinition(ApplicationObject applicationObject, sbyte searchFlag);
 }

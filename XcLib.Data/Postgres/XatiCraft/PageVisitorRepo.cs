@@ -30,11 +30,11 @@ public class PageVisitorRepo : RootRepo<PageVisitorModel>, IPageVisitorRepo
             return obj;
         }, token);
 
-    public async Task<PageVisitor> GetByIdAsync(long id, CancellationToken token = default) =>
+    public async Task<PageVisitor> GetByIdAsync(object id, CancellationToken token = default) =>
         await ExecuteAsync(
             async (pageVisitors, cancellationToken) => PageVisitor.From(await pageVisitors
                 .AsNoTracking()
-                .SingleAsync(pv => pv.Id == id, cancellationToken)), token);
+                .SingleAsync(pv => pv.Id == (long)id, cancellationToken)), token);
 
     public async Task<List<PageVisitor>> GetAsync(PageVisitor obj,
         sbyte searchFlag = 0,

@@ -7,9 +7,9 @@ using XcLib.Data.Mongo.XatiCraft.Model;
 
 namespace XcLib.Data.Mongo.XatiCraft;
 
-public class ProductCartRepoAdapter : MongoBase<ProductCartDoc>, IProductCartRepo
+public class ProductCartRepo : MongoBase<ProductCartDoc>, IProductCartRepo
 {
-    public ProductCartRepoAdapter(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
+    public ProductCartRepo(IOptions<MongoConnectionOptions> connectionOptions) : base(connectionOptions)
     {
     }
 
@@ -24,7 +24,7 @@ public class ProductCartRepoAdapter : MongoBase<ProductCartDoc>, IProductCartRep
             Builders<ProductCartDoc>.Update
                 .SetOnInsert(x => x.UserId, productCart.UserId)
                 .AddToSetEach(x => x.ProductIds, productCart.ProductIds ?? [])
-                .AddToSetEach(x => x.ProductOrderIds, productCart.ProductOrderIds ?? []);
+                .AddToSetEach(x => x.ProductIdOrderId, productCart.ProductIdOrderId ?? []);
 
         FindOneAndUpdateOptions<ProductCartDoc> options = new FindOneAndUpdateOptions<ProductCartDoc>
         {

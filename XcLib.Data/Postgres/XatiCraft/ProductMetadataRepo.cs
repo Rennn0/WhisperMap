@@ -32,11 +32,11 @@ public class ProductMetadataRepo : RootRepo<ProductMetadataModel>, IProductMetad
             return obj;
         }, token);
 
-    public async Task<ProductMetadata> GetByIdAsync(long id, CancellationToken token = default) =>
+    public async Task<ProductMetadata> GetByIdAsync(object id, CancellationToken token = default) =>
         await ExecuteAsync(
             async (productMetadata, cancellationToken) =>
                 ProductMetadata.From(
-                    await productMetadata.SingleAsync(pm => pm.Id == id, cancellationToken)), token);
+                    await productMetadata.SingleAsync(pm => pm.Id == (long)id, cancellationToken)), token);
 
     public async Task<List<ProductMetadata>> GetAsync(ProductMetadata obj,
         sbyte searchFlag = 0,

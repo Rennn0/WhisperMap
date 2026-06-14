@@ -36,7 +36,7 @@ public static partial class Api
                 if (cart is not { ProductIds.Count: > 0 } || !cart.ProductIds.Contains(productId.ToString()))
                     return null;
 
-                IEnumerable<string> pos = cart.ProductOrderIds?.Where(po => po.StartsWith(productId.ToString())) ?? [];
+                IEnumerable<string> pos = cart.ProductIdOrderId?.Where(po => po.StartsWith(productId.ToString())) ?? [];
                 foreach (string po in pos)
                 {
                     string objId = po.Split('_')[1];
@@ -50,8 +50,7 @@ public static partial class Api
                         o.OrderStatus = ((RedirectedOrderStatus)os).Status;
                     }
 
-                    if (new[] { AppOrderStatus.None }.Contains(
-                            paymentProvider.MapStatus(o!.OrderStatus)))
+                    if (paymentProvider.MapStatus(o!.OrderStatus) == AppOrderStatus.None)
                         return new CreatedRedirectOrder(o.CheckoutUrl!, o.InternalOrderId!);
                 }
                 
@@ -73,13 +72,13 @@ public static partial class Api
                     });
                 await cartRepo.UpsertAsync(new ProductCart(userId)
                     {
-                        ProductOrderIds = [$"{addedOrder.ProductId}_{addedOrder.ObjId}"]
+                        ProductIdOrderId = [$"{addedOrder.ProductId}_{addedOrder.ObjId}"]
                     },
                     CancellationToken.None);
 
                 return order;
             })
-            .RequireAuthorization(policy => policy.RequireClaim(Permissions.ClaimPermission, Permissions.PaymentCreate))
+            .RequireAuthorization(policy => policy.RequireClaim(ApiPermissions.ClaimPermission, ApiPermissions.PaymentCreate))
             .WithTags("payment", "order")
             .WithSummary("create order and get payment url");
 

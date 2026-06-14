@@ -27,7 +27,7 @@ internal class GetProductsCartHandler : IGetProductsHandler
     {
         _productOrderRepo = productOrderRepo;
         _paymentProvider = paymentProvider;
-        _cartMongo = cartRepos.First(c => c is ProductCartRepoAdapter);
+        _cartMongo = cartRepos.First(c => c is ProductCartRepo);
         _productRepo = productRepos.First(p => p is ProductRepo);
     }
 
@@ -44,7 +44,7 @@ internal class GetProductsCartHandler : IGetProductsHandler
         if (cart is not { ProductIds.Count: > 0 })
             return new ApiContract(context);
 
-        IEnumerable<IGrouping<string, string[]>> productOrderIds = cart.ProductOrderIds?
+        IEnumerable<IGrouping<string, string[]>> productOrderIds = cart.ProductIdOrderId?
             .Select(po => po.Split('_'))
             .GroupBy(x => x[0])
             .Where(kvp => cart.ProductIds.Contains(kvp.Key)) ?? [];
@@ -58,15 +58,23 @@ internal class GetProductsCartHandler : IGetProductsHandler
                 ProductOrder? order =
                     (await _productOrderRepo.GetAsync(new ProductOrder { ObjId = strings[1] }, 0, token))
                     .FirstOrDefault();
-                if (order is { InternalOrderId: null }) continue;
-                OrderStatus orderStatus =
-                    await _paymentProvider.GetOrderStatusAsync(new GetRedirectOrderStatusArgs(order!.InternalOrderId),
-                        token);
-                if (orderStatus is not RedirectedOrderStatus ros) continue;
-                order.OrderStatus ??= _paymentProvider.MapStatus(ros.Status).ToString();
-                order.UseLink =
-                    new[] { AppOrderStatus.None }.Contains(
-                        _paymentProvider.MapStatus(order.OrderStatus));
+                switch (order)
+                {
+                    case { InternalOrderId: null } or null:
+                        continue;
+                    case { OrderStatus: null }:
+                    {
+                        OrderStatus orderStatus =
+                            await _paymentProvider.GetOrderStatusAsync(
+                                new GetRedirectOrderStatusArgs(order!.InternalOrderId),
+                                token);
+                        if (orderStatus is not RedirectedOrderStatus ros) continue;
+                        order.OrderStatus = _paymentProvider.MapStatus(ros.Status).ToString();
+                        break;
+                    }
+                }
+
+                order.UseLink = _paymentProvider.MapStatus(order.OrderStatus) == AppOrderStatus.None;
                 if (productOrderes.TryGetValue(strings[0], out List<ProductOrder>? list))
                     list.Add(order);
                 else

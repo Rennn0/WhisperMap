@@ -7,5 +7,5 @@ namespace XcLib.Data.Mongo.XatiCraft.Interfaces;
 
 public interface IProductOrderRepoAdapter : IProductOrderRepo
 {
-    FilterDefinition<ProductOrderDoc> ToSearchPredicate(ApplicationObject applicationObject, sbyte searchFlag);
+    FilterDefinition<ProductOrderDoc> ToFilterDefinition(ApplicationObject applicationObject, sbyte searchFlag);
 }

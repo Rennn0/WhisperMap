@@ -14,7 +14,7 @@ public class ProductOrderRepoAdapter : MongoBase<ProductOrderDoc>, IProductOrder
     {
     }
 
-    public FilterDefinition<ProductOrderDoc> ToSearchPredicate(ApplicationObject applicationObject, sbyte searchFlag)
+    public FilterDefinition<ProductOrderDoc> ToFilterDefinition(ApplicationObject applicationObject, sbyte searchFlag)
     {
         if (applicationObject is not ProductOrder paymentProvider)
             throw new ArgumentOutOfRangeException(nameof(applicationObject));
@@ -31,7 +31,7 @@ public class ProductOrderRepoAdapter : MongoBase<ProductOrderDoc>, IProductOrder
         };
     }
 
-    public Task<ProductOrder> GetByIdAsync(long id, CancellationToken token = default) =>
+    public Task<ProductOrder> GetByIdAsync(object id, CancellationToken token = default) =>
         throw new NotImplementedException();
 
     public async Task<ProductOrder> AddAsync(ProductOrder obj, CancellationToken token = default)
@@ -44,12 +44,12 @@ public class ProductOrderRepoAdapter : MongoBase<ProductOrderDoc>, IProductOrder
     public Task<List<ProductOrder>>
         GetAsync(ProductOrder obj, sbyte searchFlag = 0, CancellationToken token = default) =>
         Task.FromResult(
-            Collection.Find(ToSearchPredicate(obj, searchFlag)).ToList(token).Select(ProductOrder.From).ToList());
+            Collection.Find(ToFilterDefinition(obj, searchFlag)).ToList(token).Select(ProductOrder.From).ToList());
 
     public async Task<ProductOrder?> UpdateAsync(ProductOrder obj, sbyte searchFlag = 0,
         CancellationToken token = default)
     {
-        await Collection.UpdateManyAsync(ToSearchPredicate(obj, searchFlag),
+        await Collection.UpdateManyAsync(ToFilterDefinition(obj, searchFlag),
             Builders<ProductOrderDoc>.Update
                 .Set(x => x.ProductId, obj.ProductId)
                 .Set(x => x.OrderStatus, obj.OrderStatus)

@@ -16,7 +16,7 @@ public class PaymentProviderRepoAdapter :
     {
     }
 
-    public Task<PaymentProvider> GetByIdAsync(long id, CancellationToken token = default) =>
+    public Task<PaymentProvider> GetByIdAsync(object id, CancellationToken token = default) =>
         throw new NotImplementedException();
 
     public Task<PaymentProvider> AddAsync(PaymentProvider obj,
@@ -25,7 +25,7 @@ public class PaymentProviderRepoAdapter :
     public Task<List<PaymentProvider>> GetAsync(PaymentProvider obj,
         sbyte searchFlag = 0, CancellationToken token = default)
     {
-        FilterDefinition<PaymentProviderDoc> filter = ToSearchPredicate(obj, searchFlag);
+        FilterDefinition<PaymentProviderDoc> filter = ToFilterDefinition(obj, searchFlag);
         return Task.FromResult(
             Collection.Find(filter).ToList(token).Select(PaymentProvider.From).ToList());
     }
@@ -39,7 +39,7 @@ public class PaymentProviderRepoAdapter :
     public Task<bool> ExistsAsync(PaymentProvider obj, sbyte searchFlag = 0,
         CancellationToken token = default) => throw new NotImplementedException();
 
-    public FilterDefinition<PaymentProviderDoc> ToSearchPredicate(ApplicationObject applicationObject,
+    public FilterDefinition<PaymentProviderDoc> ToFilterDefinition(ApplicationObject applicationObject,
         sbyte searchFlag) 
     {
         if (applicationObject is not PaymentProvider paymentProvider)
