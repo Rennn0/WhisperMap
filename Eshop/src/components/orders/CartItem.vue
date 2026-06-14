@@ -52,8 +52,8 @@ const handleRemoveConfirmed = () => {
 </script>
 
 <template>
-    <div v-if="!showLoading" class="overflow-hidden rounded-2xl border bg-surface transition-shadow duration-200"
-        :class="showPayButton ? 'border-subtle' : 'border-success-bg'">
+    <div v-if="!showLoading" class="overflow-hidden rounded-2xl bg-surface border"
+        :class="!showPayButton ? 'border-subtle' : 'border-success-bg border-2'">
         <div class="flex gap-4 p-4">
             <div class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-subtle">
                 <img v-if="props.preview_img" :src="props.preview_img" :alt="props.title"
