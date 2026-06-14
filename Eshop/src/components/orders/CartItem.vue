@@ -6,6 +6,7 @@ import TablerThreeDotIcon from '../freestyle/TablerThreeDotIcon.vue';
 import ConfirmationModal from '../modals/ConfirmationModal.vue';
 import TablerLoaderBlockWave from '../freestyle/TablerLoaderBlockWave.vue';
 import ExpandableText from '../shared/ExpandableText.vue';
+import { imgUrlTransformer } from '../../utils.ts';
 
 const props = defineProps<TCartItem & {
     preview_img?: string;
@@ -56,7 +57,7 @@ const handleRemoveConfirmed = () => {
         :class="!showPayButton ? 'border-subtle' : 'border-success-bg border-2'">
         <div class="flex gap-4 p-4">
             <div class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-subtle">
-                <img v-if="props.preview_img" :src="props.preview_img" :alt="props.title"
+                <img v-if="props.preview_img" :src="imgUrlTransformer(props.preview_img, 'thumb')" :alt="props.title"
                     class="h-full w-full object-cover" />
 
                 <div v-else class="flex h-full w-full items-center justify-center bg-subtle" />
