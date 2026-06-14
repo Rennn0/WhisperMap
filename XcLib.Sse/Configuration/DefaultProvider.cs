@@ -8,13 +8,7 @@ public class DefaultProvider : ConfigurationProvider
     private readonly Func<Task<SseOptions>>? _optionsLoader;
 
     public DefaultProvider(Func<Task<SseOptions>>? optionsLoader = null) => _optionsLoader = optionsLoader;
-    public override void Load() => SetValues();
-
-    public void Reload()
-    {
-        Load();
-        OnReload();
-    }
+    public override void Load() => ThreadPool.UnsafeQueueUserWorkItem(state => SetValues(), null);
 
     private void SetValues()
     {
@@ -30,5 +24,7 @@ public class DefaultProvider : ConfigurationProvider
             [$"{nameof(SseSignalOptions)}:{pingInterval}"] = $"{defaultOptions.PingInterval}",
             [$"{nameof(SseStreamOptions)}:{pingInterval}"] = $"{defaultOptions.PingInterval}"
         };
+        
+        OnReload();
     }
 }

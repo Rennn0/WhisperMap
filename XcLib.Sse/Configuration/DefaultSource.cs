@@ -23,7 +23,7 @@ public class DefaultSource : IConfigurationSource
     public IConfigurationProvider Build(IConfigurationBuilder builder)
     {
         DefaultProvider provider = new DefaultProvider(_optionsLoader);
-        _trigger?.Register(provider.Reload);
+        _trigger?.Register(provider.Load);
 
         return provider;
     }
