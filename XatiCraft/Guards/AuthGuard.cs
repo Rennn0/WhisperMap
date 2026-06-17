@@ -49,7 +49,7 @@ public abstract class AuthGuard : Attribute, IAuthorizationFilter
     protected virtual bool TryGetSessionData(HttpContext context, out SessionData? sessionData)
     {
         sessionData = null;
-        if (!context.Request.Cookies.TryGetValue(VersioningConst.SessionCookie, out string? protectedSession))
+        if (!context.Request.Cookies.TryGetValue(AppConstants.SessionCookie, out string? protectedSession))
         {
             _logger ??= context.RequestServices.GetRequiredService<ILogger<AuthGuard>>();
             _logger.LogWarning("no session cookie");

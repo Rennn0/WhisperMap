@@ -50,12 +50,16 @@ const handleRemoveConfirmed = () => {
     showLoading.value = true;
     emit('remove', props.id);
 };
+
+const itemCLicked = () => {
+    emit("visit", props.id)
+}
 </script>
 
 <template>
     <div v-if="!showLoading" class="overflow-hidden rounded-2xl bg-surface border"
         :class="showPayButton ? 'border-subtle' : 'border-success-bg border-2'">
-        <div class="flex gap-4 p-4">
+        <div class="flex gap-4 p-4 ">
             <div class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-subtle">
                 <img v-if="props.preview_img" :src="imgUrlTransformer(props.preview_img, 'thumb')" :alt="props.title"
                     class="h-full w-full object-cover" />
@@ -65,7 +69,7 @@ const handleRemoveConfirmed = () => {
 
             <div class="min-w-0 flex-1">
                 <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
+                    <div class="min-w-0 cursor-pointer" @click="itemCLicked">
                         <div class="text-text font-medium">
                             <ExpandableText :text="props.title" />
                         </div>
@@ -97,13 +101,13 @@ const handleRemoveConfirmed = () => {
                                 </button>
 
                                 <button v-if="showPayButton" type="button" role="menuitem"
-                                    class="w-full rounded-md px-3 py-2 text-left text-sm text-primary transition-colors hover:bg-hover"
+                                    class="w-full rounded-md px-3 py-2 text-left text-sm text-text transition-colors hover:bg-hover"
                                     @click="handlePay(close)">
                                     {{ $t('sidebar.pay') }}
                                 </button>
 
                                 <button v-else type="button" role="menuitem"
-                                    class="w-full rounded-md px-3 py-2 text-left text-sm text-success-text transition-colors hover:bg-success-bg">
+                                    class="w-full rounded-md px-3 py-2 text-left text-sm text-text bg-success-bg opacity-55">
                                     {{ $t('sidebar.paid') }}
                                 </button>
 

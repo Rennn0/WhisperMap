@@ -83,10 +83,10 @@ public static class Program
         builder.Services.AddRateLimiter(opt =>
         {
             opt.AddPolicy(
-                VersioningConst.SessionPolicy,
+                AppConstants.SessionPolicy,
                 context =>
                 {
-                    string session = context.Request.Cookies[VersioningConst.SessionCookie] ?? "";
+                    string session = context.Request.Cookies[AppConstants.SessionCookie] ?? "";
 
                     return RateLimitPartition.GetFixedWindowLimiter(
                         session,

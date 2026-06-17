@@ -1,9 +1,10 @@
 namespace XatiCraft.Guards;
 
-internal struct VersioningConst
+internal struct AppConstants
 {
     //#WARN mustbe number, ascending order
     private const string V = "1";
+    public const char Delimiter = ';';
 
     /// <summary>
     ///     client must have cookie

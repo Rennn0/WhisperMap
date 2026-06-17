@@ -35,7 +35,7 @@ public class ApplicationController : ControllerBase
     /// <summary>
     ///     User Id Cookie
     /// </summary>
-    protected string? UserIdC => HttpContext.Request.Cookies[VersioningConst.UserIdCookie];
+    protected string? UserIdC => HttpContext.Request.Cookies[AppConstants.UserIdCookie];
 
     /// <summary>
     ///     Append cookie to client

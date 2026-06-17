@@ -8,7 +8,6 @@ namespace XatiCraft.Handlers.Impl;
 /// <inheritdoc />
 internal class GetProductCartCookieHandler : IProductCartHandler
 {
-    private const char Delimiter = ';';
     private readonly IGetProductsHandler _getProductsHandler;
     private readonly HttpContext _httpContext;
     private readonly Security _security;
@@ -36,9 +35,9 @@ internal class GetProductCartCookieHandler : IProductCartHandler
     {
         string cookie = GetPlainCookie();
         string newCookie = string.Join(
-            Delimiter,
+            AppConstants.Delimiter,
             [
-                .. cookie.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries).Distinct(),
+                .. cookie.Split(AppConstants.Delimiter, StringSplitOptions.RemoveEmptyEntries).Distinct(),
                 $"{context.ProductId};",
             ]
         );
@@ -46,7 +45,7 @@ internal class GetProductCartCookieHandler : IProductCartHandler
             true,
             _security.Pack(newCookie),
             newCookie,
-            VersioningConst.CartItemsCookie,
+            AppConstants.CartItemsCookie,
             context
         );
         return new ValueTask<ApiContract>(contract);
@@ -76,9 +75,9 @@ internal class GetProductCartCookieHandler : IProductCartHandler
             return ValueTask.FromResult(new ApiContract(context));
 
         string newCookie = string.Join(
-            Delimiter,
+            AppConstants.Delimiter,
             plainCookie
-                .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
+                .Split(AppConstants.Delimiter, StringSplitOptions.RemoveEmptyEntries)
                 .Where(id => long.TryParse(id, out long lid) && lid != context.ProductId)
         );
 
@@ -87,7 +86,7 @@ internal class GetProductCartCookieHandler : IProductCartHandler
                 true,
                 _security.Pack(newCookie),
                 newCookie,
-                VersioningConst.CartItemsCookie,
+                AppConstants.CartItemsCookie,
                 context
             )
         );
@@ -103,14 +102,14 @@ internal class GetProductCartCookieHandler : IProductCartHandler
     private HashSet<long> GetProductIdsFromCookies() =>
         [
             .. GetPlainCookie()
-                .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
+                .Split(AppConstants.Delimiter, StringSplitOptions.RemoveEmptyEntries)
                 .Select(long.Parse),
         ];
 
     private string GetPlainCookie() =>
         !_httpContext
             .Request.Cookies.ToDictionary()
-            .TryGetValue(VersioningConst.CartItemsCookie, out string? protectedCookie)
+            .TryGetValue(AppConstants.CartItemsCookie, out string? protectedCookie)
             ? string.Empty
             : _security.UnPack(protectedCookie);
 }

@@ -16,7 +16,7 @@ namespace XatiCraft.Controllers;
 /// </summary>
 [ApiController]
 [Route("p")]
-[EnableRateLimiting(VersioningConst.SessionPolicy)]
+[EnableRateLimiting(AppConstants.SessionPolicy)]
 [IpSessionGuard]
 [ApiKeyGuard]
 public class ProductController : ApplicationController

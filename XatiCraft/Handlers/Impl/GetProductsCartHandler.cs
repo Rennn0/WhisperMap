@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
-using System.Collections.Immutable;
 using XatiCraft.ApiContracts;
+using XatiCraft.Guards;
 using XatiCraft.Handlers.Api;
 using XcLib.Data.Abstractions;
 using XcLib.Data.ApplicationObjects;
@@ -14,22 +14,28 @@ namespace XatiCraft.Handlers.Impl;
 
 internal class GetProductsCartHandler : IGetProductsHandler
 {
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IProductOrderRepo _productOrderRepo;
     private readonly IPaymentProvider _paymentProvider;
     private readonly IProductCartRepo _cartMongo;
     private readonly IProductRepo _productRepo;
+    private readonly Security _security;
 
     public GetProductsCartHandler(
+        IHttpContextAccessor httpContextAccessor,
         IEnumerable<IProductCartRepo> cartRepos,
         IEnumerable<IProductRepo> productRepos,
         IProductOrderRepo productOrderRepo,
-        IPaymentProvider paymentProvider
+        IPaymentProvider paymentProvider,
+        IEnumerable<Security> securities
     )
     {
+        _httpContextAccessor = httpContextAccessor;
         _productOrderRepo = productOrderRepo;
         _paymentProvider = paymentProvider;
         _cartMongo = cartRepos.First(c => c is ProductCartRepo);
         _productRepo = productRepos.First(p => p is ProductRepo);
+        _security = securities.First(s => s is SimpleBase64Protector);
     }
 
     public async ValueTask<ApiContract> HandleAsync(
@@ -40,6 +46,22 @@ internal class GetProductsCartHandler : IGetProductsHandler
         if (string.IsNullOrEmpty(context.UserId))
             return new ApiContract(context);
 
+        if (_httpContextAccessor.HttpContext?
+                .Request.Cookies.ToDictionary()
+                .TryGetValue(AppConstants.CartItemsCookie, out string? protectedCookie) ?? false)
+        {
+            string idsCookie = _security.UnPack(protectedCookie);
+            await _cartMongo.UpsertAsync(
+                new ProductCart(context.UserId)
+                {
+                    ProductIds =
+                    [
+                        ..idsCookie.Split(AppConstants.Delimiter,
+                            StringSplitOptions.RemoveEmptyEntries)
+                    ]
+                },
+                cancellationToken);
+        }
         ProductCart? cart = await _cartMongo.SelectAsync(context.UserId, cancellationToken);
 
         if (cart is not { ProductIds.Count: > 0 })

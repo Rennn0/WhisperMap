@@ -10,7 +10,7 @@ namespace XatiCraft.Controllers;
 /// </summary>
 [ApiController]
 [Route("p/{productId:long}/s")]
-[EnableRateLimiting(VersioningConst.SessionPolicy)]
+[EnableRateLimiting(AppConstants.SessionPolicy)]
 [IpSessionGuard]
 [IpAddressGuard]
 [ApiKeyGuard]

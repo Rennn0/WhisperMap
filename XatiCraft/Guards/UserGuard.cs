@@ -54,7 +54,7 @@ public class UserGuard : AuthGuard
         }
 
         userInfo.Claims.Add(ApplicationClaims.Read);
-        userInfo.Uid = _context.Request.Cookies[VersioningConst.UserIdCookie];
+        userInfo.Uid = _context.Request.Cookies[AppConstants.UserIdCookie];
         return true;
     }
 
