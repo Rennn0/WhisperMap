@@ -3,7 +3,11 @@
         "product": "Products",
         "cart": "Basket",
         "settings": "Settings",
-        "lang": "Language"
+        "lang": "Language",
+        "visit": "Visit",
+        "pay": "Pay",
+        "paid": "Paid",
+        "remove": "Remove"
     },
     "nav": {
         "search": "Search..."

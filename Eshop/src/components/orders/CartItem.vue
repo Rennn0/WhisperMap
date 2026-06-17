@@ -93,24 +93,24 @@ const handleRemoveConfirmed = () => {
                                 <button type="button" role="menuitem"
                                     class="w-full rounded-md px-3 py-2 text-left text-sm text-text transition-colors hover:bg-hover"
                                     @click="handleVisit(close)">
-                                    Visit
+                                    {{ $t('sidebar.visit') }}
                                 </button>
 
                                 <button v-if="showPayButton" type="button" role="menuitem"
                                     class="w-full rounded-md px-3 py-2 text-left text-sm text-primary transition-colors hover:bg-hover"
                                     @click="handlePay(close)">
-                                    Pay
+                                    {{ $t('sidebar.pay') }}
                                 </button>
 
                                 <button v-else type="button" role="menuitem"
                                     class="w-full rounded-md px-3 py-2 text-left text-sm text-success-text transition-colors hover:bg-success-bg">
-                                    Paid
+                                    {{ $t('sidebar.paid') }}
                                 </button>
 
                                 <button v-if="showPayButton" type="button" role="menuitem"
                                     class="w-full rounded-md px-3 py-2 text-left text-sm text-danger-text transition-colors hover:bg-danger-bg"
                                     @click="handleRemoveClick(close)">
-                                    Remove
+                                    {{ $t('sidebar.remove') }}
                                 </button>
                             </div>
                         </template>
