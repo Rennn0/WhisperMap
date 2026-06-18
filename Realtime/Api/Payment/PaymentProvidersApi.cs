@@ -24,12 +24,14 @@ public static partial class Api
             .WithSummary("payment provider by id");
 
         route.MapGet("/payments/token",
-                async (HttpContext context, [FromServices] TokenProvider tokenProvider,
+                async (HttpContext context, [FromQuery(Name = "id")] string? prefferedId,
+                    [FromServices] TokenProvider tokenProvider,
                     [FromServices] IAuthorizationRepo authRepo, IWebHostEnvironment hostEnvironment,
                     ILoggerFactory loggerFactory) =>
                 {
                     if (hostEnvironment.IsDevelopment())
-                        return Results.Text(tokenProvider.Create("b7dc9fb35e998892e77fdccf", "dev", "dev@xati.org",
+                        return Results.Text(tokenProvider.Create(prefferedId ?? "b7dc9fb35e998892e77fdccf", "dev",
+                            "dev@xati.org",
                             permissions: [ApiPermissions.PaymentCreate]));
 
                     ILogger logger = loggerFactory.CreateLogger("payments/token");

@@ -10,5 +10,6 @@ public abstract record MongoDoc
     /// <summary>
     /// </summary>
     [BsonId]
-    public ObjectId Id { get; set; }
+    [BsonIgnoreIfDefault]
+    public ObjectId Id { get; init; }
 }
