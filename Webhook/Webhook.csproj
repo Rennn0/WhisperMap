@@ -17,8 +17,13 @@
 
     
     <ItemGroup>
-        <ProjectReference Include="..\XcLib.Data\XcLib.Data.csproj"/>
-        <ProjectReference Include="..\XcLib.Shared\XcLib.Shared.csproj"/>
+        <ProjectReference Include="..\XcLib.Data\XcLib.Data.csproj" />
+        <ProjectReference Include="..\XcLib.Shared\XcLib.Shared.csproj" />
+    </ItemGroup>
+
+    
+    <ItemGroup>
+      <PackageReference Include="MasterMemory" Version="3.0.4" />
     </ItemGroup>
 
 </Project>
