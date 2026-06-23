@@ -1,10 +1,24 @@
 using MasterMemory;
 using MessagePack;
+using Webhook.Tables;
 
 namespace Webhook;
 
 public class MasterMemorySetup
 {
+    public void Test()
+    {
+        ReadOnlySpan<byte> bts = Create();
+        Save(bts);
+        MemoryDatabase db = new MemoryDatabase(bts.ToArray());
+        db.MmsPersonTable.TryFindById(2, out MmsPerson p);
+        db.MmsPersonTable.TryFindById(40, out MmsPerson pNotYet);
+        db.MmsPersonTable.TryFindByAgeAndName((1, "a"), out MmsPerson aaxax);
+        RangeView<MmsPerson> zz = db.MmsPersonTable.FindRangeByKills(int.MinValue, int.MaxValue);
+        db = new MemoryDatabase(Redeploy().ToArray());
+        db.MmsPersonTable.TryFindById(40, out MmsPerson pmaybeHere);
+        db.MmsPersonTable.TryFindById(2, out MmsPerson pnothere);
+    }
     private const string DbPath = "0_mmsdb.bin";
     public static bool Exists => File.Exists(DbPath);
     public static void Save(ReadOnlySpan<byte> data) => File.WriteAllBytes(DbPath, data.ToArray());
@@ -14,9 +28,9 @@ public class MasterMemorySetup
         DatabaseBuilder builder = new DatabaseBuilder();
         builder.Append(new List<MmsPerson>
         {
-            new MmsPerson { Id = 1, Age = 21, Name = "Luka" },
-            new MmsPerson { Id = 2, Age = 25, Name = "Nino" },
-            new MmsPerson { Id = 3, Age = 30, Name = "Giorgi" },
+            new MmsPerson { Id = 1, Age = 21, Name = "Luka", Kills = 4 },
+            new MmsPerson { Id = 2, Age = 25, Name = "Luka" },
+            new MmsPerson { Id = 3, Age = 21, Name = "Giorgi" },
             new MmsPerson { Id = 4, Age = 19, Name = "Ana" },
             new MmsPerson { Id = 5, Age = 42, Name = "David" },
             new MmsPerson { Id = 6, Age = 37, Name = "Mariam" },
@@ -60,9 +74,14 @@ public record MmsPerson
     [PrimaryKey] public required int Id { get; init; }
 
     [SecondaryKey(0)]
-    [NonUnique]
     [SecondaryKey(1)]
     public required int Age { get; init; }
 
-    [SecondaryKey(1, 1)] [NonUnique] public required string Name { get; init; }
+    [SecondaryKey(1, 1)]
+    [SecondaryKey(2, 5)]
+    public required string Name { get; init; }
+
+    [SecondaryKey(3, 4)]
+    [SecondaryKey(2, 1)]
+    public int? Kills { get; init; }
 }

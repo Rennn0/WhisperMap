@@ -23,11 +23,17 @@ public class TokenProvider
     public TokenProvider(IOptions<TokenOptions> options)
     {
         _options = options.Value;
-        _options.Expires ??= 1;
-        _options.Key ??= DefaultKey;
-        _options.Issuer ??= DefaultIssuer;
-        _options.Audience ??= DefaultAudience;
         _expire = TimeSpan.FromHours(_options.Expires ?? DefaultExpireHr);
+    }
+
+    public TokenProvider() : this(Options.Create(new TokenOptions
+    {
+        Expires = 1,
+        Key = DefaultKey,
+        Issuer = DefaultIssuer,
+        Audience = DefaultAudience
+    }))
+    {
     }
 
     public string Issuer => _options.Issuer!;

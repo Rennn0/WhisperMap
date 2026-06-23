@@ -1,9 +1,8 @@
+using System.Text;
 using System.Text.Json.Serialization;
-using Webhook.Meshes.Webhook;
+using MemoryPack;
 using Webhook.Objects;
-using XcLib.Data;
-using XcLib.Data.SqlServer.Realtime.Entities;
-using XcLib.Shared;
+using XcLib.Shared.Utils;
 
 namespace Webhook;
 
@@ -11,41 +10,57 @@ public static partial class Program
 {
     public static void Main(string[] args)
     {
-        WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
-        
-        builder.Services.ConfigureHttpJsonOptions(options =>
-        {
-            options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonContext.Default);
-        });
-        
-        const string swarmAppSettingsPath = "/run/secrets/appsettings.Production.json";
-        if (File.Exists(swarmAppSettingsPath))
-            builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
-        
-        builder.Services
-            .AddReactiveBus<DockerWebhookRequest>()
-            .AddDataflowMesh<WebhookMesh>()
-            .AddDataflowNodeFactory<DockerWebhookRequest>();
-        
-        builder.AddSqlLogging<MasterLog>(LogLevel.Information);
-        builder.AddSqlServer();
-        builder.AddMongo();
-        
-        WebApplication app = builder.Build();
-        
-        RouteGroupBuilder webHookGroup = app.MapGroup("/webhook");
-        webHookGroup.ApiPostWebhook();
-        
-        app.Run();
+        // WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
+        //
+        // builder.Services.ConfigureHttpJsonOptions(options =>
+        // {
+        //     options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonContext.Default);
+        // });
+        //
+        // const string swarmAppSettingsPath = "/run/secrets/appsettings.Production.json";
+        // if (File.Exists(swarmAppSettingsPath))
+        //     builder.Configuration.AddJsonFile(swarmAppSettingsPath, false, true);
+        //
+        // builder.Services
+        //     .AddReactiveBus<DockerWebhookRequest>()
+        //     .AddDataflowMesh<WebhookMesh>()
+        //     .AddDataflowNodeFactory<DockerWebhookRequest>();
+        //
+        // builder.AddSqlLogging<MasterLog>(LogLevel.Information);
+        // builder.AddSqlServer();
+        // builder.AddMongo();
+        //
+        // WebApplication app = builder.Build();
+        //
+        // RouteGroupBuilder webHookGroup = app.MapGroup("/webhook");
+        // webHookGroup.ApiPostWebhook();
+        //
+        // app.Run();
 
-        // ReadOnlySpan<byte> bts = MasterMemorySetup.Create();
-        // MasterMemorySetup.Save(bts);
-        // MemoryDatabase db = new MemoryDatabase(bts.ToArray());
-        // db.MmsPersonTable.TryFindById(2, out MmsPerson p);
-        // db.MmsPersonTable.TryFindById(40, out MmsPerson pNotYet);
-        // db = new MemoryDatabase(MasterMemorySetup.Redeploy().ToArray());
-        // db.MmsPersonTable.TryFindById(40, out MmsPerson pmaybeHere);
-        // db.MmsPersonTable.TryFindById(2, out MmsPerson pnothere);
+
+        byte[] bytes = File.ReadAllBytes("../_test_/MOCK_DATA.json");
+        Foo foo = new Foo(1, 2, Encoding.UTF8.GetString(bytes));
+        Foo bar = new Foo(1, 2, "hello world");
+        MemoryPackBinarySerializer serial = new MemoryPackBinarySerializer();
+        SystemJsonSerializer sys = new SystemJsonSerializer();
+
+        ReadOnlyMemory<byte> ser = serial.Serialize(foo);
+        ReadOnlyMemory<byte> sy = sys.Serialize(foo);
+        
+        Console.WriteLine($"{ser.Length} vs {sy.Length} ({bytes.Length})");
+        
+        ser = serial.Serialize(bar);
+        sy = sys.Serialize(bar);
+        
+        Console.WriteLine($"{ser.Length} vs {sy.Length} ({bytes.Length})");
+
+        // ReadOnlyMemory<byte> comp = serial.Compress(bytes);
+        // ReadOnlyMemory<byte> compSys = sys.Compress(bytes);
+        // Console.WriteLine($"{bytes.Length} vs {comp.Length} vs {compSys.Length}");
+        // ReadOnlyMemory<byte> compDec = serial.Decompress(comp);
+        // ReadOnlyMemory<byte> compSysDec = sys.Decompress(compSys);
+        // Console.WriteLine($"{bytes.Length} vs {compDec.Length} vs {compSysDec.Length}");
+        // Console.WriteLine(Encoding.UTF8.GetString(compDec.Span));
     }
 
 
@@ -55,4 +70,7 @@ public static partial class Program
     internal partial class AppJsonContext : JsonSerializerContext
     {
     }
+
+    [MemoryPackable]
+    public partial record Foo(int A, int B, string C);
 }
