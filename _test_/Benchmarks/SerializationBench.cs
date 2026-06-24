@@ -1,13 +1,18 @@
 using System.Text;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
+using Perfolizer.Mathematics.OutlierDetection;
 using XcLib.Shared.Utils;
 using XcLib.Shared.Utils.Interfaces;
 
 namespace Benchmarks;
 
+[GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
+[CategoriesColumn]
 [SimpleJob(RuntimeMoniker.Net80)]
 [MemoryDiagnoser]
+[Outliers(OutlierMode.DontRemove)]
 public class SerializationBench
 {
     private readonly ISerializer _mempack = new MemoryPackBinarySerializer();
