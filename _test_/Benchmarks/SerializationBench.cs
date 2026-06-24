@@ -4,7 +4,7 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using Perfolizer.Mathematics.OutlierDetection;
 using XcLib.Shared.Utils;
-using XcLib.Shared.Utils.Interfaces;
+using XcLib.Shared.Utils.Mocking;
 
 namespace Benchmarks;
 
@@ -15,9 +15,9 @@ namespace Benchmarks;
 [Outliers(OutlierMode.DontRemove)]
 public class SerializationBench
 {
-    private readonly ISerializer _mempack = new MemoryPackBinarySerializer();
-    private readonly ISerializer _sysJson = new SystemJsonSerializer();
-    private readonly ISerializer _newtonJson = new NewtonsoftJsonSerializer();
+    private readonly MemoryPackImplSerializer _mempack = new MemoryPackImplSerializer();
+    private readonly SystemJsonImplSerializer _sysJsonImpl = new SystemJsonImplSerializer();
+    private readonly NewtonsoftJsonImplSerializer _newtonJsonImpl = new NewtonsoftJsonImplSerializer();
     private readonly List<MockData> _data = [];
 
     private byte[] _mempackBytes = [];
@@ -29,11 +29,11 @@ public class SerializationBench
     public void Setup()
     {
         byte[] jsonBytes = Encoding.UTF8.GetBytes(Data.Json);
-        _data.AddRange(_sysJson.Deserialize<List<MockData>>(jsonBytes));
+        _data.AddRange(_sysJsonImpl.Deserialize<List<MockData>>(jsonBytes));
 
         _mempackBytes = _mempack.Serialize(_data).ToArray();
-        _sysJsonBytes = _sysJson.Serialize(_data).ToArray();
-        _newtonBytes = _newtonJson.Serialize(_data).ToArray();
+        _sysJsonBytes = _sysJsonImpl.Serialize(_data).ToArray();
+        _newtonBytes = _newtonJsonImpl.Serialize(_data).ToArray();
     }
 
     [Benchmark]
@@ -44,12 +44,12 @@ public class SerializationBench
     [Benchmark]
     [BenchmarkCategory("serialize")]
     public byte[] SystemTextJson_Serialize()
-        => _sysJson.Serialize(_data).ToArray();
+        => _sysJsonImpl.Serialize(_data).ToArray();
 
     [Benchmark]
     [BenchmarkCategory("serialize")]
     public byte[] Newtonsoft_Serialize()
-        => _newtonJson.Serialize(_data).ToArray();
+        => _newtonJsonImpl.Serialize(_data).ToArray();
 
     [Benchmark]
     [BenchmarkCategory("deserialize")]
@@ -59,10 +59,10 @@ public class SerializationBench
     [Benchmark]
     [BenchmarkCategory("deserialize")]
     public List<MockData> SystemTextJson_Deserialize()
-        => _sysJson.Deserialize<List<MockData>>(_sysJsonBytes);
+        => _sysJsonImpl.Deserialize<List<MockData>>(_sysJsonBytes);
 
     [Benchmark]
     [BenchmarkCategory("deserialize")]
     public List<MockData> Newtonsoft_Deserialize()
-        => _newtonJson.Deserialize<List<MockData>>(_newtonBytes);
+        => _newtonJsonImpl.Deserialize<List<MockData>>(_newtonBytes);
 }

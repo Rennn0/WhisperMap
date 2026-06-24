@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace XcLib.Shared.Utils;
 
-public class NewtonsoftJsonSerializer : SystemJsonSerializer
+public class NewtonsoftJsonImplSerializer : SystemJsonImplSerializer
 {
     public override ReadOnlyMemory<byte> Serialize<T>(T value)
     {

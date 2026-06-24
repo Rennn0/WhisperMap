@@ -4,7 +4,7 @@ using XcLib.Shared.Utils.Interfaces;
 
 namespace XcLib.Shared.Utils;
 
-public class SystemJsonSerializer : ISerializer
+public class SystemJsonImplSerializer : ISerializer
 {
     public virtual ReadOnlyMemory<byte> Serialize<T>(T value) =>
         new ReadOnlyMemory<byte>(JsonSerializer.SerializeToUtf8Bytes(value));
@@ -14,11 +14,11 @@ public class SystemJsonSerializer : ISerializer
     public virtual ReadOnlyMemory<byte> Compress(ReadOnlyMemory<byte> bytes)
     {
         using MemoryStream output = new MemoryStream(bytes.Length);
-        using (BrotliStream brotli = new BrotliStream(output, CompressionLevel.SmallestSize, true))
+        using (ZLibStream stream = new ZLibStream(output, CompressionLevel.SmallestSize, true))
         {
-            brotli.Write(bytes.Span);
+            stream.Write(bytes.Span);
         }
-
+        
         return new ReadOnlyMemory<byte>(output.ToArray());
     }
 
@@ -26,9 +26,9 @@ public class SystemJsonSerializer : ISerializer
     {
         using MemoryStream msIn = new MemoryStream(bytes.ToArray());
         using MemoryStream msOut = new MemoryStream();
-        using (BrotliStream brotli = new BrotliStream(msIn, CompressionMode.Decompress))
+        using (ZLibStream stream = new ZLibStream(msIn, CompressionMode.Decompress))
         {
-            brotli.CopyTo(msOut);
+            stream.CopyTo(msOut);
         }
 
         return new ReadOnlyMemory<byte>(msOut.ToArray());

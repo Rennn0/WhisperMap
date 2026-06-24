@@ -41,8 +41,8 @@ public static partial class Program
         byte[] bytes = File.ReadAllBytes("../_test_/MOCK_DATA.json");
         Foo foo = new Foo(1, 2, Encoding.UTF8.GetString(bytes));
         Foo bar = new Foo(1, 2, "hello world");
-        MemoryPackBinarySerializer serial = new MemoryPackBinarySerializer();
-        SystemJsonSerializer sys = new SystemJsonSerializer();
+        MemoryPackImplSerializer serial = new MemoryPackImplSerializer();
+        SystemJsonImplSerializer sys = new SystemJsonImplSerializer();
 
         ReadOnlyMemory<byte> ser = serial.Serialize(foo);
         ReadOnlyMemory<byte> sy = sys.Serialize(foo);

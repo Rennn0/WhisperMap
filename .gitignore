@@ -6,3 +6,4 @@ appsettings.json
 obj
 bin
 ProtectionKeys
+*.Artifacts*
