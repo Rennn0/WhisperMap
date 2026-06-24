@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Webhook", "Webhook\Webhook.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XcLib.Shared", "XcLib.Shared\XcLib.Shared.csproj", "{78869A2C-CD9A-452E-ACAC-370E7B0DE1CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "_test_\Benchmarks\Benchmarks.csproj", "{0CDA2C95-72B6-42A6-958E-D746007BD4A0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,10 @@ Global
 		{78869A2C-CD9A-452E-ACAC-370E7B0DE1CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78869A2C-CD9A-452E-ACAC-370E7B0DE1CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78869A2C-CD9A-452E-ACAC-370E7B0DE1CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CDA2C95-72B6-42A6-958E-D746007BD4A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CDA2C95-72B6-42A6-958E-D746007BD4A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CDA2C95-72B6-42A6-958E-D746007BD4A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CDA2C95-72B6-42A6-958E-D746007BD4A0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{501C0382-E3DD-43A7-875C-859F96D4F6E4} = {712A4BF7-B151-4988-BC53-1CAFA18B7AE4}
