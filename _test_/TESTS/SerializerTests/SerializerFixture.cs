@@ -1,9 +1,10 @@
+using System.Collections;
 using XcLib.Shared.Utils;
 using XcLib.Shared.Utils.Mocking;
 
 namespace TESTS.SerializerTests;
 
-public class Fixture
+public class SerializerFixture
 {
     /// <summary>
     ///     1000 items
@@ -19,7 +20,7 @@ public class Fixture
     public ReadOnlyMemory<byte> SysBytes { get; }
     public ReadOnlyMemory<byte> NewonBytes { get; }
 
-    public Fixture()
+    public SerializerFixture()
     {
         MockData = Data.GetMockList();
         MockDataBytes = Data.GetMockBytes();
