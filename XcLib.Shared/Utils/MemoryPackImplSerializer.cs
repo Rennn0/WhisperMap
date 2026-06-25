@@ -5,22 +5,20 @@ namespace XcLib.Shared.Utils;
 
 public class MemoryPackImplSerializer : SystemJsonImplSerializer
 {
+    private readonly MemoryPackSerializerOptions _options = new MemoryPackSerializerOptions
+    {
+        StringEncoding = StringEncoding.Utf8
+    };
     public override ReadOnlyMemory<byte> Serialize<T>(T value)
     {
-        byte[] bytes = MemoryPackSerializer.Serialize(value, new MemoryPackSerializerOptions
-        {
-            StringEncoding = StringEncoding.Utf8
-        });
+        byte[] bytes = MemoryPackSerializer.Serialize(value, _options);
         return new ReadOnlyMemory<byte>(bytes);
     }
 
 
     public override T Deserialize<T>(ReadOnlyMemory<byte> bytes)
     {
-        T? obj = MemoryPackSerializer.Deserialize<T>(bytes.Span, new MemoryPackSerializerOptions
-        {
-            StringEncoding = StringEncoding.Utf8
-        });
+        T? obj = MemoryPackSerializer.Deserialize<T>(bytes.Span, _options);
         return obj ?? throw new InvalidOperationException();
     }
 
