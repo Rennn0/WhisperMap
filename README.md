@@ -1,1 +1,7 @@
-[![Build and Push Images](https://github.com/Rennn0/WhisperMap/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Rennn0/WhisperMap/actions/workflows/docker-image.yml)
+[![Build](https://github.com/Rennn0/WhisperMap/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Rennn0/WhisperMap/actions/workflows/docker-image.yml)
+![License](https://img.shields.io/github/license/Rennn0/WhisperMap)
+![Last Commit](https://img.shields.io/github/last-commit/Rennn0/WhisperMap)
+![Top Language](https://img.shields.io/github/languages/top/Rennn0/WhisperMap)
+![Repo Size](https://img.shields.io/github/repo-size/Rennn0/WhisperMap)
+![Issues](https://img.shields.io/github/issues/Rennn0/WhisperMap)
+![Release](https://img.shields.io/github/v/release/Rennn0/WhisperMap)
