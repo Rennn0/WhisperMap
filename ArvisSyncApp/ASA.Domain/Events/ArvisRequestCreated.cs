@@ -1,9 +1,11 @@
+using ASA.Domain.Interfaces;
+using ASA.Domain.ValueObjects;
+
 namespace ASA.Domain.Events;
 
-public class ArvisRequestCreated : ArvisRequestDomainEvent
-{
-    public ArvisRequest ArvisRequest { get; }
-
-    public ArvisRequestCreated(ArvisRequest arvisRequest) : base(Guid.NewGuid(), arvisRequest.Id,
-        nameof(ArvisRequestCreated)) => ArvisRequest = arvisRequest;
-}
+public sealed record ArvisRequestCreated(
+    Guid AggregateId,
+    DateTimeOffset OccuredAt,
+    string Title,
+    IReadOnlyList<KeyValueProperty> Headers,
+    IReadOnlyList<KeyValueProperty> Cookies) : IDomainEvent;

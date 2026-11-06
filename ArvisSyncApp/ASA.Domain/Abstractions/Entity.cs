@@ -4,5 +4,5 @@ namespace ASA.Domain.Abstractions;
 
 public abstract class Entity : IEntity
 {
-    public Guid Id { get; protected init; }
+    public Guid Id { get; protected set; }
 }

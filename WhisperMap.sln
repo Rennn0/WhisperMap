@@ -41,6 +41,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ArvisSyncApp", "ArvisSyncAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASA.Domain", "ArvisSyncApp\ASA.Domain\ASA.Domain.csproj", "{23D71B5A-F1B8-4172-94A7-49555310EBBE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASA.Application", "ArvisSyncApp\ASA.Application\ASA.Application.csproj", "{447DA3DB-3A86-4076-B9DF-D43563C8DAF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASA.Infra", "ArvisSyncApp\ASA.Infra\ASA.Infra.csproj", "{F16DB83E-32BC-475B-A1EE-7906C21AE8A3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -103,6 +107,14 @@ Global
 		{23D71B5A-F1B8-4172-94A7-49555310EBBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23D71B5A-F1B8-4172-94A7-49555310EBBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23D71B5A-F1B8-4172-94A7-49555310EBBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{447DA3DB-3A86-4076-B9DF-D43563C8DAF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{447DA3DB-3A86-4076-B9DF-D43563C8DAF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{447DA3DB-3A86-4076-B9DF-D43563C8DAF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{447DA3DB-3A86-4076-B9DF-D43563C8DAF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F16DB83E-32BC-475B-A1EE-7906C21AE8A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F16DB83E-32BC-475B-A1EE-7906C21AE8A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F16DB83E-32BC-475B-A1EE-7906C21AE8A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F16DB83E-32BC-475B-A1EE-7906C21AE8A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{501C0382-E3DD-43A7-875C-859F96D4F6E4} = {712A4BF7-B151-4988-BC53-1CAFA18B7AE4}
