@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASA.Application", "ArvisSyn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASA.Infra", "ArvisSyncApp\ASA.Infra\ASA.Infra.csproj", "{F16DB83E-32BC-475B-A1EE-7906C21AE8A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASA.Api", "ArvisSyncApp\ASA.Api\ASA.Api.csproj", "{0C217A00-BA8E-4701-B8A1-4D5CBD316062}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -115,6 +117,10 @@ Global
 		{F16DB83E-32BC-475B-A1EE-7906C21AE8A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F16DB83E-32BC-475B-A1EE-7906C21AE8A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F16DB83E-32BC-475B-A1EE-7906C21AE8A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C217A00-BA8E-4701-B8A1-4D5CBD316062}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C217A00-BA8E-4701-B8A1-4D5CBD316062}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C217A00-BA8E-4701-B8A1-4D5CBD316062}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C217A00-BA8E-4701-B8A1-4D5CBD316062}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{501C0382-E3DD-43A7-875C-859F96D4F6E4} = {712A4BF7-B151-4988-BC53-1CAFA18B7AE4}

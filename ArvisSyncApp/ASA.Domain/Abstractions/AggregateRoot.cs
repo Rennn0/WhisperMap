@@ -11,7 +11,7 @@ public abstract class AggregateRoot : Entity
 
     protected void ApplyPersisted(IDomainEvent @event, long version)
     {
-        Apply(@event);
+        ApplyCore(@event);
         Version = version; 
     }
 
@@ -23,9 +23,9 @@ public abstract class AggregateRoot : Entity
 
     protected void Raise(IDomainEvent @event)
     {
-        Apply(@event);
+        ApplyCore(@event);
         _uncommitedDomainEvents.Add(@event);
     }
 
-    protected abstract void Apply(IDomainEvent @event);
+    protected abstract void ApplyCore(IDomainEvent @event);
 }

@@ -5,7 +5,7 @@ namespace ASA.Application.ArvisRequests.Commands;
 
 public sealed record UpdateArvisRequest(
     Guid Id,
-    long ExpectedVersion,
-    string Title,
-    IReadOnlyList<KeyValueProperty> Headers,
-    IReadOnlyList<KeyValueProperty> Cookies) : ICommand<long>;
+    long? ExpectedVersion,
+    string? Title,
+    IReadOnlyList<KeyValueProperty>? Headers,
+    IReadOnlyList<KeyValueProperty>? Cookies) : ICommand<long>;

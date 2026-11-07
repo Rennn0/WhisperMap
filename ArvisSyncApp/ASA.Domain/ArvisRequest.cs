@@ -70,7 +70,7 @@ public sealed class ArvisRequest : AggregateRoot
         Raise(new ArvisRequestDeleted(Id, time));
     }
 
-    protected override void Apply(IDomainEvent @event)
+    protected override void ApplyCore(IDomainEvent @event)
     {
         switch (@event)
         {
@@ -90,7 +90,7 @@ public sealed class ArvisRequest : AggregateRoot
                 _cookies.Clear();
                 _cookies.AddRange(e.Cookies);
                 break;
-            case ArvisRequestDeleted e: IsDeleted = true; break;
+            case ArvisRequestDeleted: IsDeleted = true; break;
             default: throw new ArgumentOutOfRangeException(nameof(@event), @event.GetType().Name);
         }
     }

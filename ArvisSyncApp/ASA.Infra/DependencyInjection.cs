@@ -5,6 +5,7 @@ using ASA.Domain.Events;
 using ASA.Domain.Interfaces;
 using ASA.Infra.Projections;
 using ASA.Infra.QueryHandlers;
+using JasperFx.Events;
 using JasperFx.Events.Projections;
 using Marten;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +24,7 @@ public static class DependencyInjection
                                throw new InvalidOperationException());
             options.DatabaseSchemaName = "marten_arvis";
 
+            options.Events.AppendMode = EventAppendMode.Quick;
             options.Events.MapEventType<ArvisRequestCreated>(nameof(ArvisRequestCreated));
             options.Events.MapEventType<ArvisRequestRenamed>(nameof(ArvisRequestRenamed));
             options.Events.MapEventType<ArvisRequestHeaderReplaced>(nameof(ArvisRequestHeaderReplaced));
@@ -34,12 +36,13 @@ public static class DependencyInjection
 
             options.Schema.For<ArvisRequestView>().Metadata(m => m.Revision.MapTo(x => x.Version))
                 .Index(x => x.UpdatedAt);
-        }).ApplyAllDatabaseChangesOnStartup();
+        })
+        .UseLightweightSessions()
+        .ApplyAllDatabaseChangesOnStartup();
 
         services.AddScoped<IArvisRequestRepository, MartenArvisRequestRepository>();
         services.AddScoped<IQueryHandler<GetArvisRequest, ArvisRequestView?>, GetArvisRequestHandler>();
         services.AddScoped<IQueryHandler<ListArvisRequest, IReadOnlyList<ArvisRequestView>>, ListArvisRequestHandler>();
-
 
         return services;
     }
