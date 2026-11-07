@@ -5,5 +5,5 @@ namespace ASA.Domain.Events;
 
 public sealed record ArvisRequestHeaderReplaced(
     Guid AggregateId,
-    DateTimeOffset OccuredAt,
+    DateTimeOffset OccurredAt,
     IReadOnlyList<KeyValueProperty> Headers) : IDomainEvent;

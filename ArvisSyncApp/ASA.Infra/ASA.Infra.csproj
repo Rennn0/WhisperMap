@@ -12,6 +12,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ASA.Domain\ASA.Domain.csproj" />
+        <ProjectReference Include="..\ASA.Application\ASA.Application.csproj"/>
     </ItemGroup>
 
 </Project>

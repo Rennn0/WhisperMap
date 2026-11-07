@@ -4,5 +4,5 @@ namespace ASA.Domain.Events;
 
 public sealed record ArvisRequestRenamed(
     Guid AggregateId,
-    DateTimeOffset OccuredAt,
+    DateTimeOffset OccurredAt,
     string NewTitle) : IDomainEvent;

@@ -1,6 +1,10 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using ASA.Application.ArvisRequests.CommandHandlers;
+using ASA.Application.ArvisRequests.Commands;
+using ASA.Application.Interfaces;
+using ASA.Infra;
 using OpenTelemetry.Metrics;
 using XatiCraft.ApiContracts;
 using XatiCraft.Guards;
@@ -180,6 +184,11 @@ public static class Program
         builder.AddSqlLogging<XaticraftLog>();
         builder.AddXcLibDataModule();
         builder.AddPaymentsModule();
+
+        builder.Services.AddArvisInfrastructure(builder.Configuration);
+        builder.Services.AddScoped<ICommandHandler<CreateArvisRequest, long>, CreateArvisRequestHandler>();
+        builder.Services.AddScoped<ICommandHandler<UpdateArvisRequest, long>, UpdateArvisRequestHandler>();
+        builder.Services.AddScoped<ICommandHandler<DeleteArvisRequest>, DeleteArvisRequestHandler>();
 #if USE_CERT
         builder.Services.AddCert();
 #endif

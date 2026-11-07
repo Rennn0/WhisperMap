@@ -9,7 +9,7 @@ public abstract class AggregateRoot : Entity
     public long Version { get; private set; }
     public IReadOnlyList<IDomainEvent> UncommitedDomainEvents => _uncommitedDomainEvents.AsReadOnly();
 
-    public void ApplyPersisted(IDomainEvent @event, long version)
+    protected void ApplyPersisted(IDomainEvent @event, long version)
     {
         Apply(@event);
         Version = version; 

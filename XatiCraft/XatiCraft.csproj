@@ -26,6 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\ArvisSyncApp\ASA.Infra\ASA.Infra.csproj"/>
         <ProjectReference Include="..\XcLib.Data\XcLib.Data.csproj"/>
         <ProjectReference Include="..\XcLib.Shared\XcLib.Shared.csproj"/>
     </ItemGroup>

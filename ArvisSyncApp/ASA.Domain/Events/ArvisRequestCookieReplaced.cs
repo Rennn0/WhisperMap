@@ -5,5 +5,5 @@ namespace ASA.Domain.Events;
 
 public sealed record ArvisRequestCookieReplaced(
     Guid AggregateId,
-    DateTimeOffset OccuredAt,
+    DateTimeOffset OccurredAt,
     IReadOnlyList<KeyValueProperty> Cookies) : IDomainEvent;

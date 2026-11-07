@@ -5,7 +5,7 @@ namespace ASA.Domain.Events;
 
 public sealed record ArvisRequestCreated(
     Guid AggregateId,
-    DateTimeOffset OccuredAt,
+    DateTimeOffset OccurredAt,
     string Title,
     IReadOnlyList<KeyValueProperty> Headers,
     IReadOnlyList<KeyValueProperty> Cookies) : IDomainEvent;

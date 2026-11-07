@@ -5,7 +5,7 @@ namespace ASA.Application.ArvisRequests;
 public sealed class ArvisRequestView
 {
     public Guid Id { get; set; }
-    public long Version { get; set; }
+    public int Version { get; set; }
     public string Title { get; set; } = string.Empty;
     public List<KeyValueProperty> Headers { get; set; } = [];
     public List<KeyValueProperty> Cookies { get; set; } = [];
