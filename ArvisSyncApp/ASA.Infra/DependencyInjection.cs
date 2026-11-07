@@ -43,6 +43,9 @@ public static class DependencyInjection
         services.AddScoped<IArvisRequestRepository, MartenArvisRequestRepository>();
         services.AddScoped<IQueryHandler<GetArvisRequest, ArvisRequestView?>, GetArvisRequestHandler>();
         services.AddScoped<IQueryHandler<ListArvisRequest, IReadOnlyList<ArvisRequestView>>, ListArvisRequestHandler>();
+        services
+            .AddScoped<IQueryHandler<GetArvisRequestHistory, ArvisRequestWithHistory>,
+                GetArvisRequestHistoryHandler>();
 
         return services;
     }

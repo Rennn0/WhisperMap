@@ -11,6 +11,9 @@ internal sealed class GetArvisRequestHandler : IQueryHandler<GetArvisRequest, Ar
 
     public GetArvisRequestHandler(IQuerySession querySession) => _querySession = querySession;
 
-    public Task<ArvisRequestView?> HandleAsync(GetArvisRequest command, CancellationToken cancellationToken) =>
-        _querySession.LoadAsync<ArvisRequestView>(command.Id, cancellationToken);
+    public async Task<ArvisRequestView?> HandleAsync(GetArvisRequest query, CancellationToken cancellationToken)
+    {
+        ArvisRequestView? view = await _querySession.LoadAsync<ArvisRequestView>(query.Id, cancellationToken);
+        return view is { IsDeleted: false } ? view : null;
+    }
 }

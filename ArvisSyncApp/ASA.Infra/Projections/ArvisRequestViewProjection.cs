@@ -6,6 +6,9 @@ using Marten.Events.Aggregation;
 
 namespace ASA.Infra.Projections;
 
+/// <summary>
+///     read model
+/// </summary>
 public class ArvisRequestViewProjection : SingleStreamProjection<ArvisRequestView, Guid>
 {
     public override ArvisRequestView? Evolve(ArvisRequestView? snapshot, Guid id, IEvent e)
