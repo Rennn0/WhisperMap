@@ -7,15 +7,15 @@ namespace ASA.Application.ArvisRequests.CommandHandlers;
 
 public sealed class CreateArvisRequestHandler : ICommandHandler<CreateArvisRequest, long>
 {
-    private readonly IArvisRequestRepository _arvisRequestRepository;
+    private readonly IEventRepository<ArvisRequest> _repository;
 
-    public CreateArvisRequestHandler(IArvisRequestRepository arvisRequestRepository) =>
-        _arvisRequestRepository = arvisRequestRepository;
+    public CreateArvisRequestHandler(IEventRepository<ArvisRequest> repository) =>
+        _repository = repository;
 
     public Task<long> HandleAsync(CreateArvisRequest command, CancellationToken cancellationToken)
     {
         ArvisRequest ar = ArvisRequest.Create(command.Id, command.Title, command.Headers, command.Cookies,
             DateTimeOffset.Now);
-        return _arvisRequestRepository.SaveAsync(ar, cancellationToken);
+        return _repository.SaveAsync(ar, cancellationToken);
     }
 }

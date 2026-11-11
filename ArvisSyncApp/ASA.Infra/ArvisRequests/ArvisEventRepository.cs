@@ -1,26 +1,28 @@
 using ASA.Domain;
+using ASA.Domain.Exceptions;
 using ASA.Domain.Interfaces;
-using JasperFx;
 using Marten;
 using Marten.Events;
 using Marten.Exceptions;
+using ConcurrencyException = JasperFx.ConcurrencyException;
 
-namespace ASA.Infra;
+namespace ASA.Infra.ArvisRequests;
 
-internal sealed class MartenArvisRequestRepository : IArvisRequestRepository
+internal sealed class ArvisEventRepository : IEventRepository<ArvisRequest>
 {
     private readonly IDocumentSession _documentSession;
 
     private readonly Dictionary<Guid, IEventStream<ArvisRequest>> _streams =
         new Dictionary<Guid, IEventStream<ArvisRequest>>();
 
-    public MartenArvisRequestRepository(IDocumentSession documentSession) => _documentSession = documentSession;
+    public ArvisEventRepository(IDocumentSession documentSession) => _documentSession = documentSession;
 
-    public async Task<ArvisRequest?> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<ArvisRequest?> GetAsync(object id, CancellationToken cancellationToken = default)
     {
+        if (id is not Guid idGuid) throw new DomainException("expected id type Guid");
         IEventStream<ArvisRequest> stream =
-            await _documentSession.Events.FetchForWriting<ArvisRequest>(id, cancellationToken);
-        _streams[id] = stream;
+            await _documentSession.Events.FetchForWriting<ArvisRequest>(idGuid, cancellationToken);
+        _streams[idGuid] = stream;
         return stream.Aggregate;
     }
 

@@ -3,7 +3,7 @@ using ASA.Application.ArvisRequests.Queries;
 using ASA.Application.Interfaces;
 using Marten;
 
-namespace ASA.Infra.QueryHandlers;
+namespace ASA.Infra.ArvisRequests.QueryHandlers;
 
 internal sealed class ListArvisRequestHandler : IQueryHandler<ListArvisRequest, IReadOnlyList<ArvisRequestView>>
 {

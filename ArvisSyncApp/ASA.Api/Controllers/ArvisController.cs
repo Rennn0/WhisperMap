@@ -2,6 +2,10 @@ using ASA.Application.ArvisRequests;
 using ASA.Application.ArvisRequests.Commands;
 using ASA.Application.ArvisRequests.Queries;
 using ASA.Application.Interfaces;
+using ASA.Application.PopularOptions.Commands;
+using ASA.Application.PopularOptions.Queries;
+using ASA.Domain;
+using ASA.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ASA.Api.Controllers;
@@ -43,4 +47,19 @@ public class ArvisController : ControllerBase
         HttpContext.Request.Headers.ETag = version.ToString();
         return Results.NoContent();
     }
+
+    [HttpGet("options/{id:long}")]
+    public async Task<IResult> GetArvisOption(
+        [FromServices] IQueryHandler<GetPopularOption, PopularRequestOption?> handler, long id) =>
+        Results.Ok(await handler.HandleAsync(new GetPopularOption(id), CancellationToken.None));
+
+    [HttpGet("options")]
+    public async Task<IResult> GetArvisOptions([FromQuery] ConfigPlace? place,
+        [FromServices] IQueryHandler<ListPopularOptions, IReadOnlyList<PopularRequestOption>> handler) =>
+        Results.Ok(await handler.HandleAsync(new ListPopularOptions(place), CancellationToken.None));
+
+    [HttpPost("options")]
+    public async Task<IResult> GetArvisOptions([FromBody] PopularRequestOption option,
+        [FromServices] ICommandHandler<CreatePopularOption, long> repository, CancellationToken cancellationToken) =>
+        Results.Ok(await repository.HandleAsync(new CreatePopularOption(option), cancellationToken));
 }

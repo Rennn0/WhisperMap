@@ -74,35 +74,55 @@ public sealed class ArvisRequest : AggregateRoot
     {
         switch (@event)
         {
-            case ArvisRequestCreated e:
-                Id = e.AggregateId;
-                Title = e.Title;
-                _headers.AddRange(e.Headers);
-                _cookies.AddRange(e.Cookies);
-                break;
-            case ArvisRequestRenamed e:
-                Title = e.NewTitle; break;
-            case ArvisRequestHeaderReplaced e:
-                _headers.Clear();
-                _headers.AddRange(e.Headers);
-                break;
-            case ArvisRequestCookieReplaced e:
-                _cookies.Clear();
-                _cookies.AddRange(e.Cookies);
-                break;
-            case ArvisRequestDeleted: IsDeleted = true; break;
+            case ArvisRequestCreated e: ApplyCore(e); break;
+            case ArvisRequestRenamed e: ApplyCore(e); break;
+            case ArvisRequestHeaderReplaced e: ApplyCore(e); break;
+            case ArvisRequestCookieReplaced e: ApplyCore(e); break;
+            case ArvisRequestDeleted: ApplyCore(); break;
             default: throw new ArgumentOutOfRangeException(nameof(@event), @event.GetType().Name);
         }
     }
 
+    private void ApplyCore()
+    {
+        IsDeleted = true;
+    }
+
+    private void ApplyCore(ArvisRequestCookieReplaced e)
+    {
+        _cookies.Clear();
+        _cookies.AddRange(e.Cookies);
+    }
+
+    private void ApplyCore(ArvisRequestHeaderReplaced e)
+    {
+        _headers.Clear();
+        _headers.AddRange(e.Headers);
+    }
+
+    private void ApplyCore(ArvisRequestRenamed e)
+    {
+        Title = e.NewTitle;
+    }
+
+    private void ApplyCore(ArvisRequestCreated e)
+    {
+        Id = e.AggregateId;
+        Title = e.Title;
+        _headers.AddRange(e.Headers);
+        _cookies.AddRange(e.Cookies);
+    }
+
     private void EnsureNotDeleted()
     {
-        if (IsDeleted) throw new DomainException(nameof(EnsureNotDeleted));
+        if (IsDeleted) throw new DomainException("This item has been deleted and can no longer be changed.");
     }
 
     private static string ValidTitle(string? title)
     {
         title = title?.Trim() ?? string.Empty;
-        return title.Length > MaxTitleLength ? throw new DomainException(nameof(ValidTitle)) : title;
+        return title.Length > MaxTitleLength
+            ? throw new DomainException($"Title must be at most {MaxTitleLength} characters.")
+            : title;
     }
 }

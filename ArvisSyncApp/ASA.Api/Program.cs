@@ -1,8 +1,10 @@
+using ASA.Api;
 using ASA.Application.ArvisRequests.CommandHandlers;
 using ASA.Application.ArvisRequests.Commands;
 using ASA.Application.Interfaces;
+using ASA.Application.PopularOptions.CommandHandlers;
+using ASA.Application.PopularOptions.Commands;
 using ASA.Infra;
-using JasperFx;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
@@ -15,12 +17,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GeneralExceptionHandler>();
+
 builder.Services.AddArvisInfrastructure(builder.Configuration);
 builder.Services.AddScoped<ICommandHandler<CreateArvisRequest, long>, CreateArvisRequestHandler>();
 builder.Services.AddScoped<ICommandHandler<UpdateArvisRequest, long>, UpdateArvisRequestHandler>();
 builder.Services.AddScoped<ICommandHandler<DeleteArvisRequest>, DeleteArvisRequestHandler>();
 
+builder.Services.AddScoped<ICommandHandler<CreatePopularOption, long>, CreatePopularOptionHandler>();
+
 WebApplication app = builder.Build();
+
+app.UseExceptionHandler();
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -28,4 +37,4 @@ app.UseSwaggerUI();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-await app.RunJasperFxCommands(args);
+app.Run();

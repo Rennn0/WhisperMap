@@ -2,7 +2,7 @@ using ASA.Domain.Interfaces;
 
 namespace ASA.Domain.Abstractions;
 
-public abstract class AggregateRoot : Entity
+public abstract class AggregateRoot : EntityGuid
 {
     private readonly List<IDomainEvent> _uncommitedDomainEvents = [];
 

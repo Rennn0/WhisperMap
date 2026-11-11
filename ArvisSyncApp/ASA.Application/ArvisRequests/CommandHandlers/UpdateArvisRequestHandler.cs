@@ -19,9 +19,11 @@ public sealed class UpdateArvisRequestHandler : ICommandHandler<UpdateArvisReque
             BackoffType = DelayBackoffType.Exponential,
             UseJitter = true
         }).Build();
-    private readonly IArvisRequestRepository _arvisRequestRepository;
-    public UpdateArvisRequestHandler(IArvisRequestRepository arvisRequestRepository) =>
-        _arvisRequestRepository = arvisRequestRepository;
+
+    private readonly IEventRepository<ArvisRequest> _repository;
+
+    public UpdateArvisRequestHandler(IEventRepository<ArvisRequest> repository) =>
+        _repository = repository;
 
     public async Task<long> HandleAsync(UpdateArvisRequest command, CancellationToken cancellationToken)
     {
@@ -35,7 +37,7 @@ public sealed class UpdateArvisRequestHandler : ICommandHandler<UpdateArvisReque
 
     private async Task<long> CoreHandleAsync(UpdateArvisRequest command, CancellationToken cancellationToken)
     {
-        ArvisRequest ar = await _arvisRequestRepository.GetAsync(command.Id, cancellationToken) is
+        ArvisRequest ar = await _repository.GetAsync(command.Id, cancellationToken) is
             { IsDeleted: false } found
             ? found
             : throw new InvalidDataException();
@@ -48,6 +50,6 @@ public sealed class UpdateArvisRequestHandler : ICommandHandler<UpdateArvisReque
             ar.ReplaceHeaders(command.Headers, time);
         if (command.Cookies is not null)
             ar.ReplaceCookies(command.Cookies, time);
-        return await _arvisRequestRepository.SaveAsync(ar, cancellationToken);
+        return await _repository.SaveAsync(ar, cancellationToken);
     }
 }

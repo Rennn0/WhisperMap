@@ -5,7 +5,7 @@ using JasperFx.Events;
 using Marten;
 using Marten.Services.BatchQuerying;
 
-namespace ASA.Infra.QueryHandlers;
+namespace ASA.Infra.ArvisRequests.QueryHandlers;
 
 internal sealed class
     GetArvisRequestHistoryHandler : IQueryHandler<GetArvisRequestHistory, ArvisRequestWithHistory>
