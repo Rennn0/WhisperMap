@@ -30,7 +30,8 @@ public static class DependencyInjection
         {
             options.Connection(configuration.GetConnectionString("ApplicationContext") ??
                                throw new InvalidOperationException());
-            options.DatabaseSchemaName = "marten_arvis";
+            options.DatabaseSchemaName = "marten";
+            options.Events.DatabaseSchemaName = "marten_streams";
             options.Events.AppendMode = EventAppendMode.Quick;
             options.UseSystemTextJsonForSerialization(EnumStorage.AsString);
             
@@ -43,10 +44,12 @@ public static class DependencyInjection
             options.Projections.Add(new ArvisRequestAggregation(), ProjectionLifecycle.Live);
             options.Projections.Add(new ArvisRequestViewProjection(), ProjectionLifecycle.Inline);
 
-            options.Schema.For<ArvisRequestView>().Metadata(m => m.Revision.MapTo(x => x.Version))
+            options.Schema.For<ArvisRequestView>()
+                .DatabaseSchemaName("marten_stream_arvis").Metadata(m => m.Revision.MapTo(x => x.Version))
                 .Index(x => x.UpdatedAt);
 
-            options.Schema.For<PopularRequestOption>().DatabaseSchemaName("configs").PartitionOn(x => x.Place, x =>
+            options.Schema.For<PopularRequestOption>().DatabaseSchemaName("marten_doc_config").PartitionOn(
+                x => x.Place, x =>
             {
                 ListPartitioning l = x.ByList();
                 foreach (string name in Enum.GetNames<ConfigPlace>()) l.AddPartition(name.ToLowerInvariant(), name);

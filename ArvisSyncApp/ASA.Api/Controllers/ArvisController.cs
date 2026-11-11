@@ -50,8 +50,11 @@ public class ArvisController : ControllerBase
 
     [HttpGet("options/{id:long}")]
     public async Task<IResult> GetArvisOption(
-        [FromServices] IQueryHandler<GetPopularOption, PopularRequestOption?> handler, long id) =>
-        Results.Ok(await handler.HandleAsync(new GetPopularOption(id), CancellationToken.None));
+        [FromServices] IQueryHandler<GetPopularOption, PopularRequestOption?> handler, long id)
+    {
+        PopularRequestOption? result = await handler.HandleAsync(new GetPopularOption(id), CancellationToken.None);
+        return result is null ? Results.NotFound() : Results.Ok(result);
+    }
 
     [HttpGet("options")]
     public async Task<IResult> GetArvisOptions([FromQuery] ConfigPlace? place,

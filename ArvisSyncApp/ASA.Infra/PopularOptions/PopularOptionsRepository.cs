@@ -16,6 +16,7 @@ internal sealed class PopularOptionsRepository : IRepository<PopularRequestOptio
     public async Task<long> SaveAsync(PopularRequestOption request, CancellationToken cancellationToken = default)
     {
         _session.Store(request);
+        _session.CorrelationId = "ratatui";
         await _session.SaveChangesAsync(cancellationToken);
         return request.Id;
     }
